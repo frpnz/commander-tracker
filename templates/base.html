@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Commander Tracker</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 980px; margin: 24px auto; padding: 0 16px; }
+    nav a { margin-right: 12px; }
+    textarea { width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border-bottom: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    .error { background: #ffe8e8; padding: 10px; border: 1px solid #ffb3b3; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin: 12px 0; }
+    .muted { color: #666; }
+    .row { display:flex; gap:12px; flex-wrap: wrap; }
+    .row > div { flex:1; min-width: 220px; }
+    button { cursor:pointer; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">Partite</a>
+    <a href="/add">Aggiungi</a>
+    <a href="/stats">Statistiche</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/export_games.csv">Export partite (1 riga = 1 partita)</a>
+    <a href="/export_flat.csv">Export flat</a>
+  </nav>
+  <hr />
+  {% block content %}{% endblock %}
+</body>
+</html>

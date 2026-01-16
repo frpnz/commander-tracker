@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Statistiche</h1>
+
+<h2>Per Player</h2>
+{% if not player_rows or player_rows|length == 0 %}
+  <p>Nessun dato.</p>
+{% else %}
+<table>
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th># Partite</th>
+      <th>Vittorie</th>
+      <th>Winrate</th>
+      <th>Commander unici</th>
+      <th>Commander più giocato</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in player_rows %}
+      <tr>
+        <td><b>{{ r.player }}</b></td>
+        <td>{{ r.games }}</td>
+        <td>{{ r.wins }}</td>
+        <td>{{ "%.1f"|format(r.winrate) }}%</td>
+        <td>{{ r.unique_commanders }}</td>
+        <td>
+          {% if r.top_commander %}
+            {{ r.top_commander }} ({{ r.top_commander_games }})
+          {% else %}
+            —
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<h2 style="margin-top:24px;">Per Player + Commander</h2>
+{% if not pair_rows or pair_rows|length == 0 %}
+  <p>Nessun dato.</p>
+{% else %}
+<table>
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>Commander</th>
+      <th># Partite</th>
+      <th>Vittorie</th>
+      <th>Winrate</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in pair_rows %}
+      <tr>
+        <td><b>{{ r.player }}</b></td>
+        <td>{{ r.commander }}</td>
+        <td>{{ r.games }}</td>
+        <td>{{ r.wins }}</td>
+        <td>{{ "%.1f"|format(r.winrate) }}%</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<p class="muted" style="margin-top:12px;">
+Le vittorie funzionano quando compili <b>Winner</b> con lo stesso nome del player.
+</p>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="row">
+  <div class="card" style="flex:1; min-width:320px;">
+    <h3>Distribuzione pod size</h3>
+    <canvas id="podChart"></canvas>
+  </div>
+
+  <div class="card" style="flex:1; min-width:320px;">
+    <h3>Top 10 player per #partite</h3>
+    <canvas id="playersGamesChart"></canvas>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card" style="flex:1; min-width:320px;">
+    <h3>Top 10 player per vittorie</h3>
+    <canvas id="playersWinsChart"></canvas>
+  </div>
+
+  <div class="card" style="flex:1; min-width:320px;">
+    <h3>Top 10 commander più giocati</h3>
+    <canvas id="commandersChart"></canvas>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card" style="flex:1; min-width:320px;">
+    <h3 id="pairingsTitle">Top pairing Player+Commander per winrate (min {{ min_games }} partite)</h3>
+    <canvas id="pairingsWinrateChart"></canvas>
+
+    <table style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Player</th><th>Commander</th><th>#</th><th>W</th><th>WR%</th>
+        </tr>
+      </thead>
+      <tbody id="pairingsWinrateTable"></tbody>
+    </table>
+
+    <p class="muted" style="margin-top:8px;">
+      Tip: cambia soglia con <code>?min_games=3</code>, <code>?min_games=5</code> ecc.
+    </p>
+  </div>
+</div>
+
+<!-- ✅ JSON robusto: passiamo un dict (chart_data) e lo serializziamo con tojson -->
+<script id="chart-data" type="application/json">
+{{ chart_data | tojson }}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const data = JSON.parse(document.getElementById("chart-data").textContent);
+
+  function donut(el, labels, values) {
+    new Chart(document.getElementById(el), {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: values }] },
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+
+  function bar(el, labels, values) {
+    new Chart(document.getElementById(el), {
+      type: 'bar',
+      data: { labels, datasets: [{ data: values }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // Grafici base
+  donut("podChart", data.pod.labels, data.pod.values);
+  bar("playersGamesChart", data.topPlayersGames.labels, data.topPlayersGames.values);
+  bar("playersWinsChart", data.topPlayersWins.labels, data.topPlayersWins.values);
+  bar("commandersChart", data.topCommanders.labels, data.topCommanders.values);
+
+  // Pairings winrate
+  const minGames = data.topPairingsWinrate?.minGames ?? 1;
+  document.getElementById("pairingsTitle").textContent =
+  `Top pairing Player+Commander per winrate (min ${minGames} partite)`; 
+
+  bar("pairingsWinrateChart", data.topPairingsWinrate.labels, data.topPairingsWinrate.values);
+
+  const tbody = document.getElementById("pairingsWinrateTable");
+  tbody.innerHTML = "";
+  for (const r of data.topPairingsWinrate.rows) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${r.player}</b></td>
+      <td>${r.commander}</td>
+      <td>${r.games}</td>
+      <td>${r.wins}</td>
+      <td>${r.winrate}%</td>
+    `;
+    tbody.appendChild(tr);
+  }
+</script>
+{% endblock %}
