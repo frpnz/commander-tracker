@@ -95,6 +95,19 @@ def build_entries_by_game(entries: List[GameEntry]) -> Dict[int, List[GameEntry]
         by_game.setdefault(e.game_id, []).append(e)
     return by_game
 
+def get_known_players_and_commanders() -> Tuple[List[str], List[str]]:
+    """
+    Ritorna (players, commanders) distinti presenti nel DB (da GameEntry),
+    ordinati case-insensitive e puliti da stringhe vuote.
+    """
+    with get_session() as session:
+        players = session.exec(select(GameEntry.player).distinct()).all()
+        commanders = session.exec(select(GameEntry.commander).distinct()).all()
+
+    players_clean = sorted({p.strip() for p in players if p and p.strip()}, key=lambda s: s.lower())
+    commanders_clean = sorted({c.strip() for c in commanders if c and c.strip()}, key=lambda s: s.lower())
+    return players_clean, commanders_clean
+
 
 # =============================================================================
 # BASIC ROUTES / DEBUG
@@ -160,7 +173,11 @@ def index(request: Request) -> HTMLResponse:
 
 @app.get("/add", response_class=HTMLResponse)
 def add_form(request: Request, error: Optional[str] = None) -> HTMLResponse:
-    return templates.TemplateResponse("add_game.html", {"request": request, "error": error})
+    players, commanders = get_known_players_and_commanders()
+    return templates.TemplateResponse(
+        "add_game.html",
+        {"request": request, "error": error, "players": players, "commanders": commanders},
+    )
 
 
 @app.post("/add")
@@ -173,11 +190,13 @@ def add_game(
     try:
         entries = parse_entries(entries_text)
     except ValueError as e:
+        players, commanders = get_known_players_and_commanders()
         return templates.TemplateResponse(
             "add_game.html",
-            {"request": request, "error": str(e)},
+            {"request": request, "error": str(e), "players": players, "commanders": commanders},
             status_code=400,
         )
+
 
     winner = winner_player.strip() or None
     notes_clean = notes.strip() or None
@@ -414,7 +433,23 @@ def stats(request: Request) -> HTMLResponse:
 # =============================================================================
 
 @app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request, min_games: int = 3) -> HTMLResponse:
+def dashboard(
+    request: Request,
+    player: str = "__all__",          # "__all__" = tutti
+    min_pg: int = 3,
+    min_pair: int = 3,
+    min_cmd: int = 3,
+    top_players: int = 10,
+    top_pairs: int = 10,
+    top_cmd: int = 10,
+) -> HTMLResponse:
+    min_pg = max(1, int(min_pg))
+    min_pair = max(1, int(min_pair))
+    min_cmd = max(1, int(min_cmd))
+    top_players = max(1, min(50, int(top_players)))
+    top_pairs = max(1, min(50, int(top_pairs)))
+    top_cmd = max(1, min(50, int(top_cmd)))
+
     with get_session() as session:
         games = session.exec(select(Game)).all()
         entries = session.exec(select(GameEntry)).all()
@@ -424,35 +459,60 @@ def dashboard(request: Request, min_games: int = 3) -> HTMLResponse:
     for e in entries:
         entries_by_game.setdefault(e.game_id, []).append(e)
 
-    # Distribuzione pod size
-    pod_counts: Dict[int, int] = {}
-    for _, es in entries_by_game.items():
-        n = len(es)
-        pod_counts[n] = pod_counts.get(n, 0) + 1
+    participants_by_game: Dict[int, int] = {gid: len(es) for gid, es in entries_by_game.items()}
 
-    # winner per game
     winner_by_game: Dict[int, Optional[str]] = {g.id: g.winner_player for g in games if g.id is not None}
+    game_time_by_id: Dict[int, datetime] = {g.id: g.played_at for g in games if g.id is not None}
 
-    # Vittorie per player
+    # elenco player + partite per player
+    games_by_player: Dict[str, set] = {}
+    for e in entries:
+        games_by_player.setdefault(e.player, set()).add(e.game_id)
+    all_players = sorted(games_by_player.keys(), key=lambda x: x.lower())
+
+    # selezione player
+    player = (player or "").strip()
+    if player == "":
+        player = "__all__"
+    if player != "__all__" and player not in games_by_player:
+        player = "__all__"
+
+    # wins per player
     wins_by_player: Dict[str, int] = {}
     for g in games:
         if g.winner_player:
             wins_by_player[g.winner_player] = wins_by_player.get(g.winner_player, 0) + 1
 
-    # Partite per player
-    games_by_player: Dict[str, set] = {}
-    for e in entries:
-        games_by_player.setdefault(e.player, set()).add(e.game_id)
-    games_by_player_counts = {p: len(s) for p, s in games_by_player.items()}
+    games_count_by_player = {p: len(s) for p, s in games_by_player.items()}
 
-    # Commander più giocati
-    commander_counts: Dict[str, int] = {}
-    for e in entries:
-        commander_counts[e.commander] = commander_counts.get(e.commander, 0) + 1
+    # -------------------------------------------------------------------------
+    # 1) Winrate Player (top N) + Scatter WR vs Games (sample size)
+    # -------------------------------------------------------------------------
+    player_wr_rows = []
+    for p, games_n in games_count_by_player.items():
+        if games_n < min_pg:
+            continue
+        wins_n = wins_by_player.get(p, 0)
+        wr = (wins_n / games_n) * 100.0 if games_n else 0.0
+        player_wr_rows.append((p, games_n, wins_n, wr))
 
-    # --- TOP PAIRING per WINRATE (con soglia min_games) ---
+    # top players by WR (tie-break by games)
+    player_wr_rows.sort(key=lambda x: (-x[3], -x[1], x[0].lower()))
+    player_wr_top = player_wr_rows[:top_players]
+
+    scatter_rows = []
+    for (p, games_n, wins_n, wr) in player_wr_rows:
+        # Bubble radius: cresce con games ma in modo “smooth”
+        # r minimo 4, massimo 18 circa
+        r = 4 + min(14, int((games_n ** 0.5) * 3))
+        scatter_rows.append(
+            {"player": p, "games": games_n, "wins": wins_n, "winrate": round(wr, 1), "r": r}
+        )
+
+    # -------------------------------------------------------------------------
+    # 2) Top pairing player+commander per winrate (con soglia min_pair)
+    # -------------------------------------------------------------------------
     pair_stats: Dict[Tuple[str, str], Dict[str, object]] = {}
-
     for gid, es in entries_by_game.items():
         winner = winner_by_game.get(gid)
         for e in es:
@@ -462,54 +522,160 @@ def dashboard(request: Request, min_games: int = 3) -> HTMLResponse:
             if winner and winner == e.player:
                 pair_stats[key]["wins"] += 1
 
-    top_pairs = []
+    pair_rows = []
     for (p, c), v in pair_stats.items():
         games_n = len(v["games"])
-        if games_n < max(1, min_games):
+        if games_n < min_pair:
             continue
         wins_n = int(v["wins"])
-        winrate = (wins_n / games_n) * 100.0 if games_n else 0.0
-        top_pairs.append((p, c, games_n, wins_n, winrate))
+        wr = (wins_n / games_n) * 100.0 if games_n else 0.0
+        pair_rows.append((p, c, games_n, wins_n, wr))
 
-    top_pairs.sort(key=lambda x: (-x[4], -x[2], x[0].lower(), x[1].lower()))
-    top_pairs = top_pairs[:10]
+    pair_rows.sort(key=lambda x: (-x[4], -x[2], x[0].lower(), x[1].lower()))
+    pair_rows = pair_rows[:top_pairs]
 
-    def top_k(d: Dict[str, int], k: int = 10):
-        return sorted(d.items(), key=lambda x: (-x[1], x[0].lower()))[:k]
+    # -------------------------------------------------------------------------
+    # 3) Winrate per pod size (BAR) — per player selezionato o tutti
+    # -------------------------------------------------------------------------
+    pod_participations: Dict[int, int] = {}
+    pod_wins: Dict[int, int] = {}
 
-    pod_labels = [f"{n}p" for n in sorted(pod_counts.keys())]
-    pod_values = [pod_counts[int(lbl[:-1])] for lbl in pod_labels]
+    for gid, es in entries_by_game.items():
+        n = participants_by_game.get(gid, 0)
+        if n <= 0:
+            continue
 
-    top_games = top_k(games_by_player_counts, 10)
-    top_wins = top_k(wins_by_player, 10)
-    top_cmd = top_k(commander_counts, 10)
+        winner = winner_by_game.get(gid)
+
+        if player == "__all__":
+            pod_participations[n] = pod_participations.get(n, 0) + n
+            if winner:
+                pod_wins[n] = pod_wins.get(n, 0) + 1
+        else:
+            participated = any(e.player == player for e in es)
+            if not participated:
+                continue
+            pod_participations[n] = pod_participations.get(n, 0) + 1
+            if winner and winner == player:
+                pod_wins[n] = pod_wins.get(n, 0) + 1
+
+    pod_sizes = sorted(pod_participations.keys())
+    pod_wr_values = []
+    pod_denoms = []
+    for n in pod_sizes:
+        denom = pod_participations.get(n, 0)
+        wins = pod_wins.get(n, 0)
+        wr = (wins / denom) * 100.0 if denom else 0.0
+        pod_wr_values.append(round(wr, 1))
+        pod_denoms.append(denom)
+
+    pod_baseline = [round((1.0 / n) * 100.0, 1) for n in pod_sizes]
+
+    # -------------------------------------------------------------------------
+    # 4) Top Commander per Winrate (con soglia min_cmd)
+    # -------------------------------------------------------------------------
+    cmd_stats: Dict[str, Dict[str, object]] = {}
+    for gid, es in entries_by_game.items():
+        winner = winner_by_game.get(gid)
+        for e in es:
+            c = e.commander
+            cmd_stats.setdefault(c, {"games": set(), "wins": 0})
+            cmd_stats[c]["games"].add(gid)
+            if winner and winner == e.player:
+                cmd_stats[c]["wins"] += 1
+
+    cmd_rows = []
+    for c, v in cmd_stats.items():
+        games_n = len(v["games"])
+        if games_n < min_cmd:
+            continue
+        wins_n = int(v["wins"])
+        wr = (wins_n / games_n) * 100.0 if games_n else 0.0
+        cmd_rows.append((c, games_n, wins_n, wr))
+
+    cmd_rows.sort(key=lambda x: (-x[3], -x[1], x[0].lower()))
+    cmd_rows = cmd_rows[:top_cmd]
+
+    # -------------------------------------------------------------------------
+    # 5) Trend winrate cumulativo (solo per player specifico)
+    # -------------------------------------------------------------------------
+    trend_points = []
+    if player != "__all__":
+        gp = sorted(
+            [gid for gid, es in entries_by_game.items() if any(e.player == player for e in es)],
+            key=lambda gid: game_time_by_id.get(gid, datetime.min),
+        )
+        total = 0
+        wins = 0
+        for gid in gp:
+            total += 1
+            if winner_by_game.get(gid) == player:
+                wins += 1
+            wr = (wins / total) * 100.0 if total else 0.0
+            dt = game_time_by_id.get(gid)
+            label = dt.strftime("%Y-%m-%d") if dt else f"game {gid}"
+            trend_points.append((label, round(wr, 1)))
 
     payload = {
-        "pod": {"labels": pod_labels, "values": pod_values},
-        "topPlayersGames": {"labels": [x[0] for x in top_games], "values": [x[1] for x in top_games]},
-        "topPlayersWins": {"labels": [x[0] for x in top_wins], "values": [x[1] for x in top_wins]},
-        "topCommanders": {"labels": [x[0] for x in top_cmd], "values": [x[1] for x in top_cmd]},
-        "topPairingsWinrate": {
-            "minGames": max(1, min_games),
-            "labels": [f"{p} — {c}" for (p, c, _, _, _) in top_pairs],
-            "values": [round(wr, 1) for (_, _, _, _, wr) in top_pairs],
-            "rows": [
-                {"player": p, "commander": c, "games": g, "wins": w, "winrate": round(wr, 1)}
-                for (p, c, g, w, wr) in top_pairs
-            ],
+        "params": {
+            "player": player,
+            "min_pg": min_pg,
+            "min_pair": min_pair,
+            "min_cmd": min_cmd,
+            "top_players": top_players,
+            "top_pairs": top_pairs,
+            "top_cmd": top_cmd,
+        },
+        "players": all_players,
+
+        # 1a) Bar top WR
+        "playerWinrate": {
+            "labels": [p for (p, _, _, _) in player_wr_top],
+            "values": [round(wr, 1) for (_, _, _, wr) in player_wr_top],
+            "rows": [{"player": p, "games": g, "wins": w, "winrate": round(wr, 1)} for (p, g, w, wr) in player_wr_top],
+        },
+        # 1b) Scatter WR vs games (sample size)
+        "playerScatter": {
+            "minGames": min_pg,
+            "rows": scatter_rows,  # [{player,games,wins,winrate}]
+        },
+
+        # 2) Pairing
+        "pairingWinrate": {
+            "labels": [f"{p} — {c}" for (p, c, _, _, _) in pair_rows],
+            "values": [round(wr, 1) for (_, _, _, _, wr) in pair_rows],
+            "rows": [{"player": p, "commander": c, "games": g, "wins": w, "winrate": round(wr, 1)} for (p, c, g, w, wr) in pair_rows],
+        },
+
+        # 3) Pod WR
+        "podWinrate": {
+            "player": player,
+            "labels": [f"{n}p" for n in pod_sizes],
+            "values": pod_wr_values,
+            "baseline": pod_baseline,
+            "denom": pod_denoms,
+            "mode": "all" if player == "__all__" else "player",
+        },
+
+        # 4) Commander WR
+        "commanderWinrate": {
+            "labels": [c for (c, _, _, _) in cmd_rows],
+            "values": [round(wr, 1) for (_, _, _, wr) in cmd_rows],
+            "rows": [{"commander": c, "games": g, "wins": w, "winrate": round(wr, 1)} for (c, g, w, wr) in cmd_rows],
+        },
+
+        # 5) Trend
+        "trend": {
+            "player": player,
+            "labels": [x[0] for x in trend_points],
+            "values": [x[1] for x in trend_points],
         },
     }
 
-    resp = templates.TemplateResponse(
-        "dashboard.html",
-        {
-            "request": request,
-            "chart_data": payload,   # ✅ dict, non stringa JSON
-            "min_games": max(1, min_games),
-        },
-    )
+    resp = templates.TemplateResponse("dashboard.html", {"request": request, "chart_data": payload})
     resp.headers["Cache-Control"] = "no-store"
     return resp
+
 
 
 
@@ -517,58 +683,27 @@ def dashboard(request: Request, min_games: int = 3) -> HTMLResponse:
 # EXPORT
 # =============================================================================
 
-@app.get("/export_flat.csv")
-def export_flat_csv() -> StreamingResponse:
-    """Export 'flat': una riga per player in una partita."""
-    with get_session() as session:
-        games = session.exec(select(Game)).all()
-        entries = session.exec(select(GameEntry)).all()
-
-    game_by_id = {g.id: g for g in games}
-
-    def generate():
-        output = io.StringIO()
-        writer = csv.writer(output)
-
-        writer.writerow(["game_id", "played_at_utc", "winner_player", "notes", "player", "commander"])
-        yield output.getvalue()
-        output.seek(0)
-        output.truncate(0)
-
-        for e in entries:
-            g = game_by_id.get(e.game_id)
-            if not g:
-                continue
-            writer.writerow([g.id, g.played_at.isoformat(), g.winner_player or "", g.notes or "", e.player, e.commander])
-            yield output.getvalue()
-            output.seek(0)
-            output.truncate(0)
-
-    return StreamingResponse(
-        generate(),
-        media_type="text/csv",
-        headers={"Content-Disposition": 'attachment; filename="commander_tracker_export_flat.csv"'},
-    )
-
-
-@app.get("/export_games.csv")
-def export_games_csv() -> StreamingResponse:
+@app.get("/export.csv")
+def export_csv() -> StreamingResponse:
     """
-    Export 'per-game': una riga per partita con lineup + winner + participants.
+    Export unico (base): una riga per partita con lineup + winner + participants.
     Columns:
-      game_id, played_at_utc, participants, winner_player, notes, players, commanders, lineup
+      game_id, played_at_utc, participants, winner_player, notes, lineup
     """
     with get_session() as session:
         games = session.exec(select(Game).order_by(Game.played_at.asc())).all()
         entries = session.exec(select(GameEntry)).all()
 
-    entries_by_game = build_entries_by_game(entries)
+    # game_id -> [entries...]
+    entries_by_game: Dict[int, List[GameEntry]] = {}
+    for e in entries:
+        entries_by_game.setdefault(e.game_id, []).append(e)
 
     def generate():
         output = io.StringIO()
         writer = csv.writer(output)
 
-        writer.writerow(["game_id", "played_at_utc", "participants", "winner_player", "notes", "players", "commanders", "lineup"])
+        writer.writerow(["game_id", "played_at_utc", "participants", "winner_player", "notes", "lineup"])
         yield output.getvalue()
         output.seek(0)
         output.truncate(0)
@@ -576,26 +711,23 @@ def export_games_csv() -> StreamingResponse:
         for g in games:
             if g.id is None:
                 continue
+
             es = entries_by_game.get(g.id, [])
-            es_sorted = sorted(es, key=lambda x: x.player.lower())  # ordine stabile
+            # ordine stabile (alfabetico player). Se preferisci ordine inserimento, dimmelo.
+            es_sorted = sorted(es, key=lambda x: (x.player or "").lower())
 
             participants = len(es_sorted)
-            players = " | ".join([e.player for e in es_sorted])
-            commanders = " | ".join([e.commander for e in es_sorted])
             lineup = " | ".join([f"{e.player}={e.commander}" for e in es_sorted])
 
-            writer.writerow(
-                [
-                    g.id,
-                    g.played_at.isoformat(),
-                    participants,
-                    g.winner_player or "",
-                    g.notes or "",
-                    players,
-                    commanders,
-                    lineup,
-                ]
-            )
+            writer.writerow([
+                g.id,
+                g.played_at.isoformat(),
+                participants,
+                g.winner_player or "",
+                g.notes or "",
+                lineup,
+            ])
+
             yield output.getvalue()
             output.seek(0)
             output.truncate(0)
@@ -603,6 +735,208 @@ def export_games_csv() -> StreamingResponse:
     return StreamingResponse(
         generate(),
         media_type="text/csv",
-        headers={"Content-Disposition": 'attachment; filename="commander_tracker_export_games.csv"'},
+        headers={"Content-Disposition": 'attachment; filename="commander_tracker_export.csv"'},
     )
 
+
+from playwright.sync_api import sync_playwright
+from fastapi.responses import StreamingResponse
+import tempfile
+
+@app.get("/dashboard.pdf")
+def dashboard_pdf(
+    request: Request,
+    player: str = "__all__",
+    min_pg: int = 3,
+    min_pair: int = 3,
+    min_cmd: int = 3,
+    top_players: int = 10,
+    top_pairs: int = 10,
+    top_cmd: int = 10,
+    trend_top: int = 8,
+    trend_min_games: int = 0,
+):
+    # ricostruisci la query string identica alla dashboard
+    qs = request.url.query
+    url = f"http://127.0.0.1:8000/dashboard"
+    if qs:
+        url += f"?{qs}"
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1400, "height": 900})
+
+        page.goto(url, wait_until="networkidle")
+
+        # attende che Chart.js abbia renderizzato (robusto)
+        page.wait_for_timeout(1200)
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            page.pdf(
+                path=tmp.name,
+                format="A4",
+                landscape=True,
+                print_background=True,
+                margin={
+                    "top": "12mm",
+                    "bottom": "12mm",
+                    "left": "10mm",
+                    "right": "10mm",
+                },
+            )
+            pdf_path = tmp.name
+
+        browser.close()
+
+    return StreamingResponse(
+        open(pdf_path, "rb"),
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=commander_dashboard.pdf"},
+    )
+
+from typing import Dict, List, Optional, Tuple
+import tempfile
+from fastapi.responses import HTMLResponse, StreamingResponse
+from sqlmodel import select
+from playwright.sync_api import sync_playwright
+
+@app.get("/dashboard_mini", response_class=HTMLResponse)
+def dashboard_mini(
+    request: Request,
+    min_pg: int = 3,
+    min_pair: int = 3,
+    top_players: int = 10,
+    top_pairs: int = 10,
+) -> HTMLResponse:
+    min_pg = max(1, int(min_pg))
+    min_pair = max(1, int(min_pair))
+    top_players = max(1, min(50, int(top_players)))
+    top_pairs = max(1, min(50, int(top_pairs)))
+
+    with get_session() as session:
+        games = session.exec(select(Game)).all()
+        entries = session.exec(select(GameEntry)).all()
+
+    # game_id -> entries
+    entries_by_game: Dict[int, List[GameEntry]] = {}
+    for e in entries:
+        entries_by_game.setdefault(e.game_id, []).append(e)
+
+    # winners by game
+    winner_by_game: Dict[int, Optional[str]] = {g.id: g.winner_player for g in games if g.id is not None}
+
+    # games per player (set di game_id)
+    games_by_player: Dict[str, set] = {}
+    for e in entries:
+        games_by_player.setdefault(e.player, set()).add(e.game_id)
+    games_count_by_player = {p: len(s) for p, s in games_by_player.items()}
+
+    # wins per player (da Game.winner_player)
+    wins_by_player: Dict[str, int] = {}
+    for g in games:
+        if g.winner_player:
+            wins_by_player[g.winner_player] = wins_by_player.get(g.winner_player, 0) + 1
+
+    # ---------------------------------------------------------------------
+    # 1) Winrate player (top 10, min 3) + 4) Bubble WR vs Games
+    # ---------------------------------------------------------------------
+    player_rows = []
+    bubble_rows = []
+    for p, games_n in games_count_by_player.items():
+        if games_n < min_pg:
+            continue
+        wins_n = wins_by_player.get(p, 0)
+        wr = (wins_n / games_n) * 100.0 if games_n else 0.0
+
+        # bubble radius (smooth)
+        r = 4 + min(14, int((games_n ** 0.5) * 3))
+
+        bubble_rows.append({"player": p, "games": games_n, "wins": wins_n, "winrate": round(wr, 1), "r": r})
+        player_rows.append((p, games_n, wins_n, wr))
+
+    player_rows.sort(key=lambda x: (-x[3], -x[1], x[0].lower()))
+    player_top = player_rows[:top_players]
+
+    # ---------------------------------------------------------------------
+    # 2) Top pairing player+commander per winrate (min_pair)
+    # ---------------------------------------------------------------------
+    pair_stats: Dict[Tuple[str, str], Dict[str, object]] = {}
+    for gid, es in entries_by_game.items():
+        winner = winner_by_game.get(gid)
+        for e in es:
+            key = (e.player, e.commander)
+            pair_stats.setdefault(key, {"games": set(), "wins": 0})
+            pair_stats[key]["games"].add(gid)
+            if winner and winner == e.player:
+                pair_stats[key]["wins"] += 1
+
+    pair_rows = []
+    for (p, c), v in pair_stats.items():
+        games_n = len(v["games"])
+        if games_n < min_pair:
+            continue
+        wins_n = int(v["wins"])
+        wr = (wins_n / games_n) * 100.0 if games_n else 0.0
+        pair_rows.append((p, c, games_n, wins_n, wr))
+
+    pair_rows.sort(key=lambda x: (-x[4], -x[2], x[0].lower(), x[1].lower()))
+    pair_rows = pair_rows[:top_pairs]
+
+    payload = {
+        "params": {
+            "min_pg": min_pg,
+            "min_pair": min_pair,
+            "top_players": top_players,
+            "top_pairs": top_pairs,
+        },
+        "playerWinrate": {
+            "labels": [p for (p, _, _, _) in player_top],
+            "values": [round(wr, 1) for (_, _, _, wr) in player_top],
+            "rows": [{"player": p, "games": g, "wins": w, "winrate": round(wr, 1)} for (p, g, w, wr) in player_top],
+        },
+        "playerBubble": {
+            "minGames": min_pg,
+            "rows": bubble_rows,  # [{player,games,wins,winrate,r}]
+        },
+        "pairingWinrate": {
+            "labels": [f"{p} — {c}" for (p, c, _, _, _) in pair_rows],
+            "values": [round(wr, 1) for (_, _, _, _, wr) in pair_rows],
+            "rows": [{"player": p, "commander": c, "games": g, "wins": w, "winrate": round(wr, 1)} for (p, c, g, w, wr) in pair_rows],
+        },
+    }
+
+    resp = templates.TemplateResponse("dashboard_mini.html", {"request": request, "chart_data": payload})
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
+@app.get("/dashboard_mini.pdf")
+def dashboard_mini_pdf(request: Request) -> StreamingResponse:
+    qs = request.url.query
+    url = "http://127.0.0.1:8000/dashboard_mini"
+    if qs:
+        url += f"?{qs}"
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1400, "height": 900})
+        page.goto(url, wait_until="networkidle")
+        page.wait_for_timeout(1200)
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            page.pdf(
+                path=tmp.name,
+                format="A4",
+                landscape=True,
+                print_background=True,
+                margin={"top": "12mm", "bottom": "12mm", "left": "10mm", "right": "10mm"},
+            )
+            pdf_path = tmp.name
+
+        browser.close()
+
+    return StreamingResponse(
+        open(pdf_path, "rb"),
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=commander_dashboard_mini.pdf"},
+    )

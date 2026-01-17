@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="display:flex; align-items:center; justify-content:space-between;">
+  <h1>Dashboard (Essenziale)</h1>
+
+  <a href="/dashboard_mini.pdf{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+     class="button">
+    Export PDF
+  </a>
+</div>
+
+<form method="get" action="/dashboard_mini" class="card" style="margin:12px 0 16px;">
+  <div class="row" style="gap:12px; align-items:end; flex-wrap:wrap;">
+    <div>
+      <label>Min partite (player)</label><br>
+      <input type="number" name="min_pg" value="{{ chart_data.params.min_pg }}" min="1" style="width:110px;">
+    </div>
+
+    <div>
+      <label>Min partite (pairing)</label><br>
+      <input type="number" name="min_pair" value="{{ chart_data.params.min_pair }}" min="1" style="width:110px;">
+    </div>
+
+    <div>
+      <label>Top players</label><br>
+      <input type="number" name="top_players" value="{{ chart_data.params.top_players }}" min="1" max="50" style="width:90px;">
+    </div>
+
+    <div>
+      <label>Top pairs</label><br>
+      <input type="number" name="top_pairs" value="{{ chart_data.params.top_pairs }}" min="1" max="50" style="width:90px;">
+    </div>
+
+    <div>
+      <button type="submit">Aggiorna</button>
+    </div>
+  </div>
+</form>
+
+<div class="row">
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>Winrate Player (top {{ chart_data.params.top_players }}, min {{ chart_data.params.min_pg }} partite)</h3>
+    <canvas id="playerWinrateChart"></canvas>
+  </div>
+
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>WR% vs #Partite (sample size)</h3>
+    <canvas id="playerBubbleChart"></canvas>
+    <p class="muted" style="margin-top:8px;">
+      Bubble più grande = più partite (dato più solido). Legenda cliccabile.
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>Top pairing Player+Commander per winrate (min {{ chart_data.params.min_pair }} partite)</h3>
+    <canvas id="pairingWinrateChart"></canvas>
+
+    <table style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Player</th><th>Commander</th><th>#</th><th>W</th><th>WR%</th>
+        </tr>
+      </thead>
+      <tbody id="pairingWinrateTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<script id="chart-data" type="application/json">
+{{ chart_data | tojson }}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const data = JSON.parse(document.getElementById("chart-data").textContent);
+
+  function bar(el, labels, values, labelText) {
+    new Chart(document.getElementById(el), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: labelText || '', data: values }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: !!labelText } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
+
+  // 1) Winrate player
+  bar("playerWinrateChart", data.playerWinrate.labels, data.playerWinrate.values, "Winrate %");
+
+  // 2) Bubble WR vs games + legenda per player (dataset per player)
+  function colorForIndex(i) {
+    const colors = [
+      "#4e79a7", "#f28e2b", "#e15759", "#76b7b2",
+      "#59a14f", "#edc949", "#af7aa1", "#ff9da7",
+      "#9c755f", "#bab0ab"
+    ];
+    return colors[i % colors.length];
+  }
+
+  const bubbleDatasets = data.playerBubble.rows.map((r, i) => ({
+    label: r.player,
+    data: [{ x: r.games, y: r.winrate, r: r.r, _meta: r }],
+    backgroundColor: colorForIndex(i),
+  }));
+
+  new Chart(document.getElementById("playerBubbleChart"), {
+    type: 'bubble',
+    data: { datasets: bubbleDatasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const r = ctx.raw._meta;
+              return `${r.player}: ${r.winrate}% (${r.wins}/${r.games})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: "# Partite" }, beginAtZero: true },
+        y: { title: { display: true, text: "Winrate %" }, beginAtZero: true, max: 100 }
+      }
+    }
+  });
+
+  // 3) Pairing winrate
+  bar("pairingWinrateChart", data.pairingWinrate.labels, data.pairingWinrate.values, "Winrate %");
+
+  // Tabella pairing
+  const tbody = document.getElementById("pairingWinrateTable");
+  tbody.innerHTML = "";
+  for (const r of data.pairingWinrate.rows) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${r.player}</b></td>
+      <td>${r.commander}</td>
+      <td>${r.games}</td>
+      <td>${r.wins}</td>
+      <td>${r.winrate}%</td>
+    `;
+    tbody.appendChild(tr);
+  }
+</script>
+
+{% endblock %}
