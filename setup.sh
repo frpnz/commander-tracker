@@ -2,7 +2,7 @@
 set -e
 
 echo "Installing Python dependencies"
-pip install -r requirements.txt
+pip install -r req.txt
 
 echo "Installing system deps for Playwright Chromium (Ubuntu 24.04+ compatible)"
 sudo apt update
