@@ -2,12 +2,19 @@
 {% block content %}
 
 <div style="display:flex; align-items:center; justify-content:space-between;">
-  <h1>Dashboard</h1>
+  <h1>Dashboard (Essenziale)</h1>
 
-  <a href="/dashboard_mini.pdf{{ '?' + request.query_string.decode() if request.query_string else '' }}"
-     class="button">
-    Export PDF
-  </a>
+  <div style="display:flex; align-items:center; gap:8px;">
+    <a href="/dashboard_mini.pdf{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+       class="button">
+      Export PDF
+    </a>
+
+    <a href="/dashboard_mini.html{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+       class="button">
+      Export HTML
+    </a>
+  </div>
 </div>
 
 <form method="get" action="/dashboard_mini" class="card" style="margin:12px 0 16px;">

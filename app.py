@@ -967,3 +967,23 @@ def dashboard_mini_pdf(request: Request) -> StreamingResponse:
         media_type="application/pdf",
         headers={"Content-Disposition": "attachment; filename=commander_dashboard_mini.pdf"},
     )
+
+@app.get("/dashboard_mini.html", response_class=HTMLResponse)
+def dashboard_mini_html(
+    request: Request,
+    min_pg: int = 3,
+    min_pair: int = 3,
+    top_players: int = 10,
+    top_pairs: int = 10,
+) -> HTMLResponse:
+    # riusa la logica della dashboard_mini (stesso payload)
+    resp = dashboard_mini(
+        request=request,
+        min_pg=min_pg,
+        min_pair=min_pair,
+        top_players=top_players,
+        top_pairs=top_pairs,
+    )
+    # forza download (facoltativo: puoi anche ometterlo)
+    resp.headers["Content-Disposition"] = "attachment; filename=dashboard_mini.html"
+    return resp
