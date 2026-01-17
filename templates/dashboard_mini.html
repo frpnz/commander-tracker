@@ -38,22 +38,26 @@
   </div>
 </form>
 
+<!-- =========================
+     ROW 1 (TOP): 2 charts + tables
+     ========================= -->
 <div class="row">
+  <!-- TOP LEFT -->
   <div class="card" style="flex:1; min-width:340px;">
     <h3>Winrate Player (top {{ chart_data.params.top_players }}, min {{ chart_data.params.min_pg }} partite)</h3>
     <canvas id="playerWinrateChart"></canvas>
+
+    <table style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Player</th><th>#</th><th>W</th><th>WR%</th>
+        </tr>
+      </thead>
+      <tbody id="playerWinrateTable"></tbody>
+    </table>
   </div>
 
-  <div class="card" style="flex:1; min-width:340px;">
-    <h3>WR% vs #Partite (sample size)</h3>
-    <canvas id="playerBubbleChart"></canvas>
-    <p class="muted" style="margin-top:8px;">
-      Bubble più grande = più partite (dato più solido). Legenda cliccabile.
-    </p>
-  </div>
-</div>
-
-<div class="row">
+  <!-- TOP RIGHT -->
   <div class="card" style="flex:1; min-width:340px;">
     <h3>Top pairing Player+Commander per winrate (min {{ chart_data.params.min_pair }} partite)</h3>
     <canvas id="pairingWinrateChart"></canvas>
@@ -66,6 +70,29 @@
       </thead>
       <tbody id="pairingWinrateTable"></tbody>
     </table>
+  </div>
+</div>
+
+<!-- =========================
+     ROW 2 (BOTTOM): 2 bubble charts
+     ========================= -->
+<div class="row">
+  <!-- BOTTOM LEFT -->
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>WR% vs #Partite (sample size) — Player</h3>
+    <canvas id="playerBubbleChart"></canvas>
+    <p class="muted" style="margin-top:8px;">
+      Bubble più grande = più partite (dato più solido). Legenda cliccabile.
+    </p>
+  </div>
+
+  <!-- BOTTOM RIGHT -->
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>WR% vs #Partite (sample size) — Player+Commander</h3>
+    <canvas id="pairingBubbleChart"></canvas>
+    <p class="muted" style="margin-top:8px;">
+      Ogni bubble = una coppia Player+Commander. Dimensione = sample size. Colore/legenda = player.
+    </p>
   </div>
 </div>
 
@@ -89,10 +116,6 @@
     });
   }
 
-  // 1) Winrate player
-  bar("playerWinrateChart", data.playerWinrate.labels, data.playerWinrate.values, "Winrate %");
-
-  // 2) Bubble WR vs games + legenda per player (dataset per player)
   function colorForIndex(i) {
     const colors = [
       "#4e79a7", "#f28e2b", "#e15759", "#76b7b2",
@@ -102,7 +125,50 @@
     return colors[i % colors.length];
   }
 
-  const bubbleDatasets = data.playerBubble.rows.map((r, i) => ({
+  // -------------------------
+  // TOP LEFT: Player winrate + table
+  // -------------------------
+  bar("playerWinrateChart", data.playerWinrate.labels, data.playerWinrate.values, "Winrate %");
+
+  const pbody = document.getElementById("playerWinrateTable");
+  pbody.innerHTML = "";
+  for (const r of (data.playerWinrate?.rows || [])) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${r.player}</b></td>
+      <td>${r.games}</td>
+      <td>${r.wins}</td>
+      <td>${r.winrate}%</td>
+    `;
+    pbody.appendChild(tr);
+  }
+
+  // -------------------------
+  // TOP RIGHT: Pairing winrate + table
+  // -------------------------
+  bar("pairingWinrateChart", data.pairingWinrate.labels, data.pairingWinrate.values, "Winrate %");
+
+  const tbody = document.getElementById("pairingWinrateTable");
+  tbody.innerHTML = "";
+  for (const r of (data.pairingWinrate?.rows || [])) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${r.player}</b></td>
+      <td>${r.commander}</td>
+      <td>${r.games}</td>
+      <td>${r.wins}</td>
+      <td>${r.winrate}%</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // -------------------------
+  // BOTTOM LEFT: Bubble Player (dataset per player)
+  // -------------------------
+  const playerRows = data.playerBubble?.rows || [];
+  const maxWRPlayer = Math.max(...playerRows.map(r => r.winrate), 0);
+
+  const playerBubbleDatasets = playerRows.map((r, i) => ({
     label: r.player,
     data: [{ x: r.games, y: r.winrate, r: r.r, _meta: r }],
     backgroundColor: colorForIndex(i),
@@ -110,7 +176,7 @@
 
   new Chart(document.getElementById("playerBubbleChart"), {
     type: 'bubble',
-    data: { datasets: bubbleDatasets },
+    data: { datasets: playerBubbleDatasets },
     options: {
       responsive: true,
       plugins: {
@@ -125,29 +191,66 @@
         }
       },
       scales: {
-        x: { title: { display: true, text: "# Partite" }, beginAtZero: true },
-        y: { title: { display: true, text: "Winrate %" }, beginAtZero: true, max: 100 }
+        x: { title: { display: true, text: "# Partite" }, beginAtZero: true, grace: "10%" },
+        y: {
+          title: { display: true, text: "Winrate %" },
+          beginAtZero: true,
+          max: Math.min(110, Math.ceil(maxWRPlayer + 5))
+        }
       }
     }
   });
 
-  // 3) Pairing winrate
-  bar("pairingWinrateChart", data.pairingWinrate.labels, data.pairingWinrate.values, "Winrate %");
+  // -------------------------
+  // BOTTOM RIGHT: Bubble Pairing (raggruppato per player)
+  // -------------------------
+  const pairingRows = data.pairingBubble?.rows || [];
+  const maxWRPair = Math.max(...pairingRows.map(r => r.winrate), 0);
 
-  // Tabella pairing
-  const tbody = document.getElementById("pairingWinrateTable");
-  tbody.innerHTML = "";
-  for (const r of data.pairingWinrate.rows) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><b>${r.player}</b></td>
-      <td>${r.commander}</td>
-      <td>${r.games}</td>
-      <td>${r.wins}</td>
-      <td>${r.winrate}%</td>
-    `;
-    tbody.appendChild(tr);
+  const pairingByPlayer = {};
+  for (const r of pairingRows) {
+    if (!pairingByPlayer[r.player]) pairingByPlayer[r.player] = [];
+    pairingByPlayer[r.player].push({
+      x: r.games,
+      y: r.winrate,
+      r: r.r,
+      _meta: r
+    });
   }
+
+  const pairingPlayers = Object.keys(pairingByPlayer).sort((a,b) => a.localeCompare(b));
+  const pairingDatasets = pairingPlayers.map((p, idx) => ({
+    label: p,
+    data: pairingByPlayer[p],
+    backgroundColor: colorForIndex(idx),
+  }));
+
+  new Chart(document.getElementById("pairingBubbleChart"), {
+    type: 'bubble',
+    data: { datasets: pairingDatasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const r = ctx.raw._meta;
+              return `${r.player} — ${r.commander}: ${r.winrate}% (${r.wins}/${r.games})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: "# Partite (pairing)" }, beginAtZero: true, grace: "10%" },
+        y: {
+          title: { display: true, text: "Winrate % (pairing)" },
+          beginAtZero: true,
+          max: Math.min(110, Math.ceil(maxWRPair + 5))
+        }
+      }
+    }
+  });
 </script>
 
 {% endblock %}

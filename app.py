@@ -13,6 +13,13 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Resp
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
+import tempfile
+from typing import Dict, List, Optional, Tuple
+
+from fastapi import Request
+from fastapi.responses import HTMLResponse, StreamingResponse
+from playwright.sync_api import sync_playwright
+from sqlmodel import select
 # =============================================================================
 # DB MODELS
 # =============================================================================
@@ -794,20 +801,15 @@ def dashboard_pdf(
         headers={"Content-Disposition": "attachment; filename=commander_dashboard.pdf"},
     )
 
-from typing import Dict, List, Optional, Tuple
-import tempfile
-from fastapi.responses import HTMLResponse, StreamingResponse
-from sqlmodel import select
-from playwright.sync_api import sync_playwright
-
 @app.get("/dashboard_mini", response_class=HTMLResponse)
 def dashboard_mini(
     request: Request,
-    min_pg: int = 3,
-    min_pair: int = 3,
+    min_pg: int = 3,       # min partite per stats player
+    min_pair: int = 1,     # min partite per stats pairing (come richiesto)
     top_players: int = 10,
     top_pairs: int = 10,
 ) -> HTMLResponse:
+    # sanitizzazione parametri
     min_pg = max(1, int(min_pg))
     min_pair = max(1, int(min_pair))
     top_players = max(1, min(50, int(top_players)))
@@ -822,43 +824,43 @@ def dashboard_mini(
     for e in entries:
         entries_by_game.setdefault(e.game_id, []).append(e)
 
-    # winners by game
+    # winner per game
     winner_by_game: Dict[int, Optional[str]] = {g.id: g.winner_player for g in games if g.id is not None}
 
-    # games per player (set di game_id)
+    # games per player
     games_by_player: Dict[str, set] = {}
     for e in entries:
         games_by_player.setdefault(e.player, set()).add(e.game_id)
     games_count_by_player = {p: len(s) for p, s in games_by_player.items()}
 
-    # wins per player (da Game.winner_player)
+    # wins per player
     wins_by_player: Dict[str, int] = {}
     for g in games:
         if g.winner_player:
             wins_by_player[g.winner_player] = wins_by_player.get(g.winner_player, 0) + 1
 
     # ---------------------------------------------------------------------
-    # 1) Winrate player (top 10, min 3) + 4) Bubble WR vs Games
+    # A) Player winrate (bar) + Player bubble (wr vs games)
     # ---------------------------------------------------------------------
-    player_rows = []
-    bubble_rows = []
+    player_winrate_rows: List[Tuple[str, int, int, float]] = []
+    player_bubble_rows: List[dict] = []
+
     for p, games_n in games_count_by_player.items():
         if games_n < min_pg:
             continue
         wins_n = wins_by_player.get(p, 0)
         wr = (wins_n / games_n) * 100.0 if games_n else 0.0
 
-        # bubble radius (smooth)
         r = 4 + min(14, int((games_n ** 0.5) * 3))
+        player_bubble_rows.append({"player": p, "games": games_n, "wins": wins_n, "winrate": round(wr, 1), "r": r})
+        player_winrate_rows.append((p, games_n, wins_n, wr))
 
-        bubble_rows.append({"player": p, "games": games_n, "wins": wins_n, "winrate": round(wr, 1), "r": r})
-        player_rows.append((p, games_n, wins_n, wr))
-
-    player_rows.sort(key=lambda x: (-x[3], -x[1], x[0].lower()))
-    player_top = player_rows[:top_players]
+    # bar: top players by WR, tie-break games
+    player_winrate_rows.sort(key=lambda x: (-x[3], -x[1], x[0].lower()))
+    player_top = player_winrate_rows[:top_players]
 
     # ---------------------------------------------------------------------
-    # 2) Top pairing player+commander per winrate (min_pair)
+    # B) Pair stats (player+commander) + pairing bar + pairing bubble
     # ---------------------------------------------------------------------
     pair_stats: Dict[Tuple[str, str], Dict[str, object]] = {}
     for gid, es in entries_by_game.items():
@@ -870,17 +872,26 @@ def dashboard_mini(
             if winner and winner == e.player:
                 pair_stats[key]["wins"] += 1
 
-    pair_rows = []
+    pairing_rows: List[Tuple[str, str, int, int, float]] = []
+    pairing_bubble_rows: List[dict] = []
+
     for (p, c), v in pair_stats.items():
         games_n = len(v["games"])
         if games_n < min_pair:
             continue
         wins_n = int(v["wins"])
         wr = (wins_n / games_n) * 100.0 if games_n else 0.0
-        pair_rows.append((p, c, games_n, wins_n, wr))
 
-    pair_rows.sort(key=lambda x: (-x[4], -x[2], x[0].lower(), x[1].lower()))
-    pair_rows = pair_rows[:top_pairs]
+        pairing_rows.append((p, c, games_n, wins_n, wr))
+
+        r = 4 + min(14, int((games_n ** 0.5) * 3))
+        pairing_bubble_rows.append(
+            {"player": p, "commander": c, "games": games_n, "wins": wins_n, "winrate": round(wr, 1), "r": r}
+        )
+
+    # bar: top pairings by WR, tie-break games
+    pairing_rows.sort(key=lambda x: (-x[4], -x[2], x[0].lower(), x[1].lower()))
+    pairing_top = pairing_rows[:top_pairs]
 
     payload = {
         "params": {
@@ -889,26 +900,40 @@ def dashboard_mini(
             "top_players": top_players,
             "top_pairs": top_pairs,
         },
+
+        # top-left
         "playerWinrate": {
             "labels": [p for (p, _, _, _) in player_top],
             "values": [round(wr, 1) for (_, _, _, wr) in player_top],
             "rows": [{"player": p, "games": g, "wins": w, "winrate": round(wr, 1)} for (p, g, w, wr) in player_top],
         },
+
+        # bottom-left
         "playerBubble": {
             "minGames": min_pg,
-            "rows": bubble_rows,  # [{player,games,wins,winrate,r}]
+            "rows": player_bubble_rows,
         },
+
+        # top-right
         "pairingWinrate": {
-            "labels": [f"{p} — {c}" for (p, c, _, _, _) in pair_rows],
-            "values": [round(wr, 1) for (_, _, _, _, wr) in pair_rows],
-            "rows": [{"player": p, "commander": c, "games": g, "wins": w, "winrate": round(wr, 1)} for (p, c, g, w, wr) in pair_rows],
+            "labels": [f"{p} — {c}" for (p, c, _, _, _) in pairing_top],
+            "values": [round(wr, 1) for (_, _, _, _, wr) in pairing_top],
+            "rows": [
+                {"player": p, "commander": c, "games": g, "wins": w, "winrate": round(wr, 1)}
+                for (p, c, g, w, wr) in pairing_top
+            ],
+        },
+
+        # bottom-right
+        "pairingBubble": {
+            "minGames": min_pair,
+            "rows": pairing_bubble_rows,
         },
     }
 
     resp = templates.TemplateResponse("dashboard_mini.html", {"request": request, "chart_data": payload})
     resp.headers["Cache-Control"] = "no-store"
     return resp
-
 
 @app.get("/dashboard_mini.pdf")
 def dashboard_mini_pdf(request: Request) -> StreamingResponse:
@@ -921,6 +946,8 @@ def dashboard_mini_pdf(request: Request) -> StreamingResponse:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": 1400, "height": 900})
         page.goto(url, wait_until="networkidle")
+
+        # attende render chart
         page.wait_for_timeout(1200)
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
