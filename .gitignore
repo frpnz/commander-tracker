@@ -3,7 +3,6 @@
 
 ### Specific folders ###
 .venv
-data/
 results_*
 results/
 cifar100_tuning/
