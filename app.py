@@ -987,3 +987,187 @@ def dashboard_mini_html(
     # forza download (facoltativo: puoi anche ometterlo)
     resp.headers["Content-Disposition"] = "attachment; filename=dashboard_mini.html"
     return resp
+
+@app.get("/player_dashboard", response_class=HTMLResponse)
+def player_dashboard(
+    request: Request,
+    player: str = "",
+    min_pair: int = 1,
+    top_cmd: int = 10,
+    top_pairs: int = 30,
+) -> HTMLResponse:
+    min_pair = max(1, int(min_pair))
+    top_cmd = max(1, min(50, int(top_cmd)))
+    top_pairs = max(1, min(200, int(top_pairs)))
+
+    with get_session() as session:
+        games = session.exec(select(Game)).all()
+        entries = session.exec(select(GameEntry)).all()
+
+    # game_id -> entries
+    entries_by_game: Dict[int, List[GameEntry]] = {}
+    for e in entries:
+        entries_by_game.setdefault(e.game_id, []).append(e)
+
+    # winner + played_at
+    winner_by_game: Dict[int, Optional[str]] = {g.id: g.winner_player for g in games if g.id is not None}
+    time_by_game: Dict[int, datetime] = {g.id: g.played_at for g in games if g.id is not None}
+
+    # players list
+    games_by_player: Dict[str, set] = {}
+    for e in entries:
+        games_by_player.setdefault(e.player, set()).add(e.game_id)
+    all_players = sorted(games_by_player.keys(), key=lambda s: s.lower())
+
+    # normalize selected player
+    player = (player or "").strip()
+    if not player:
+        player = all_players[0] if all_players else ""
+
+    if player not in games_by_player:
+        # fallback safe
+        player = all_players[0] if all_players else ""
+
+    # se DB vuoto
+    if not player:
+        payload = {
+            "params": {"player": "", "min_pair": min_pair, "top_cmd": top_cmd, "top_pairs": top_pairs},
+            "players": [],
+            "trend": {"labels": [], "values": []},
+            "podWinrate": {"labels": [], "values": [], "baseline": [], "denom": []},
+            "topCommanders": {"labels": [], "values": [], "rows": []},
+            "pairingBubble": {"minGames": min_pair, "rows": []},
+        }
+        resp = templates.TemplateResponse("player_dashboard.html", {"request": request, "chart_data": payload})
+        resp.headers["Cache-Control"] = "no-store"
+        return resp
+
+    # ---------------------------------------------------------------------
+    # Subset: game_id dove il player partecipa
+    # ---------------------------------------------------------------------
+    player_game_ids = sorted(
+        list(games_by_player.get(player, set())),
+        key=lambda gid: time_by_game.get(gid, datetime.min),
+    )
+
+    # ---------------------------------------------------------------------
+    # 1) Trend winrate cumulativo
+    # ---------------------------------------------------------------------
+    trend_labels: List[str] = []
+    trend_values: List[float] = []
+    total = 0
+    wins = 0
+    for gid in player_game_ids:
+        total += 1
+        if winner_by_game.get(gid) == player:
+            wins += 1
+        wr = (wins / total) * 100.0 if total else 0.0
+        dt = time_by_game.get(gid)
+        trend_labels.append(dt.strftime("%Y-%m-%d") if dt else f"game {gid}")
+        trend_values.append(round(wr, 1))
+
+    # ---------------------------------------------------------------------
+    # 2) Winrate per pod size (solo games del player)
+    # ---------------------------------------------------------------------
+    pod_games: Dict[int, int] = {}  # size -> games count (player partecipazioni)
+    pod_wins: Dict[int, int] = {}   # size -> wins count (player wins)
+
+    for gid in player_game_ids:
+        es = entries_by_game.get(gid, [])
+        n = len(es)
+        if n <= 0:
+            continue
+        pod_games[n] = pod_games.get(n, 0) + 1
+        if winner_by_game.get(gid) == player:
+            pod_wins[n] = pod_wins.get(n, 0) + 1
+
+    pod_sizes = sorted(pod_games.keys())
+    pod_labels = [f"{n}p" for n in pod_sizes]
+    pod_values = []
+    pod_denoms = []
+    pod_baseline = []
+    for n in pod_sizes:
+        denom = pod_games.get(n, 0)
+        wins_n = pod_wins.get(n, 0)
+        wr = (wins_n / denom) * 100.0 if denom else 0.0
+        pod_values.append(round(wr, 1))
+        pod_denoms.append(denom)
+        pod_baseline.append(round((1.0 / n) * 100.0, 1))
+
+    # ---------------------------------------------------------------------
+    # 3) Top commander del player per winrate (min_pair)
+    #    (qui per commander del player: games=set, wins=int)
+    # ---------------------------------------------------------------------
+    cmd_stats: Dict[str, Dict[str, object]] = {}
+    for gid in player_game_ids:
+        winner = winner_by_game.get(gid)
+        for e in entries_by_game.get(gid, []):
+            if e.player != player:
+                continue
+            c = e.commander
+            cmd_stats.setdefault(c, {"games": set(), "wins": 0})
+            cmd_stats[c]["games"].add(gid)
+            if winner and winner == player:
+                cmd_stats[c]["wins"] += 1
+
+    cmd_rows = []
+    for c, v in cmd_stats.items():
+        games_n = len(v["games"])
+        if games_n < min_pair:
+            continue
+        wins_n = int(v["wins"])
+        wr = (wins_n / games_n) * 100.0 if games_n else 0.0
+        cmd_rows.append((c, games_n, wins_n, wr))
+
+    cmd_rows.sort(key=lambda x: (-x[3], -x[1], x[0].lower()))
+    cmd_rows = cmd_rows[:top_cmd]
+
+    # ---------------------------------------------------------------------
+    # 4) Bubble WR% vs #Partite per player+commander (solo quel player)
+    # ---------------------------------------------------------------------
+    pair_stats: Dict[Tuple[str, str], Dict[str, object]] = {}
+    for gid in player_game_ids:
+        winner = winner_by_game.get(gid)
+        for e in entries_by_game.get(gid, []):
+            if e.player != player:
+                continue
+            key = (e.player, e.commander)  # player è sempre lo stesso
+            pair_stats.setdefault(key, {"games": set(), "wins": 0})
+            pair_stats[key]["games"].add(gid)
+            if winner and winner == player:
+                pair_stats[key]["wins"] += 1
+
+    bubble_rows = []
+    for (p, c), v in pair_stats.items():
+        games_n = len(v["games"])
+        if games_n < min_pair:
+            continue
+        wins_n = int(v["wins"])
+        wr = (wins_n / games_n) * 100.0 if games_n else 0.0
+
+        # r cresce con sample size
+        r = 4 + min(16, int((games_n ** 0.5) * 3))
+        bubble_rows.append(
+            {"player": p, "commander": c, "games": games_n, "wins": wins_n, "winrate": round(wr, 1), "r": r}
+        )
+
+    # puoi limitare quanti punti bubble vuoi visualizzare
+    bubble_rows.sort(key=lambda x: (-x["games"], -x["winrate"], x["commander"].lower()))
+    bubble_rows = bubble_rows[:top_pairs]
+
+    payload = {
+        "params": {"player": player, "min_pair": min_pair, "top_cmd": top_cmd, "top_pairs": top_pairs},
+        "players": all_players,
+        "trend": {"labels": trend_labels, "values": trend_values},
+        "podWinrate": {"labels": pod_labels, "values": pod_values, "baseline": pod_baseline, "denom": pod_denoms},
+        "topCommanders": {
+            "labels": [c for (c, _, _, _) in cmd_rows],
+            "values": [round(wr, 1) for (_, _, _, wr) in cmd_rows],
+            "rows": [{"commander": c, "games": g, "wins": w, "winrate": round(wr, 1)} for (c, g, w, wr) in cmd_rows],
+        },
+        "pairingBubble": {"minGames": min_pair, "rows": bubble_rows},
+    }
+
+    resp = templates.TemplateResponse("player_dashboard.html", {"request": request, "chart_data": payload})
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
