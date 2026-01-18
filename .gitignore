@@ -14,6 +14,7 @@ PROVA/
 crop_obj.pickle
 .idea/*
 params/
+__pycache__/
 #!.idea/runConfigurations/*.xml
 
 # Vim
