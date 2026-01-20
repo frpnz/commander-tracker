@@ -771,12 +771,16 @@ def dashboard_pdf(
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        page = browser.new_page(viewport={"width": 1400, "height": 900})
+        # viewport coerente con A4 landscape (~96dpi)
+        page = browser.new_page(viewport={"width": 1684, "height": 1191})
+
+        # usa media "screen" così la pagina rende come desktop
+        page.emulate_media(media="screen")
 
         page.goto(url, wait_until="networkidle")
 
-        # attende che Chart.js abbia renderizzato (robusto)
-        page.wait_for_timeout(1200)
+        # attesa rendering (più generosa)
+        page.wait_for_timeout(1800)
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             page.pdf(
@@ -784,11 +788,12 @@ def dashboard_pdf(
                 format="A4",
                 landscape=True,
                 print_background=True,
+                prefer_css_page_size=True,  # ✅ rispetta meglio eventuale CSS di stampa
                 margin={
-                    "top": "12mm",
-                    "bottom": "12mm",
-                    "left": "10mm",
-                    "right": "10mm",
+                    "top": "8mm",
+                    "bottom": "8mm",
+                    "left": "8mm",
+                    "right": "8mm",
                 },
             )
             pdf_path = tmp.name
@@ -943,12 +948,19 @@ def dashboard_mini_pdf(request: Request) -> StreamingResponse:
         url += f"?{qs}"
 
     with sync_playwright() as p:
+        
         browser = p.chromium.launch()
-        page = browser.new_page(viewport={"width": 1400, "height": 900})
+
+        # viewport coerente con A4 landscape (~96dpi)
+        page = browser.new_page(viewport={"width": 1684, "height": 1191})
+
+        # usa media "screen" così la pagina rende come desktop
+        page.emulate_media(media="screen")
+
         page.goto(url, wait_until="networkidle")
 
-        # attende render chart
-        page.wait_for_timeout(1200)
+        # attesa rendering (più generosa)
+        page.wait_for_timeout(1800)
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             page.pdf(
@@ -956,7 +968,13 @@ def dashboard_mini_pdf(request: Request) -> StreamingResponse:
                 format="A4",
                 landscape=True,
                 print_background=True,
-                margin={"top": "12mm", "bottom": "12mm", "left": "10mm", "right": "10mm"},
+                prefer_css_page_size=True,  # rispetta meglio eventuale CSS di stampa
+                margin={
+                    "top": "8mm",
+                    "bottom": "8mm",
+                    "left": "8mm",
+                    "right": "8mm",
+                },
             )
             pdf_path = tmp.name
 
@@ -1302,10 +1320,17 @@ def player_dashboard_pdf(
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        page = browser.new_page(viewport={"width": 1400, "height": 900})
+
+        # viewport coerente con A4 landscape (~96dpi)
+        page = browser.new_page(viewport={"width": 1684, "height": 1191})
+
+        # usa media "screen" così la pagina rende come desktop
+        page.emulate_media(media="screen")
 
         page.goto(url, wait_until="networkidle")
-        page.wait_for_timeout(1200)
+
+        # attesa rendering (più generosa)
+        page.wait_for_timeout(1800)
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             page.pdf(
@@ -1313,7 +1338,13 @@ def player_dashboard_pdf(
                 format="A4",
                 landscape=True,
                 print_background=True,
-                margin={"top": "12mm", "bottom": "12mm", "left": "10mm", "right": "10mm"},
+                prefer_css_page_size=True,  # rispetta meglio eventuale CSS di stampa
+                margin={
+                    "top": "8mm",
+                    "bottom": "8mm",
+                    "left": "8mm",
+                    "right": "8mm",
+                },
             )
             pdf_path = tmp.name
 
