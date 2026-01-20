@@ -1171,3 +1171,82 @@ def player_dashboard(
     resp = templates.TemplateResponse("player_dashboard.html", {"request": request, "chart_data": payload})
     resp.headers["Cache-Control"] = "no-store"
     return resp
+
+from fastapi.responses import Response
+from fastapi.templating import Jinja2Templates
+from starlette.responses import HTMLResponse
+import tempfile
+from playwright.sync_api import sync_playwright
+
+@app.get("/player_dashboard.html")
+def player_dashboard_export_html(
+    request: Request,
+    player: str = "",
+    min_pair: int = 1,
+    top_cmd: int = 10,
+    top_pairs: int = 30,
+) -> Response:
+    # riusa la stessa logica della pagina (chiamiamo direttamente la route e prendiamo il context)
+    # più semplice: renderizzo il template con gli stessi dati costruiti dalla tua player_dashboard()
+
+    # --- DUPLICA MINIMA: chiama la funzione "player_dashboard" e poi renderizza ---
+    # Siccome player_dashboard ritorna TemplateResponse, la starlette lo renderizza lazy.
+    # Facciamo invece un helper che costruisce payload. Se non vuoi refactor, duplichiamo qui
+    # (ti do la versione "senza refactor" ma pulita: richiama player_dashboard e forza render).
+
+    resp = player_dashboard(
+        request=request,
+        player=player,
+        min_pair=min_pair,
+        top_cmd=top_cmd,
+        top_pairs=top_pairs,
+    )
+    # resp è un TemplateResponse (HTMLResponse subclass). Forziamo render:
+    resp.render()
+
+    filename = "commander_player_dashboard.html"
+    return Response(
+        content=resp.body,
+        media_type="text/html; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+@app.get("/player_dashboard.pdf")
+def player_dashboard_pdf(
+    request: Request,
+    player: str = "",
+    min_pair: int = 1,
+    top_cmd: int = 10,
+    top_pairs: int = 30,
+) -> StreamingResponse:
+    # Usa la stessa query string della pagina corrente
+    qs = request.url.query
+    url = "http://127.0.0.1:8000/player_dashboard"
+    if qs:
+        url += f"?{qs}"
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1400, "height": 900})
+
+        page.goto(url, wait_until="networkidle")
+        page.wait_for_timeout(1200)
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            page.pdf(
+                path=tmp.name,
+                format="A4",
+                landscape=True,
+                print_background=True,
+                margin={"top": "12mm", "bottom": "12mm", "left": "10mm", "right": "10mm"},
+            )
+            pdf_path = tmp.name
+
+        browser.close()
+
+    return StreamingResponse(
+        open(pdf_path, "rb"),
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=commander_player_dashboard.pdf"},
+    )
+

@@ -1,7 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1>Dashboard Player</h1>
+<div style="display:flex; align-items:center; justify-content:space-between;">
+  <h1>Dashboard Player</h1>
+
+  <div style="display:flex; align-items:center; gap:8px;">
+    <a href="/player_dashboard.pdf{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+       class="button">
+      Export PDF
+    </a>
+
+    <a href="/player_dashboard.html{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+       class="button">
+      Export HTML
+    </a>
+  </div>
+</div>
+
 
 <form method="get" action="/player_dashboard" class="card" style="margin:12px 0 16px;">
   <div class="row" style="gap:12px; align-items:end; flex-wrap:wrap;">
