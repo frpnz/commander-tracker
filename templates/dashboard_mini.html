@@ -10,10 +10,10 @@
       Export PDF
     </a>
 
-    <a href="/dashboard_mini.html{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+    <!-- <a href="/dashboard_mini.html{{ '?' + request.query_string.decode() if request.query_string else '' }}"
        class="button">
       Export HTML
-    </a>
+    </a> -->
   </div>
 </div>
 
@@ -123,14 +123,22 @@
     });
   }
 
-  function colorForIndex(i) {
-    const colors = [
-      "#4e79a7", "#f28e2b", "#e15759", "#76b7b2",
-      "#59a14f", "#edc949", "#af7aa1", "#ff9da7",
-      "#9c755f", "#bab0ab"
-    ];
-    return colors[i % colors.length];
-  }
+ function colorForIndex(i, alpha = 0.6) {
+  const colors = [
+    [78,121,167],
+    [242,142,43],
+    [225,87,89],
+    [118,183,178],
+    [89,161,79],
+    [237,201,73],
+    [175,122,161],
+    [255,157,167],
+    [156,117,95],
+    [186,176,171]
+  ];
+  const c = colors[i % colors.length];
+  return `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${alpha})`;
+}
 
   // -------------------------
   // TOP LEFT: Player winrate + table
@@ -178,7 +186,9 @@
   const playerBubbleDatasets = playerRows.map((r, i) => ({
     label: r.player,
     data: [{ x: r.games, y: r.winrate, r: r.r, _meta: r }],
-    backgroundColor: colorForIndex(i),
+    backgroundColor: colorForIndex(i, 0.6), // trasparente
+    borderColor: colorForIndex(i, 1),       // bordo pieno
+    borderWidth: 1
   }));
 
   new Chart(document.getElementById("playerBubbleChart"), {
@@ -230,6 +240,9 @@
     label: p,
     data: pairingByPlayer[p],
     backgroundColor: colorForIndex(idx),
+    backgroundColor: colorForIndex(idx, 0.6), // trasparente
+    borderColor: colorForIndex(idx, 1),       // bordo pieno
+    borderWidth: 1
   }));
 
   new Chart(document.getElementById("pairingBubbleChart"), {
