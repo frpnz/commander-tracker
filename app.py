@@ -1178,39 +1178,114 @@ from starlette.responses import HTMLResponse
 import tempfile
 from playwright.sync_api import sync_playwright
 
-@app.get("/player_dashboard.html")
-def player_dashboard_export_html(
+def build_player_dashboard_payload(
+    player: str,
+    min_pair: int,
+    top_cmd: int,
+    top_pairs: int,
+) -> dict:
+    min_pair = max(1, int(min_pair))
+    top_cmd = max(1, min(50, int(top_cmd)))
+    top_pairs = max(1, min(200, int(top_pairs)))
+
+    with get_session() as session:
+        games = session.exec(select(Game)).all()
+        entries = session.exec(select(GameEntry)).all()
+
+    entries_by_game: Dict[int, List[GameEntry]] = {}
+    for e in entries:
+        entries_by_game.setdefault(e.game_id, []).append(e)
+
+    winner_by_game: Dict[int, Optional[str]] = {g.id: g.winner_player for g in games if g.id is not None}
+
+    # lista players per tendina
+    players_set = sorted({e.player.strip() for e in entries if e.player and e.player.strip()}, key=str.lower)
+
+    if not player or player not in players_set:
+        player = players_set[0] if players_set else ""
+
+    # --- stats del player selezionato ---
+    played_gids = [gid for gid, es in entries_by_game.items() if any(x.player == player for x in es)]
+    total_games = len(played_gids)
+    total_wins = sum(1 for gid in played_gids if winner_by_game.get(gid) == player)
+    total_wr = round((total_wins / total_games) * 100.0, 1) if total_games else 0.0
+
+    # commander usage + winrate (per quel player)
+    cmd_games: Dict[str, set] = {}
+    cmd_wins: Dict[str, int] = {}
+    for gid in played_gids:
+        winner = winner_by_game.get(gid)
+        for e in entries_by_game.get(gid, []):
+            if e.player != player:
+                continue
+            c = e.commander
+            cmd_games.setdefault(c, set()).add(gid)
+            if winner == player:
+                cmd_wins[c] = cmd_wins.get(c, 0) + 1
+
+    cmd_rows = []
+    for c, gset in cmd_games.items():
+        g = len(gset)
+        w = cmd_wins.get(c, 0)
+        wr = (w / g) * 100.0 if g else 0.0
+        cmd_rows.append((c, g, w, wr))
+    cmd_rows.sort(key=lambda x: (-x[3], -x[1], x[0].lower()))
+    cmd_rows = cmd_rows[:top_cmd]
+
+    # pairing player+commander (per quel player) -> winrate, min games
+    pair_games: Dict[Tuple[str, str], set] = {}
+    pair_wins: Dict[Tuple[str, str], int] = {}
+
+    for gid in played_gids:
+        winner = winner_by_game.get(gid)
+        for e in entries_by_game.get(gid, []):
+            if e.player != player:
+                continue
+            key = (e.player, e.commander)
+            pair_games.setdefault(key, set()).add(gid)
+            if winner == player:
+                pair_wins[key] = pair_wins.get(key, 0) + 1
+
+    pair_rows = []
+    for (p, c), gset in pair_games.items():
+        g = len(gset)
+        if g < min_pair:
+            continue
+        w = pair_wins.get((p, c), 0)
+        wr = (w / g) * 100.0 if g else 0.0
+        pair_rows.append((p, c, g, w, wr))
+    pair_rows.sort(key=lambda x: (-x[4], -x[2], x[1].lower()))
+    pair_rows = pair_rows[:top_pairs]
+
+    payload = {
+        "params": {"player": player, "min_pair": min_pair, "top_cmd": top_cmd, "top_pairs": top_pairs},
+        "players": players_set,
+        "summary": {"games": total_games, "wins": total_wins, "winrate": total_wr},
+        "commanderWinrate": {
+            "labels": [c for (c, _, _, _) in cmd_rows],
+            "values": [round(wr, 1) for (_, _, _, wr) in cmd_rows],
+            "rows": [{"commander": c, "games": g, "wins": w, "winrate": round(wr, 1)} for (c, g, w, wr) in cmd_rows],
+        },
+        "pairingWinrate": {
+            "labels": [f"{p} — {c}" for (p, c, _, _, _) in pair_rows],
+            "values": [round(wr, 1) for (_, _, _, _, wr) in pair_rows],
+            "rows": [{"player": p, "commander": c, "games": g, "wins": w, "winrate": round(wr, 1)} for (p, c, g, w, wr) in pair_rows],
+        },
+    }
+    return payload
+
+@app.get("/player_dashboard", response_class=HTMLResponse)
+def player_dashboard(
     request: Request,
     player: str = "",
     min_pair: int = 1,
     top_cmd: int = 10,
     top_pairs: int = 30,
-) -> Response:
-    # riusa la stessa logica della pagina (chiamiamo direttamente la route e prendiamo il context)
-    # più semplice: renderizzo il template con gli stessi dati costruiti dalla tua player_dashboard()
-
-    # --- DUPLICA MINIMA: chiama la funzione "player_dashboard" e poi renderizza ---
-    # Siccome player_dashboard ritorna TemplateResponse, la starlette lo renderizza lazy.
-    # Facciamo invece un helper che costruisce payload. Se non vuoi refactor, duplichiamo qui
-    # (ti do la versione "senza refactor" ma pulita: richiama player_dashboard e forza render).
-
-    resp = player_dashboard(
-        request=request,
-        player=player,
-        min_pair=min_pair,
-        top_cmd=top_cmd,
-        top_pairs=top_pairs,
-    )
-    # resp è un TemplateResponse (HTMLResponse subclass). Forziamo render:
-    resp.render()
-
-    filename = "commander_player_dashboard.html"
-    return Response(
-        content=resp.body,
-        media_type="text/html; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
-
+) -> HTMLResponse:
+    payload = build_player_dashboard_payload(player, min_pair, top_cmd, top_pairs)
+    resp = templates.TemplateResponse("player_dashboard.html", {"request": request, "chart_data": payload})
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
 @app.get("/player_dashboard.pdf")
 def player_dashboard_pdf(
     request: Request,
@@ -1250,3 +1325,19 @@ def player_dashboard_pdf(
         headers={"Content-Disposition": "attachment; filename=commander_player_dashboard.pdf"},
     )
 
+@app.get("/player_dashboard.html")
+def player_dashboard_export_html(
+    request: Request,
+    player: str = "",
+    min_pair: int = 1,
+    top_cmd: int = 10,
+    top_pairs: int = 30,
+) -> Response:
+    payload = build_player_dashboard_payload(player, min_pair, top_cmd, top_pairs)
+    rendered = templates.get_template("player_dashboard.html").render({"request": request, "chart_data": payload})
+
+    return Response(
+        content=rendered,
+        media_type="text/html; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="commander_player_dashboard.html"'},
+    )
