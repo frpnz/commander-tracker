@@ -30,6 +30,16 @@
       </select>
     </div>
 
+    <div style="min-width:140px;">
+      <label>Bracket</label><br>
+      <select id="bracketSelect" style="width:100%;">
+        <option value="n/a">n/a</option>
+        {% for b in [1,2,3,4,5] %}
+          <option value="{{ b }}">{{ b }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
     <div>
       <button type="button" id="addLineBtn">Inserisci riga</button>
     </div>
@@ -38,11 +48,12 @@
   <div style="margin-top:12px;">
     <label>Entries (una riga per player)</label><br>
     <textarea id="entriesText" name="entries_text" rows="8" style="width:100%;" required
-      placeholder="Fra-Magda
-Matti-Flubs
+      placeholder="Fra - Magda - 3
+Matti - Flubs - n/a
 ..."></textarea>
     <p class="muted" style="margin-top:6px;">
-      Formato: <code>Player - Commander</code> (una riga per player)
+      Formato: <code>Player - Commander - Bracket</code> (una riga per player). Bracket: <code>1-5</code> oppure <code>n/a</code>.<br>
+      (Compatibile anche il vecchio formato: <code>Player - Commander</code>)
     </p>
   </div>
 
@@ -87,14 +98,16 @@ Matti-Flubs
 <script>
   const playerSelect = document.getElementById("playerSelect");
   const commanderSelect = document.getElementById("commanderSelect");
+  const bracketSelect = document.getElementById("bracketSelect");
   const entriesText = document.getElementById("entriesText");
 
   document.getElementById("addLineBtn").addEventListener("click", () => {
     const p = (playerSelect.value || "").trim();
     const c = (commanderSelect.value || "").trim();
+    const b = (bracketSelect.value || "n/a").trim();
     if (!p || !c) return;
 
-    const line = `${p} - ${c}`;
+    const line = `${p} - ${c} - ${b}`;
     const current = entriesText.value.trim();
 
     // evita duplicati identici

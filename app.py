@@ -36,6 +36,7 @@ class GameEntry(SQLModel, table=True):
     game_id: int = Field(foreign_key="game.id", index=True)
     player: str = Field(index=True)
     commander: str = Field(index=True)
+    bracket: Optional[int] = Field(default=None, index=True)
 
 
 # =============================================================================
@@ -52,8 +53,29 @@ DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
 
 
+def migrate_schema() -> None:
+    """Esegue piccole migrazioni incrementali sul DB SQLite (ALTER TABLE).
+
+    Nota: SQLModel.metadata.create_all NON aggiunge colonne su tabelle esistenti.
+    """
+    with engine.connect() as conn:
+        # Verifica se la tabella esiste già
+        res = conn.exec_driver_sql(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='gameentry';"
+        ).fetchone()
+        if not res:
+            return
+
+        cols = conn.exec_driver_sql("PRAGMA table_info('gameentry');").fetchall()
+        col_names = {c[1] for c in cols}  # (cid, name, type, notnull, dflt_value, pk)
+        if "bracket" not in col_names:
+            conn.exec_driver_sql("ALTER TABLE gameentry ADD COLUMN bracket INTEGER;")
+            conn.commit()
+
+
 @app.on_event("startup")
 def on_startup() -> None:
+    migrate_schema()
     SQLModel.metadata.create_all(engine)
 
 
@@ -65,22 +87,60 @@ def get_session() -> Session:
 # HELPERS
 # =============================================================================
 
-def parse_entries(text: str) -> List[Tuple[str, str]]:
+def parse_entries(text: str) -> List[Tuple[str, str, Optional[int]]]:
     """
     Formato atteso (una riga per player):
+      Player - Commander - Bracket
+
+    Dove Bracket è:
+      - un intero da 1 a 5
+      - oppure 'n/a' (o vuoto) per indicare assente
+
+    Per retro-compatibilità, è accettato anche:
       Player - Commander
     """
-    out: List[Tuple[str, str]] = []
+    out: List[Tuple[str, str, Optional[int]]] = []
     for raw in text.splitlines():
         line = raw.strip()
         if not line:
             continue
-        if "-" not in line:
-            raise ValueError(f"Riga non valida (manca '-'): {line}")
-        player, commander = [x.strip() for x in line.split("-", 1)]
-        if not player or not commander:
+
+        # Preferisci separatore " - " (più robusto se nei nomi ci sono trattini)
+        sep = " - " if " - " in line else "-"
+        parts = [p.strip() for p in line.split(sep)]
+
+        if len(parts) < 2:
             raise ValueError(f"Riga non valida: {line}")
-        out.append((player, commander))
+
+        player = parts[0]
+        if not player:
+            raise ValueError(f"Riga non valida: {line}")
+
+        bracket: Optional[int] = None
+        commander_parts = parts[1:]
+
+        # Se ci sono 3+ parti, interpretiamo l'ultima come bracket
+        if len(parts) >= 3:
+            bracket_token = parts[-1].strip().lower()
+            commander_parts = parts[1:-1]
+
+            if bracket_token in {"", "n/a", "na", "none", "null"}:
+                bracket = None
+            else:
+                try:
+                    bracket_val = int(bracket_token)
+                except ValueError:
+                    raise ValueError(f"Bracket non valido (usa 1-5 o n/a): {line}")
+                if bracket_val < 1 or bracket_val > 5:
+                    raise ValueError(f"Bracket fuori range (1-5): {line}")
+                bracket = bracket_val
+
+        commander = f" {sep.strip()} ".join([c for c in commander_parts if c]).strip()
+        if not commander:
+            raise ValueError(f"Riga non valida: {line}")
+
+        out.append((player, commander, bracket))
+
     if not out:
         raise ValueError("Nessuna entry trovata.")
     return out
@@ -214,8 +274,8 @@ def add_game(
         session.commit()
         session.refresh(g)
 
-        for player, commander in entries:
-            session.add(GameEntry(game_id=g.id, player=player, commander=commander))
+        for player, commander, bracket in entries:
+            session.add(GameEntry(game_id=g.id, player=player, commander=commander, bracket=bracket))
 
         session.commit()
 
@@ -231,7 +291,9 @@ def edit_form(request: Request, game_id: int) -> HTMLResponse:
 
         entries = session.exec(select(GameEntry).where(GameEntry.game_id == game_id)).all()
 
-    entries_text = "\n".join([f"{e.player} - {e.commander}" for e in entries])
+    entries_text = "\n".join([
+        f"{e.player} - {e.commander} - {(e.bracket if e.bracket is not None else 'n/a')}" for e in entries
+    ])
     return templates.TemplateResponse(
         "edit_game.html",
         {"request": request, "game": g, "entries_text": entries_text, "error": None},
@@ -275,8 +337,8 @@ def edit_game(
             session.delete(oe)
         session.commit()
 
-        for player, commander in entries:
-            session.add(GameEntry(game_id=game_id, player=player, commander=commander))
+        for player, commander, bracket in entries:
+            session.add(GameEntry(game_id=game_id, player=player, commander=commander, bracket=bracket))
         session.commit()
 
     return RedirectResponse(url="/", status_code=303)
