@@ -1379,6 +1379,56 @@ def dashboard_mini_pdf(request: Request) -> StreamingResponse:
         headers={"Content-Disposition": "attachment; filename=commander_dashboard_mini.pdf"},
     )
 
+
+
+@app.get("/dashboard_mini_bracket.pdf")
+def dashboard_mini_bracket_pdf(request: Request) -> StreamingResponse:
+    """
+    Export PDF for /dashboard_mini_bracket using Playwright.
+    It preserves query string parameters (min_pg, min_pair, top_players, top_pairs, ...).
+    """
+    qs = request.url.query
+    url = "http://127.0.0.1:8000/dashboard_mini_bracket"
+    if qs:
+        url += f"?{qs}"
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+
+        # Viewport coerente con A4 landscape (~96dpi)
+        page = browser.new_page(viewport={"width": 1684, "height": 1191})
+
+        # Usa media "screen" così la pagina rende come desktop
+        page.emulate_media(media="screen")
+
+        page.goto(url, wait_until="networkidle")
+
+        # Attesa rendering (più generosa)
+        page.wait_for_timeout(1800)
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            page.pdf(
+                path=tmp.name,
+                format="A4",
+                landscape=True,
+                print_background=True,
+                prefer_css_page_size=True,
+                margin={
+                    "top": "8mm",
+                    "bottom": "8mm",
+                    "left": "8mm",
+                    "right": "8mm",
+                },
+            )
+            pdf_path = tmp.name
+
+        browser.close()
+
+    return StreamingResponse(
+        open(pdf_path, "rb"),
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=commander_dashboard_mini_bracket.pdf"},
+    )
 @app.get("/dashboard_mini.html", response_class=HTMLResponse)
 def dashboard_mini_html(
     request: Request,

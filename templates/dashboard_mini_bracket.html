@@ -5,6 +5,11 @@
   <h1>Dashboard (Bracket-wise)</h1>
 
   <div style="display:flex; align-items:center; gap:8px;">
+    <a href="/dashboard_mini_bracket.pdf{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+       class="button">
+      Export PDF
+    </a>
+
     <!-- <a href="/dashboard_mini.html{{ '?' + request.query_string.decode() if request.query_string else '' }}"
        class="button">
       Export HTML
