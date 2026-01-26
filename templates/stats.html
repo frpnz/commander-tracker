@@ -120,9 +120,47 @@
 </table>
 {% endif %}
 
+<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:22px;">
+  <h3 style="margin:0;">Triplette univoche Commander – Player – Bracket</h3>
+  <form method="get" action="/stats" style="display:flex; align-items:center; gap:8px; margin:0;">
+    <input type="hidden" name="top_triples" value="{{ top_triples }}" />
+    <label class="muted" for="max_unique" style="white-space:nowrap;">Max righe</label>
+    <select id="max_unique" name="max_unique" onchange="this.form.submit()">
+      {% for n in max_unique_options %}
+        <option value="{{ n }}" {% if n == max_unique %}selected{% endif %}>{{ n }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+{% if not unique_triples_rows or unique_triples_rows|length == 0 %}
+  <p>Nessun dato.</p>
+{% else %}
+<table>
+  <thead>
+    <tr>
+      <th>Commander</th>
+      <th>Player</th>
+      <th>Bracket</th>
+      <th># Entries</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in unique_triples_rows %}
+      <tr>
+        <td>{{ r.commander }}</td>
+        <td><b>{{ r.player }}</b></td>
+        <td>{{ r.bracket }}</td>
+        <td>{{ r.entries }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
 <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:18px;">
   <h3 style="margin:0;">Triplette Player – Commander – Bracket</h3>
   <form method="get" action="/stats" style="display:flex; align-items:center; gap:8px; margin:0;">
+    <input type="hidden" name="max_unique" value="{{ max_unique }}" />
     <label class="muted" for="top_triples" style="white-space:nowrap;">Mostra top</label>
     <select id="top_triples" name="top_triples" onchange="this.form.submit()">
       {% for n in top_options %}

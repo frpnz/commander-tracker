@@ -416,7 +416,7 @@ def delete_game(game_id: int = Form(...)) -> RedirectResponse:
 # =============================================================================
 
 @app.get("/stats", response_class=HTMLResponse)
-def stats(request: Request, top_triples: int = 50) -> HTMLResponse:
+def stats(request: Request, top_triples: int = 50, max_unique: int = 200) -> HTMLResponse:
     with get_session() as session:
         games = session.exec(select(Game)).all()
         entries = session.exec(select(GameEntry)).all()
@@ -542,6 +542,12 @@ def stats(request: Request, top_triples: int = 50) -> HTMLResponse:
         top_triples = 50
     top_triples = max(10, min(500, top_triples))
 
+    try:
+        max_unique = int(max_unique)
+    except Exception:
+        max_unique = 200
+    max_unique = max(10, min(5000, max_unique))
+
     # Bracket distributions
     bracket_entry_counts: Dict[str, int] = {}
     for e in entries:
@@ -588,6 +594,23 @@ def stats(request: Request, top_triples: int = 50) -> HTMLResponse:
         w = int(bracket_wins.get(k, 0))
         wr = (w / g * 100.0) if g else 0.0
         bracket_rows.append({"bracket": k, "games": g, "wins": w, "winrate": wr})
+
+    # Unique triples (Commander, Player, Bracket) as a simple data-hygiene list
+    # Note: we keep bracket as string so that "n/a" is an explicit bucket.
+    unique_triples_counts: Dict[Tuple[str, str, str], int] = {}
+    for e in entries:
+        bkey = str(e.bracket) if e.bracket is not None else "n/a"
+        key = (e.commander, e.player, bkey)
+        unique_triples_counts[key] = unique_triples_counts.get(key, 0) + 1
+
+    unique_triples_rows = [
+        {"commander": c, "player": p, "bracket": b, "entries": cnt}
+        for (c, p, b), cnt in unique_triples_counts.items()
+    ]
+    unique_triples_rows.sort(
+        key=lambda r: (r["commander"].lower(), r["player"].lower(), (r["bracket"] == "n/a", r["bracket"]))
+    )
+    unique_triples_rows = unique_triples_rows[:max_unique]
 
     # Triples (player, commander, bracket) descriptive table
     triples: Dict[Tuple[str, str, str], Dict[str, object]] = {}
@@ -656,6 +679,7 @@ def stats(request: Request, top_triples: int = 50) -> HTMLResponse:
     triple_rows = triple_rows[:top_triples]
 
     top_options = [10, 25, 50, 100, 200, 500]
+    max_unique_options = [25, 50, 100, 200, 500, 1000, 2000, 5000]
     resp = templates.TemplateResponse(
         "stats.html",
         {
@@ -667,9 +691,12 @@ def stats(request: Request, top_triples: int = 50) -> HTMLResponse:
             "pair_by_size_tables": pair_by_size_tables,
             "top_triples": top_triples,
             "top_options": top_options,
+            "max_unique": max_unique,
+            "max_unique_options": max_unique_options,
             "bracket_entry_counts": bracket_entry_counts,
             "bracket_winner_counts": bracket_winner_counts,
             "bracket_rows": bracket_rows,
+            "unique_triples_rows": unique_triples_rows,
             "triple_rows": triple_rows,
         },
     )
