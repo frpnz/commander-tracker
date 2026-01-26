@@ -1188,12 +1188,25 @@ def dashboard_mini_bracket(
     min_pair: int = 1,
     top_players: int = 10,
     top_pairs: int = 10,
+    alpha: float = 0.5,
 ) -> HTMLResponse:
     """Bracket-wise mini dashboard (original /dashboard_mini remains unchanged)."""
     min_pg = max(1, int(min_pg))
     min_pair = max(1, int(min_pair))
     top_players = max(1, min(50, int(top_players)))
     top_pairs = max(1, min(50, int(top_pairs)))
+
+    # Bracket weight parameter (alpha) controls how strongly wins are down-weighted
+    # when the winner bracket is above the table average.
+    try:
+        alpha = float(alpha)
+    except Exception:
+        alpha = 0.5
+    # clamp to a sane range (allow 0 = no weighting)
+    if alpha < 0:
+        alpha = 0.0
+    if alpha > 5:
+        alpha = 5.0
 
     with get_session() as session:
         games = session.exec(select(Game)).all()
@@ -1233,7 +1246,7 @@ def dashboard_mini_bracket(
         # win weight (only if computable)
         w = None
         if b_avg is not None and b_w is not None:
-            w = win_weight_from_delta(float(b_w) - float(b_avg))
+            w = win_weight_from_delta(float(b_w) - float(b_avg), alpha=alpha)
 
         if w is not None and winner:
             weighted_wins_by_player[winner] = weighted_wins_by_player.get(winner, 0.0) + w
@@ -1303,6 +1316,7 @@ def dashboard_mini_bracket(
             "min_pair": min_pair,
             "top_players": top_players,
             "top_pairs": top_pairs,
+            "alpha": alpha,
         },
         "playerWinrate": {
             "labels": [p for (p, _, _, _) in player_top],
