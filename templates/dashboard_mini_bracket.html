@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="display:flex; align-items:center; justify-content:space-between;">
+  <h1>Dashboard (Bracket-wise)</h1>
+
+  <div style="display:flex; align-items:center; gap:8px;">
+    <!-- <a href="/dashboard_mini.html{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+       class="button">
+      Export HTML
+    </a> -->
+  </div>
+</div>
+
+<form method="get" action="/dashboard_mini_bracket" class="card" style="margin:12px 0 16px;">
+  <div class="row" style="gap:12px; align-items:end; flex-wrap:wrap;">
+    <div>
+      <label>Min partite (player)</label><br>
+      <input type="number" name="min_pg" value="{{ chart_data.params.min_pg }}" min="1" style="width:110px;">
+    </div>
+
+    <div>
+      <label>Min partite (pairing)</label><br>
+      <input type="number" name="min_pair" value="{{ chart_data.params.min_pair }}" min="1" style="width:110px;">
+    </div>
+
+    <div>
+      <label>Top players</label><br>
+      <input type="number" name="top_players" value="{{ chart_data.params.top_players }}" min="1" max="50" style="width:90px;">
+    </div>
+
+    <div>
+      <label>Top pairs</label><br>
+      <input type="number" name="top_pairs" value="{{ chart_data.params.top_pairs }}" min="1" max="50" style="width:90px;">
+    </div>
+
+    <div>
+      <button type="submit">Aggiorna</button>
+    </div>
+  </div>
+</form>
+
+
+<div class="card" style="margin:12px 0 16px;">
+  <h3>Note (bracket-wise)</h3>
+  <p class="muted">
+    Qui le metriche usano il <b>bracket</b> (1–5) associato a ogni coppia Player–Commander.
+    Per ogni partita calcoliamo il bracket medio del tavolo (<code>B_avg</code>) e il bracket del vincitore (<code>B_w</code>).
+  </p>
+  <ul class="muted" style="margin-top:8px;">
+    <li><b>ΔB</b> = <code>B_w - B_avg</code>. Se ΔB &gt; 0 il vincitore era sopra il meta del tavolo.</li>
+    <li><b>Weighted WR%</b>: somma dei win “pesati” / partite. Il peso di una win è <code>1 / (1 + 0.5 · max(0, ΔB))</code>.</li>
+    <li><b>Meta impact</b> (player): media di <code>B_player - B_avg</code> nelle sue partecipazioni (valori &gt; 0 = tende a portare mazzi sopra tavolo).</li>
+  </ul>
+  <p class="muted" style="margin-top:8px;">
+    Le partite con bracket mancanti (n/a) contribuiscono alle partite giocate, ma non sempre permettono di calcolare ΔB.
+  </p>
+</div>
+
+
+<!-- =========================
+     ROW 1 (TOP): 2 charts + tables
+     ========================= -->
+<div class="row">
+  <!-- TOP LEFT -->
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>Winrate Player (top {{ chart_data.params.top_players }}, min {{ chart_data.params.min_pg }} partite)</h3>
+    <canvas id="playerWinrateChart"></canvas>
+
+    <table style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Player</th><th>#</th><th>Weighted WR%</th><th>Meta impact</th>
+        </tr>
+      </thead>
+      <tbody id="playerWinrateTable"></tbody>
+    </table>
+  </div>
+
+  <!-- TOP RIGHT -->
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>Top pairing Player+Commander per winrate (min {{ chart_data.params.min_pair }} partite)</h3>
+    <canvas id="pairingWinrateChart"></canvas>
+
+    <table style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Player</th><th>Commander</th><th>#</th><th>Weighted WR%</th>
+        </tr>
+      </thead>
+      <tbody id="pairingWinrateTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- =========================
+     ROW 2 (BOTTOM): 2 bubble charts
+     ========================= -->
+<div class="row">
+  <!-- BOTTOM LEFT -->
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>WR% vs #Partite (sample size) — Player</h3>
+    <canvas id="playerBubbleChart"></canvas>
+    <p class="muted" style="margin-top:8px;">
+      Bubble più grande = più partite (dato più solido). Legenda cliccabile.
+    </p>
+  </div>
+
+  <!-- BOTTOM RIGHT -->
+  
+</div>
+
+<script id="chart-data" type="application/json">
+{{ chart_data | tojson }}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const data = JSON.parse(document.getElementById("chart-data").textContent);
+
+  function bar(el, labels, values, labelText) {
+    new Chart(document.getElementById(el), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: labelText || '', data: values }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: !!labelText } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
+
+ function colorForIndex(i, alpha = 0.6) {
+  const colors = [
+    [78,121,167],
+    [242,142,43],
+    [225,87,89],
+    [118,183,178],
+    [89,161,79],
+    [237,201,73],
+    [175,122,161],
+    [255,157,167],
+    [156,117,95],
+    [186,176,171]
+  ];
+  const c = colors[i % colors.length];
+  return `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${alpha})`;
+}
+
+  // -------------------------
+  // TOP LEFT: Player winrate + table
+  // -------------------------
+  bar("playerWinrateChart", data.playerWinrate.labels, data.playerWinrate.values, "Weighted WR%");
+
+  const pbody = document.getElementById("playerWinrateTable");
+  pbody.innerHTML = "";
+  for (const r of (data.playerWinrate?.rows || [])) {
+    const tr = document.createElement("tr");
+    const mi = (r.meta_impact === null || r.meta_impact === undefined) ? "n/a" : r.meta_impact;
+    tr.innerHTML = `
+      <td><b>${r.player}</b></td>
+      <td>${r.games}</td>
+      <td>${r.weighted_winrate}%</td>
+      <td>${mi}</td>
+    `;
+    pbody.appendChild(tr);
+  }
+
+  // -------------------------
+  // TOP RIGHT: Pairing winrate + table
+  // -------------------------
+  bar("pairingWinrateChart", data.pairingWinrate.labels, data.pairingWinrate.values, "Weighted WR%");
+
+  const tbody = document.getElementById("pairingWinrateTable");
+  tbody.innerHTML = "";
+  for (const r of (data.pairingWinrate?.rows || [])) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${r.player}</b></td>
+      <td>${r.commander}</td>
+      <td>${r.games}</td>
+      <td>${r.weighted_winrate}%</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // -------------------------
+  // BOTTOM LEFT: Bubble Player (dataset per player)
+  // -------------------------
+  const playerRows = data.playerBubble?.rows || [];
+  const maxWRPlayer = Math.max(...playerRows.map(r => r.weighted_winrate), 0);
+
+  const playerBubbleDatasets = playerRows.map((r, i) => ({
+    label: r.player,
+    data: [{ x: r.games, y: r.weighted_winrate, r: r.r, _meta: r }],
+    backgroundColor: colorForIndex(i, 0.6), // trasparente
+    borderColor: colorForIndex(i, 1),       // bordo pieno
+    borderWidth: 1
+  }));
+
+  new Chart(document.getElementById("playerBubbleChart"), {
+    type: 'bubble',
+    data: { datasets: playerBubbleDatasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const r = ctx.raw._meta;
+              return `${r.player}: ${r.weighted_winrate}% (games=${r.games})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: "# Partite" }, beginAtZero: true, grace: "10%" },
+        y: {
+          title: { display: true, text: "Winrate %" },
+          beginAtZero: true,
+          max: Math.min(110, Math.ceil(maxWRPlayer + 5))
+        }
+      }
+    }
+  });
+
+  // -------------------------
+  // BOTTOM RIGHT: Bubble Pairing (raggruppato per player)
+  // -------------------------
+  const pairingRows = data.pairingBubble?.rows || [];
+  const maxWRPair = Math.max(...pairingRows.map(r => r.winrate), 0);
+
+  const pairingByPlayer = {};
+  for (const r of pairingRows) {
+    if (!pairingByPlayer[r.player]) pairingByPlayer[r.player] = [];
+    pairingByPlayer[r.player].push({
+      x: r.games,
+      y: r.winrate,
+      r: r.r,
+      _meta: r
+    });
+  }
+
+  const pairingPlayers = Object.keys(pairingByPlayer).sort((a,b) => a.localeCompare(b));
+  const pairingDatasets = pairingPlayers.map((p, idx) => ({
+    label: p,
+    data: pairingByPlayer[p],
+    backgroundColor: colorForIndex(idx),
+    backgroundColor: colorForIndex(idx, 0.6), // trasparente
+    borderColor: colorForIndex(idx, 1),       // bordo pieno
+    borderWidth: 1
+  }));
+
+  new Chart(document.getElementById("pairingBubbleChart"), {
+    type: 'bubble',
+    data: { datasets: pairingDatasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const r = ctx.raw._meta;
+              return `${r.player} — ${r.commander}: ${r.weighted_winrate}% (games=${r.games})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: "# Partite (pairing)" }, beginAtZero: true, grace: "10%" },
+        y: {
+          title: { display: true, text: "Winrate % (pairing)" },
+          beginAtZero: true,
+          max: Math.min(110, Math.ceil(maxWRPair + 5))
+        }
+      }
+    }
+  });
+</script>
+
+{% endblock %}

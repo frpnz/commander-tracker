@@ -145,6 +145,57 @@ def parse_entries(text: str) -> List[Tuple[str, str, Optional[int]]]:
         raise ValueError("Nessuna entry trovata.")
     return out
 
+# =============================================================================
+# BRACKET METRICS (used in bracket-wise dashboards)
+# =============================================================================
+
+def compute_table_bracket_avg(entries: List[GameEntry]) -> Optional[float]:
+    """Average bracket at the table (ignoring n/a). Returns None if no brackets."""
+    vals = [e.bracket for e in entries if e.bracket is not None]
+    if not vals:
+        return None
+    return sum(vals) / len(vals)
+
+
+def compute_winner_bracket(entries: List[GameEntry], winner_player: Optional[str]) -> Optional[int]:
+    if not winner_player:
+        return None
+    for e in entries:
+        if e.player == winner_player:
+            return e.bracket
+    return None
+
+
+def compute_player_bracket(entries: List[GameEntry], player: str) -> Optional[int]:
+    for e in entries:
+        if e.player == player:
+            return e.bracket
+    return None
+
+
+def win_weight_from_delta(delta_b: float, alpha: float = 0.5) -> float:
+    """Weight applied to a win when winner bracket is above table average.
+
+    delta_b = B_winner - B_avg
+    - If delta_b <= 0: weight = 1.0 (no penalty, 'upset' not boosted)
+    - If delta_b > 0 : weight decreases as mismatch grows
+    """
+    if delta_b <= 0:
+        return 1.0
+    return 1.0 / (1.0 + alpha * float(delta_b))
+
+
+def bpi_label(bpi: Optional[float]) -> str:
+    """Qualitative label for BPI (mean deltaB in wins)."""
+    if bpi is None:
+        return "n/a"
+    if bpi >= 2.0:
+        return "pubstomp"
+    if bpi >= 1.0:
+        return "over"
+    if bpi <= -1.0:
+        return "underdog"
+    return "fair"
 
 def load_game_rows(limit: int = 50) -> List[Tuple[Game, List[GameEntry]]]:
     with get_session() as session:
@@ -1002,6 +1053,158 @@ def dashboard_mini(
     resp.headers["Cache-Control"] = "no-store"
     return resp
 
+@app.get("/dashboard_mini_bracket", response_class=HTMLResponse)
+def dashboard_mini_bracket(
+    request: Request,
+    min_pg: int = 3,
+    min_pair: int = 1,
+    top_players: int = 10,
+    top_pairs: int = 10,
+) -> HTMLResponse:
+    """Bracket-wise mini dashboard (original /dashboard_mini remains unchanged)."""
+    min_pg = max(1, int(min_pg))
+    min_pair = max(1, int(min_pair))
+    top_players = max(1, min(50, int(top_players)))
+    top_pairs = max(1, min(50, int(top_pairs)))
+
+    with get_session() as session:
+        games = session.exec(select(Game)).all()
+        entries = session.exec(select(GameEntry)).all()
+
+    entries_by_game: Dict[int, List[GameEntry]] = {}
+    for e in entries:
+        entries_by_game.setdefault(e.game_id, []).append(e)
+
+    winner_by_game: Dict[int, Optional[str]] = {g.id: g.winner_player for g in games if g.id is not None}
+
+    # games per player (participations)
+    games_by_player: Dict[str, set] = {}
+    for e in entries:
+        games_by_player.setdefault(e.player, set()).add(e.game_id)
+    games_count_by_player = {p: len(s) for p, s in games_by_player.items()}
+
+    # --- bracket-wise aggregates ---
+    weighted_wins_by_player: Dict[str, float] = {}
+    bracket_games_by_player: Dict[str, int] = {}  # games where we can compute player's impact (player bracket + avg)
+    meta_delta_sum_by_player: Dict[str, float] = {}
+
+    # pairing (player, commander)
+    pair_games: Dict[Tuple[str, str], set] = {}
+    pair_weighted_wins: Dict[Tuple[str, str], float] = {}
+
+    for gid, es in entries_by_game.items():
+        winner = winner_by_game.get(gid)
+        b_avg = compute_table_bracket_avg(es)
+        b_w = compute_winner_bracket(es, winner)
+
+        # pairing participations
+        for e in es:
+            key = (e.player, e.commander)
+            pair_games.setdefault(key, set()).add(gid)
+
+        # win weight (only if computable)
+        w = None
+        if b_avg is not None and b_w is not None:
+            w = win_weight_from_delta(float(b_w) - float(b_avg))
+
+        if w is not None and winner:
+            weighted_wins_by_player[winner] = weighted_wins_by_player.get(winner, 0.0) + w
+            # pairing winner increment (for the specific winner's commander in that game)
+            for e in es:
+                if e.player == winner:
+                    key = (e.player, e.commander)
+                    pair_weighted_wins[key] = pair_weighted_wins.get(key, 0.0) + w
+                    break
+
+        # meta impact per player (player bracket - table avg), only if computable
+        if b_avg is not None:
+            for e in es:
+                if e.bracket is None:
+                    continue
+                bracket_games_by_player[e.player] = bracket_games_by_player.get(e.player, 0) + 1
+                meta_delta_sum_by_player[e.player] = meta_delta_sum_by_player.get(e.player, 0.0) + (float(e.bracket) - float(b_avg))
+
+    # -----------------------------------------------------------------
+    # A) Player table (Weighted WR + Meta impact)
+    # -----------------------------------------------------------------
+    player_rows = []
+    bubble_rows = []
+    for p, games_n in games_count_by_player.items():
+        if games_n < min_pg:
+            continue
+        ww = weighted_wins_by_player.get(p, 0.0)
+        wr_w = (ww / games_n) * 100.0 if games_n else 0.0
+
+        mg = bracket_games_by_player.get(p, 0)
+        mi = (meta_delta_sum_by_player.get(p, 0.0) / mg) if mg else None
+
+        r = 4 + min(14, int((games_n ** 0.5) * 3))
+        bubble_rows.append(
+            {"player": p, "games": games_n, "weighted_winrate": round(wr_w, 1), "r": r}
+        )
+        player_rows.append((p, games_n, wr_w, mi))
+
+    # sort by weighted WR, tie-break games
+    player_rows.sort(key=lambda x: (-x[2], -x[1], x[0].lower()))
+    player_top = player_rows[:top_players]
+
+    # -----------------------------------------------------------------
+    # B) Pairing table (Weighted WR)
+    # -----------------------------------------------------------------
+    pairing_rows = []
+    pairing_bubble_rows = []
+    for (p, c), gids in pair_games.items():
+        games_n = len(gids)
+        if games_n < min_pair:
+            continue
+        ww = pair_weighted_wins.get((p, c), 0.0)
+        wr_w = (ww / games_n) * 100.0 if games_n else 0.0
+
+        r = 4 + min(14, int((games_n ** 0.5) * 3))
+        pairing_bubble_rows.append(
+            {"player": p, "commander": c, "games": games_n, "weighted_winrate": round(wr_w, 1), "r": r}
+        )
+        pairing_rows.append((p, c, games_n, wr_w))
+
+    pairing_rows.sort(key=lambda x: (-x[3], -x[2], x[0].lower(), x[1].lower()))
+    pairing_top = pairing_rows[:top_pairs]
+
+    payload = {
+        "params": {
+            "min_pg": min_pg,
+            "min_pair": min_pair,
+            "top_players": top_players,
+            "top_pairs": top_pairs,
+        },
+        "playerWinrate": {
+            "labels": [p for (p, _, _, _) in player_top],
+            "values": [round(wr_w, 1) for (_, _, wr_w, _) in player_top],
+            "rows": [
+                {
+                    "player": p,
+                    "games": g,
+                    "weighted_winrate": round(wr_w, 1),
+                    "meta_impact": (round(mi, 2) if mi is not None else None),
+                }
+                for (p, g, wr_w, mi) in player_top
+            ],
+        },
+        "playerBubble": {"minGames": min_pg, "rows": bubble_rows},
+        "pairingWinrate": {
+            "labels": [f"{p} — {c}" for (p, c, _, _) in pairing_top],
+            "values": [round(wr_w, 1) for (_, _, _, wr_w) in pairing_top],
+            "rows": [
+                {"player": p, "commander": c, "games": g, "weighted_winrate": round(wr_w, 1)}
+                for (p, c, g, wr_w) in pairing_top
+            ],
+        },
+        "pairingBubble": {"minGames": min_pair, "rows": pairing_bubble_rows},
+    }
+
+    resp = templates.TemplateResponse("dashboard_mini_bracket.html", {"request": request, "chart_data": payload})
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
 @app.get("/dashboard_mini.pdf")
 def dashboard_mini_pdf(request: Request) -> StreamingResponse:
     qs = request.url.query
@@ -1434,3 +1637,226 @@ def player_dashboard_export_html(
         media_type="text/html; charset=utf-8",
         headers={"Content-Disposition": 'attachment; filename="commander_player_dashboard.html"'},
     )
+
+# =============================================================================
+# BRACKET-WISE PLAYER DASHBOARD (separate endpoint + template)
+# =============================================================================
+
+def build_player_dashboard_payload_bracket(
+    player: str,
+    min_pair: int,
+    top_cmd: int,
+    top_pairs: int,
+) -> dict:
+    min_pair = max(1, int(min_pair))
+    top_cmd = max(1, min(50, int(top_cmd)))
+    top_pairs = max(1, min(200, int(top_pairs)))
+
+    with get_session() as session:
+        games = session.exec(select(Game)).all()
+        entries = session.exec(select(GameEntry)).all()
+
+    entries_by_game: Dict[int, List[GameEntry]] = {}
+    for e in entries:
+        entries_by_game.setdefault(e.game_id, []).append(e)
+
+    winner_by_game: Dict[int, Optional[str]] = {g.id: g.winner_player for g in games if g.id is not None}
+    time_by_game: Dict[int, datetime] = {g.id: g.played_at for g in games if g.id is not None}
+
+    # player list for dropdown
+    players_set = sorted({e.player.strip() for e in entries if e.player and e.player.strip()}, key=str.lower)
+    player = (player or "").strip()
+    if not player or player not in players_set:
+        player = players_set[0] if players_set else ""
+
+    if not player:
+        return {
+            "params": {"player": "", "min_pair": min_pair, "top_cmd": top_cmd, "top_pairs": top_pairs},
+            "players": [],
+            "trend": {"labels": [], "values": []},
+            "podWinrate": {"labels": [], "values": [], "baseline": [], "denom": []},
+            "topCommanders": {"labels": [], "values": [], "rows": []},
+            "pairingBubble": {"minGames": min_pair, "rows": []},
+        }
+
+    # games where player participated
+    player_game_ids = sorted(
+        [gid for gid, es in entries_by_game.items() if any(x.player == player for x in es)],
+        key=lambda gid: time_by_game.get(gid, datetime.min),
+    )
+
+    # Trend: skill-adjusted (cumulative weighted wr). Denom = games played.
+    trend_labels: List[str] = []
+    trend_values: List[float] = []
+    total = 0
+    weighted_wins = 0.0
+    for gid in player_game_ids:
+        total += 1
+        winner = winner_by_game.get(gid)
+        es = entries_by_game.get(gid, [])
+        b_avg = compute_table_bracket_avg(es)
+        b_w = compute_winner_bracket(es, winner)
+        w = None
+        if b_avg is not None and b_w is not None:
+            w = win_weight_from_delta(float(b_w) - float(b_avg))
+        if winner == player and w is not None:
+            weighted_wins += w
+        wr = (weighted_wins / total) * 100.0 if total else 0.0
+        dt = time_by_game.get(gid)
+        trend_labels.append(dt.strftime("%Y-%m-%d") if dt else f"game {gid}")
+        trend_values.append(round(wr, 1))
+
+    # Pod winrate: keep classic baseline, but value = weighted wr within that pod size
+    pod_games: Dict[int, int] = {}
+    pod_weighted_wins: Dict[int, float] = {}
+    for gid in player_game_ids:
+        es = entries_by_game.get(gid, [])
+        n = len(es)
+        if n <= 0:
+            continue
+        pod_games[n] = pod_games.get(n, 0) + 1
+
+        winner = winner_by_game.get(gid)
+        b_avg = compute_table_bracket_avg(es)
+        b_w = compute_winner_bracket(es, winner)
+        w = None
+        if b_avg is not None and b_w is not None:
+            w = win_weight_from_delta(float(b_w) - float(b_avg))
+        if winner == player and w is not None:
+            pod_weighted_wins[n] = pod_weighted_wins.get(n, 0.0) + w
+
+    pod_sizes = sorted(pod_games.keys())
+    pod_labels = [f"{n}p" for n in pod_sizes]
+    pod_values = []
+    pod_denoms = []
+    pod_baseline = []
+    for n in pod_sizes:
+        denom = pod_games.get(n, 0)
+        ww = pod_weighted_wins.get(n, 0.0)
+        wr = (ww / denom) * 100.0 if denom else 0.0
+        pod_values.append(round(wr, 1))
+        pod_denoms.append(denom)
+        pod_baseline.append(round((1.0 / n) * 100.0, 1))
+
+    # Commander stats for the selected player:
+    # - Weighted WR% (sum weights of wins / games played with that commander)
+    # - BPI: mean deltaB in wins (only when computable), label qualitative
+    cmd_games: Dict[str, set] = {}
+    cmd_weighted_wins: Dict[str, float] = {}
+    cmd_delta_sum_in_wins: Dict[str, float] = {}
+    cmd_delta_n_in_wins: Dict[str, int] = {}
+
+    for gid in player_game_ids:
+        es = entries_by_game.get(gid, [])
+        winner = winner_by_game.get(gid)
+        b_avg = compute_table_bracket_avg(es)
+        b_w = compute_winner_bracket(es, winner)
+        w = None
+        delta = None
+        if b_avg is not None and b_w is not None:
+            delta = float(b_w) - float(b_avg)
+            w = win_weight_from_delta(delta)
+
+        # find player's commander in this game
+        p_cmd = None
+        for e in es:
+            if e.player == player:
+                p_cmd = e.commander
+                break
+        if not p_cmd:
+            continue
+
+        cmd_games.setdefault(p_cmd, set()).add(gid)
+
+        if winner == player and w is not None:
+            cmd_weighted_wins[p_cmd] = cmd_weighted_wins.get(p_cmd, 0.0) + w
+            if delta is not None:
+                cmd_delta_sum_in_wins[p_cmd] = cmd_delta_sum_in_wins.get(p_cmd, 0.0) + delta
+                cmd_delta_n_in_wins[p_cmd] = cmd_delta_n_in_wins.get(p_cmd, 0) + 1
+
+    cmd_rows = []
+    for c, gids in cmd_games.items():
+        games_n = len(gids)
+        if games_n < min_pair:
+            continue
+        ww = cmd_weighted_wins.get(c, 0.0)
+        wr_w = (ww / games_n) * 100.0 if games_n else 0.0
+
+        nwin = cmd_delta_n_in_wins.get(c, 0)
+        bpi = (cmd_delta_sum_in_wins.get(c, 0.0) / nwin) if nwin else None
+        cmd_rows.append((c, games_n, wr_w, bpi))
+
+    cmd_rows.sort(key=lambda x: (-x[2], -x[1], x[0].lower()))
+    cmd_rows = cmd_rows[:top_cmd]
+
+    # Bubble: keep like original but y = weighted wr
+    pair_stats: Dict[Tuple[str, str], Dict[str, object]] = {}
+    for gid in player_game_ids:
+        es = entries_by_game.get(gid, [])
+        winner = winner_by_game.get(gid)
+        b_avg = compute_table_bracket_avg(es)
+        b_w = compute_winner_bracket(es, winner)
+        w = None
+        if b_avg is not None and b_w is not None:
+            w = win_weight_from_delta(float(b_w) - float(b_avg))
+
+        for e in es:
+            if e.player != player:
+                continue
+            key = (e.player, e.commander)
+            pair_stats.setdefault(key, {"games": set(), "weighted_wins": 0.0})
+            pair_stats[key]["games"].add(gid)
+            if winner == player and w is not None:
+                pair_stats[key]["weighted_wins"] += w
+
+    bubble_rows = []
+    for (p, c), v in pair_stats.items():
+        games_n = len(v["games"])
+        if games_n < min_pair:
+            continue
+        ww = float(v["weighted_wins"])
+        wr_w = (ww / games_n) * 100.0 if games_n else 0.0
+        r = 4 + min(16, int((games_n ** 0.5) * 3))
+        bubble_rows.append(
+            {"player": p, "commander": c, "games": games_n, "weighted_winrate": round(wr_w, 1), "r": r}
+        )
+
+    bubble_rows.sort(key=lambda x: (-x["games"], -x["weighted_winrate"], x["commander"].lower()))
+    bubble_rows = bubble_rows[:top_pairs]
+
+    payload = {
+        "params": {"player": player, "min_pair": min_pair, "top_cmd": top_cmd, "top_pairs": top_pairs},
+        "players": players_set,
+        "trend": {"labels": trend_labels, "values": trend_values},
+        "podWinrate": {"labels": pod_labels, "values": pod_values, "baseline": pod_baseline, "denom": pod_denoms},
+        "topCommanders": {
+            "labels": [c for (c, _, _, _) in cmd_rows],
+            "values": [round(wr_w, 1) for (_, _, wr_w, _) in cmd_rows],
+            "rows": [
+                {
+                    "commander": c,
+                    "games": g,
+                    "weighted_winrate": round(wr_w, 1),
+                    "bpi": (round(bpi, 2) if bpi is not None else None),
+                    "bpi_label": bpi_label(bpi),
+                }
+                for (c, g, wr_w, bpi) in cmd_rows
+            ],
+        },
+        "pairingBubble": {"minGames": min_pair, "rows": bubble_rows},
+    }
+    return payload
+
+
+@app.get("/player_dashboard_bracket", response_class=HTMLResponse)
+def player_dashboard_bracket(
+    request: Request,
+    player: str = "",
+    min_pair: int = 1,
+    top_cmd: int = 10,
+    top_pairs: int = 30,
+) -> HTMLResponse:
+    payload = build_player_dashboard_payload_bracket(player, min_pair, top_cmd, top_pairs)
+    resp = templates.TemplateResponse("player_dashboard_bracket.html", {"request": request, "chart_data": payload})
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
