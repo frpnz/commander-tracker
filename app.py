@@ -174,15 +174,34 @@ def compute_player_bracket(entries: List[GameEntry], player: str) -> Optional[in
 
 
 def win_weight_from_delta(delta_b: float, alpha: float = 0.5) -> float:
-    """Weight applied to a win when winner bracket is above table average.
+    """Weight applied to a win based on bracket mismatch.
 
-    delta_b = B_winner - B_avg
-    - If delta_b <= 0: weight = 1.0 (no penalty, 'upset' not boosted)
-    - If delta_b > 0 : weight decreases as mismatch grows
+    delta_b = B_winner - B_avg (winner bracket minus table average)
+
+    - If delta_b > 0  (winner bracket ABOVE the pod average): penalize the win
+        w = 1 / (1 + alpha * delta_b)
+    - If delta_b == 0: neutral
+        w = 1
+    - If delta_b < 0  (winner bracket BELOW the pod average): reward the win
+        w = 1 + alpha * (-delta_b)
+
+    Note: downstream "weighted winrate" computations use a win-weighted denominator
+    (i.e., a win with weight w also makes that game count as w in the denominator),
+    so winrates remain bounded in [0, 100].
     """
-    if delta_b <= 0:
-        return 1.0
-    return 1.0 / (1.0 + alpha * float(delta_b))
+    try:
+        a = float(alpha)
+    except Exception:
+        a = 0.0
+    if a < 0:
+        a = 0.0
+
+    d = float(delta_b)
+    if d > 0:
+        return 1.0 / (1.0 + a * d)
+    if d < 0:
+        return 1.0 + a * (-d)
+    return 1.0
 
 
 def bpi_label(bpi: Optional[float]) -> str:
@@ -623,9 +642,18 @@ def stats(request: Request, top_triples: int = 50, max_unique: int = 200) -> HTM
             key = (e.player, e.commander, bkey)
             rec = triples.setdefault(
                 key,
-                {"games": set(), "wins": 0, "weighted_wins": 0.0, "deltas": [], "table_avgs": []},
+                {
+                    "games": set(),
+                    "wins": 0,
+                    "weighted_wins": 0.0,
+                    "weighted_games": 0.0,  # win-weighted denominator (keeps WR in [0,100])
+                    "deltas": [],
+                    "table_avgs": [],
+                },
             )
             rec["games"].add(gid)
+            # baseline: each participation counts as 1 game in the weighted denominator
+            rec["weighted_games"] += 1.0
             if bavg is not None:
                 rec["table_avgs"].append(float(bavg))
 
@@ -635,7 +663,10 @@ def stats(request: Request, top_triples: int = 50, max_unique: int = 200) -> HTM
                 if (e.bracket is not None) and (bavg is not None):
                     delta = float(e.bracket) - float(bavg)
                     rec["deltas"].append(delta)
-                    rec["weighted_wins"] += float(win_weight_from_delta(delta))
+                    w_eff = float(win_weight_from_delta(delta))
+                    rec["weighted_wins"] += w_eff
+                    # A win with weight w also makes that game count as w in the denominator
+                    rec["weighted_games"] += (w_eff - 1.0)
                 else:
                     # If delta isn't computable, treat as unweighted win (neutral)
                     rec["weighted_wins"] += 1.0
@@ -647,7 +678,8 @@ def stats(request: Request, top_triples: int = 50, max_unique: int = 200) -> HTM
         wr = (wins_n / games_n * 100.0) if games_n else 0.0
 
         ww = float(rec["weighted_wins"])
-        wwr = (ww / games_n * 100.0) if games_n else 0.0
+        wg = float(rec.get("weighted_games") or games_n)
+        wwr = (ww / wg * 100.0) if wg else 0.0
 
         deltas = rec["deltas"]
         bpi = (sum(deltas) / len(deltas)) if deltas else None
@@ -1223,8 +1255,9 @@ def dashboard_mini_bracket(
     top_players = max(1, min(50, int(top_players)))
     top_pairs = max(1, min(50, int(top_pairs)))
 
-    # Bracket weight parameter (alpha) controls how strongly wins are down-weighted
-    # when the winner bracket is above the table average.
+    # Bracket weight parameter (alpha) controls how strongly wins are:
+    # - down-weighted when the winner bracket is above the table average
+    # - up-weighted when the winner bracket is below the table average
     try:
         alpha = float(alpha)
     except Exception:
@@ -1253,12 +1286,14 @@ def dashboard_mini_bracket(
 
     # --- bracket-wise aggregates ---
     weighted_wins_by_player: Dict[str, float] = {}
+    weighted_games_by_player: Dict[str, float] = {}  # win-weighted denominator (<= keeps WR in [0,100])
     bracket_games_by_player: Dict[str, int] = {}  # games where we can compute player's impact (player bracket + avg)
     meta_delta_sum_by_player: Dict[str, float] = {}
 
     # pairing (player, commander)
     pair_games: Dict[Tuple[str, str], set] = {}
     pair_weighted_wins: Dict[Tuple[str, str], float] = {}
+    pair_weighted_games: Dict[Tuple[str, str], float] = {}  # win-weighted denominator
 
     for gid, es in entries_by_game.items():
         winner = winner_by_game.get(gid)
@@ -1269,19 +1304,26 @@ def dashboard_mini_bracket(
         for e in es:
             key = (e.player, e.commander)
             pair_games.setdefault(key, set()).add(gid)
+            pair_weighted_games[key] = pair_weighted_games.get(key, 0.0) + 1.0
+            weighted_games_by_player[e.player] = weighted_games_by_player.get(e.player, 0.0) + 1.0
 
         # win weight (only if computable)
         w = None
         if b_avg is not None and b_w is not None:
             w = win_weight_from_delta(float(b_w) - float(b_avg), alpha=alpha)
 
-        if w is not None and winner:
-            weighted_wins_by_player[winner] = weighted_wins_by_player.get(winner, 0.0) + w
+        if winner:
+            # If w isn't computable, treat as neutral win (w = 1.0)
+            w_eff = float(w) if w is not None else 1.0
+            weighted_wins_by_player[winner] = weighted_wins_by_player.get(winner, 0.0) + w_eff
+            # Win-weighted denominator: a win with weight w also makes that game count as w
+            weighted_games_by_player[winner] = weighted_games_by_player.get(winner, 0.0) + (w_eff - 1.0)
             # pairing winner increment (for the specific winner's commander in that game)
             for e in es:
                 if e.player == winner:
                     key = (e.player, e.commander)
-                    pair_weighted_wins[key] = pair_weighted_wins.get(key, 0.0) + w
+                    pair_weighted_wins[key] = pair_weighted_wins.get(key, 0.0) + w_eff
+                    pair_weighted_games[key] = pair_weighted_games.get(key, 0.0) + (w_eff - 1.0)
                     break
 
         # meta impact per player (player bracket - table avg), only if computable
@@ -1301,7 +1343,8 @@ def dashboard_mini_bracket(
         if games_n < min_pg:
             continue
         ww = weighted_wins_by_player.get(p, 0.0)
-        wr_w = (ww / games_n) * 100.0 if games_n else 0.0
+        wg = weighted_games_by_player.get(p, float(games_n))
+        wr_w = (ww / wg) * 100.0 if wg else 0.0
 
         mg = bracket_games_by_player.get(p, 0)
         mi = (meta_delta_sum_by_player.get(p, 0.0) / mg) if mg else None
@@ -1326,7 +1369,8 @@ def dashboard_mini_bracket(
         if games_n < min_pair:
             continue
         ww = pair_weighted_wins.get((p, c), 0.0)
-        wr_w = (ww / games_n) * 100.0 if games_n else 0.0
+        wg = pair_weighted_games.get((p, c), float(games_n))
+        wr_w = (ww / wg) * 100.0 if wg else 0.0
 
         r = 4 + min(14, int((games_n ** 0.5) * 3))
         pairing_bubble_rows.append(
@@ -1904,13 +1948,17 @@ def build_player_dashboard_payload_bracket(
         key=lambda gid: time_by_game.get(gid, datetime.min),
     )
 
-    # Trend: skill-adjusted (cumulative weighted wr). Denom = games played.
+    # Trend: skill-adjusted (cumulative weighted wr).
+    # Denominator is win-weighted so that WR remains bounded in [0,100]
+    # even when underdog wins get rewarded (w > 1).
     trend_labels: List[str] = []
     trend_values: List[float] = []
     total = 0
+    total_w = 0.0
     weighted_wins = 0.0
     for gid in player_game_ids:
         total += 1
+        total_w += 1.0
         winner = winner_by_game.get(gid)
         es = entries_by_game.get(gid, [])
         b_avg = compute_table_bracket_avg(es)
@@ -1918,22 +1966,26 @@ def build_player_dashboard_payload_bracket(
         w = None
         if b_avg is not None and b_w is not None:
             w = win_weight_from_delta(float(b_w) - float(b_avg))
-        if winner == player and w is not None:
-            weighted_wins += w
-        wr = (weighted_wins / total) * 100.0 if total else 0.0
+        if winner == player:
+            w_eff = float(w) if w is not None else 1.0
+            weighted_wins += w_eff
+            total_w += (w_eff - 1.0)
+        wr = (weighted_wins / total_w) * 100.0 if total_w else 0.0
         dt = time_by_game.get(gid)
         trend_labels.append(dt.strftime("%Y-%m-%d") if dt else f"game {gid}")
         trend_values.append(round(wr, 1))
 
-    # Pod winrate: keep classic baseline, but value = weighted wr within that pod size
+    # Pod winrate: keep classic baseline, but value = bracket-adjusted WR within that pod size
     pod_games: Dict[int, int] = {}
     pod_weighted_wins: Dict[int, float] = {}
+    pod_weighted_games: Dict[int, float] = {}
     for gid in player_game_ids:
         es = entries_by_game.get(gid, [])
         n = len(es)
         if n <= 0:
             continue
         pod_games[n] = pod_games.get(n, 0) + 1
+        pod_weighted_games[n] = pod_weighted_games.get(n, 0.0) + 1.0
 
         winner = winner_by_game.get(gid)
         b_avg = compute_table_bracket_avg(es)
@@ -1941,8 +1993,10 @@ def build_player_dashboard_payload_bracket(
         w = None
         if b_avg is not None and b_w is not None:
             w = win_weight_from_delta(float(b_w) - float(b_avg))
-        if winner == player and w is not None:
-            pod_weighted_wins[n] = pod_weighted_wins.get(n, 0.0) + w
+        if winner == player:
+            w_eff = float(w) if w is not None else 1.0
+            pod_weighted_wins[n] = pod_weighted_wins.get(n, 0.0) + w_eff
+            pod_weighted_games[n] = pod_weighted_games.get(n, 0.0) + (w_eff - 1.0)
 
     pod_sizes = sorted(pod_games.keys())
     pod_labels = [f"{n}p" for n in pod_sizes]
@@ -1950,11 +2004,11 @@ def build_player_dashboard_payload_bracket(
     pod_denoms = []
     pod_baseline = []
     for n in pod_sizes:
-        denom = pod_games.get(n, 0)
+        denom = pod_weighted_games.get(n, float(pod_games.get(n, 0)))
         ww = pod_weighted_wins.get(n, 0.0)
         wr = (ww / denom) * 100.0 if denom else 0.0
         pod_values.append(round(wr, 1))
-        pod_denoms.append(denom)
+        pod_denoms.append(pod_games.get(n, 0))
         pod_baseline.append(round((1.0 / n) * 100.0, 1))
 
     # Commander stats for the selected player:
@@ -1962,6 +2016,7 @@ def build_player_dashboard_payload_bracket(
     # - BPI: mean deltaB in wins (only when computable), label qualitative
     cmd_games: Dict[str, set] = {}
     cmd_weighted_wins: Dict[str, float] = {}
+    cmd_weighted_games: Dict[str, float] = {}
     cmd_delta_sum_in_wins: Dict[str, float] = {}
     cmd_delta_n_in_wins: Dict[str, int] = {}
 
@@ -1986,9 +2041,12 @@ def build_player_dashboard_payload_bracket(
             continue
 
         cmd_games.setdefault(p_cmd, set()).add(gid)
+        cmd_weighted_games[p_cmd] = cmd_weighted_games.get(p_cmd, 0.0) + 1.0
 
-        if winner == player and w is not None:
-            cmd_weighted_wins[p_cmd] = cmd_weighted_wins.get(p_cmd, 0.0) + w
+        if winner == player:
+            w_eff = float(w) if w is not None else 1.0
+            cmd_weighted_wins[p_cmd] = cmd_weighted_wins.get(p_cmd, 0.0) + w_eff
+            cmd_weighted_games[p_cmd] = cmd_weighted_games.get(p_cmd, 0.0) + (w_eff - 1.0)
             if delta is not None:
                 cmd_delta_sum_in_wins[p_cmd] = cmd_delta_sum_in_wins.get(p_cmd, 0.0) + delta
                 cmd_delta_n_in_wins[p_cmd] = cmd_delta_n_in_wins.get(p_cmd, 0) + 1
@@ -1999,7 +2057,8 @@ def build_player_dashboard_payload_bracket(
         if games_n < min_pair:
             continue
         ww = cmd_weighted_wins.get(c, 0.0)
-        wr_w = (ww / games_n) * 100.0 if games_n else 0.0
+        wg = cmd_weighted_games.get(c, float(games_n))
+        wr_w = (ww / wg) * 100.0 if wg else 0.0
 
         nwin = cmd_delta_n_in_wins.get(c, 0)
         bpi = (cmd_delta_sum_in_wins.get(c, 0.0) / nwin) if nwin else None
@@ -2023,10 +2082,13 @@ def build_player_dashboard_payload_bracket(
             if e.player != player:
                 continue
             key = (e.player, e.commander)
-            pair_stats.setdefault(key, {"games": set(), "weighted_wins": 0.0})
+            pair_stats.setdefault(key, {"games": set(), "weighted_wins": 0.0, "weighted_games": 0.0})
             pair_stats[key]["games"].add(gid)
-            if winner == player and w is not None:
-                pair_stats[key]["weighted_wins"] += w
+            pair_stats[key]["weighted_games"] += 1.0
+            if winner == player:
+                w_eff = float(w) if w is not None else 1.0
+                pair_stats[key]["weighted_wins"] += w_eff
+                pair_stats[key]["weighted_games"] += (w_eff - 1.0)
 
     bubble_rows = []
     for (p, c), v in pair_stats.items():
@@ -2034,7 +2096,8 @@ def build_player_dashboard_payload_bracket(
         if games_n < min_pair:
             continue
         ww = float(v["weighted_wins"])
-        wr_w = (ww / games_n) * 100.0 if games_n else 0.0
+        wg = float(v.get("weighted_games") or games_n)
+        wr_w = (ww / wg) * 100.0 if wg else 0.0
         r = 4 + min(16, int((games_n ** 0.5) * 3))
         bubble_rows.append(
             {"player": p, "commander": c, "games": games_n, "weighted_winrate": round(wr_w, 1), "r": r}

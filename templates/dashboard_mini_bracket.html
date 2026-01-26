@@ -59,7 +59,13 @@
   </p>
   <ul class="muted" style="margin-top:8px;">
     <li><b>ΔB</b> = <code>B_w - B_avg</code>. Se ΔB &gt; 0 il vincitore era sopra il meta del tavolo.</li>
-    <li><b>Weighted WR%</b>: somma dei win “pesati” / partite. Il peso di una win è <code>1 / (1 + {{ chart_data.params.alpha }} · max(0, ΔB))</code>.</li>
+    <li><b>Weighted WR%</b>: winrate “pesato” sul bracket del vincitore rispetto alla media del pod (ΔB = B<sub>w</sub> − B<sub>avg</sub>).<br>
+      <small>
+        Se ΔB &gt; 0: <code>w = 1 / (1 + {{ chart_data.params.alpha }} · ΔB)</code> (penalizzazione). &nbsp;
+        Se ΔB &lt; 0: <code>w = 1 + {{ chart_data.params.alpha }} · (−ΔB)</code> (premio).
+        <br>La percentuale resta sempre tra 0 e 100 perché una win di peso <code>w</code> fa contare quella partita come <code>w</code> anche al denominatore.
+      </small>
+    </li>
     <li><b>Meta impact</b> (player): media di <code>B_player - B_avg</code> nelle sue partecipazioni (valori &gt; 0 = tende a portare mazzi sopra tavolo).</li>
   </ul>
   <p class="muted" style="margin-top:8px;">
