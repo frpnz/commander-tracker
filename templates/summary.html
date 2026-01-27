@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% set p = chart_data.params if chart_data is defined and chart_data.params is defined else {"min_pg": 3, "top_players": 10, "alpha": 0.5} %}
 
 <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
   <h1 style="margin:0;">Summary Dashboard</h1>
@@ -12,17 +13,17 @@
   <div class="row" style="gap:12px; align-items:end; flex-wrap:wrap;">
     <div>
       <label>Min partite (player)</label><br>
-      <input type="number" name="min_pg" value="{{ chart_data.params.min_pg }}" min="1" style="width:110px;">
+      <input type="number" name="min_pg" value="{{ p.min_pg }}" min="1" style="width:110px;">
     </div>
 
     <div>
       <label>Top players</label><br>
-      <input type="number" name="top_players" value="{{ chart_data.params.top_players }}" min="1" max="50" style="width:110px;">
+      <input type="number" name="top_players" value="{{ p.top_players }}" min="1" max="50" style="width:110px;">
     </div>
 
     <div>
       <label>Alpha (peso bracket)</label><br>
-      <input type="number" name="alpha" value="{{ chart_data.params.alpha }}" step="0.05" min="0" style="width:110px;">
+      <input type="number" name="alpha" value="{{ p.alpha }}" step="0.05" min="0" style="width:110px;">
     </div>
 
     <div>
@@ -45,7 +46,7 @@
 
 <div class="grid2">
   <div class="card">
-    <h2 style="margin-top:0;">Winrate Player — Top {{ chart_data.params.top_players }}</h2>
+    <h2 style="margin-top:0;">Winrate Player — Top {{ p.top_players }}</h2>
     <div class="chartWrap"><canvas id="wrBar"></canvas></div>
 
     <table class="small">
@@ -68,11 +69,11 @@
         {% endfor %}
       </tbody>
     </table>
-    <div class="muted">Filtro: min {{ chart_data.params.min_pg }} partite.</div>
+    <div class="muted">Filtro: min {{ p.min_pg }} partite.</div>
   </div>
 
   <div class="card">
-    <h2 style="margin-top:0;">Winrate Player — Top {{ chart_data.params.top_players }} (pesato da bracket)</h2>
+    <h2 style="margin-top:0;">Winrate Player — Top {{ p.top_players }} (pesato da bracket)</h2>
     <div class="chartWrap"><canvas id="wrBarWeighted"></canvas></div>
 
     <table class="small">
@@ -95,7 +96,7 @@
         {% endfor %}
       </tbody>
     </table>
-    <div class="muted">Peso come definito da bracket: deltaB = B_winner − B_avg pod, con alpha={{ chart_data.params.alpha }}.</div>
+    <div class="muted">Peso come definito da bracket: deltaB = B_winner − B_avg pod, con alpha={{ p.alpha }}.</div>
   </div>
 </div>
 
