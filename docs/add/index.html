@@ -1,0 +1,64 @@
+<!doctype html><html lang='it'><head><meta charset='utf-8'/>
+<meta name='viewport' content='width=device-width, initial-scale=1'/>
+<title>Aggiungi partita (statica)</title>
+<style>
+body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:980px;margin:24px auto;padding:0 16px;}
+input,button,textarea{padding:10px;font-size:16px;}
+label{display:block;margin-top:12px;font-weight:600;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
+textarea{width:100%;min-height:160px;}
+.hint{color:#555;}
+</style></head><body>
+<h1>Aggiungi partita (modalità statica)</h1>
+<p class='hint'>Su GitHub Pages non esiste backend, quindi non posso salvare nel database. Qui puoi però generare un JSON/CSV da copiare o scaricare e poi inserirlo nel backend.</p>
+<p><a href='/commander-tracker/'>← Home</a></p>
+<div class='grid'>
+<div><label>Player</label><input id='player' placeholder='Nome player'></div>
+<div><label>Commander</label><input id='commander' placeholder='Nome commander'></div>
+<div><label>Posizione (1..N)</label><input id='position' type='number' min='1' step='1'></div>
+<div><label>Note</label><input id='notes' placeholder='(opzionale)'></div>
+</div>
+<div style='margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;'>
+<button id='make_json' type='button'>Genera JSON</button>
+<button id='make_csv' type='button'>Genera riga CSV</button>
+<button id='download' type='button'>Scarica JSON</button>
+</div>
+<label style='margin-top:16px;'>Output</label>
+<textarea id='out' readonly></textarea>
+<script>
+function getVal(id){return document.getElementById(id).value.trim();}
+function payload(){
+  return {
+    player: getVal('player'),
+    commander: getVal('commander'),
+    position: Number(getVal('position') || 0),
+    notes: getVal('notes')
+  };
+}
+function validate(p){
+  if(!p.player || !p.commander || !p.position){
+    alert('Compila almeno Player, Commander e Posizione');
+    return false;
+  }
+  return true;
+}
+document.getElementById('make_json').onclick = () => {
+  const p = payload(); if(!validate(p)) return;
+  document.getElementById('out').value = JSON.stringify(p, null, 2);
+};
+document.getElementById('make_csv').onclick = () => {
+  const p = payload(); if(!validate(p)) return;
+  const esc = (s)=>('"'+String(s).replaceAll('"','""')+'"');
+  document.getElementById('out').value = [esc(p.player),esc(p.commander),p.position,esc(p.notes)].join(',');
+};
+document.getElementById('download').onclick = () => {
+  const p = payload(); if(!validate(p)) return;
+  const blob = new Blob([JSON.stringify(p, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'new_game_entry.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+</script>
+</body></html>

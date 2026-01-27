@@ -1,0 +1,29 @@
+<!doctype html><html lang='it'><head><meta charset='utf-8'/>
+<meta name='viewport' content='width=device-width, initial-scale=1'/>
+<title>Player Dashboard</title>
+<style>
+body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:980px;margin:24px auto;padding:0 16px;}
+select{padding:10px;font-size:16px;min-width:280px;}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+</style></head><body>
+<h1>Player Dashboard</h1>
+<p><a href='/commander-tracker/'>← Home</a> &nbsp;|&nbsp; <a href='/commander-tracker/player/'>Lista player</a></p>
+<div class='row'>
+<label for='p'>Seleziona player:</label>
+<select id='p'><option value=''>— scegli —</option>
+<option value='/commander-tracker/player/Da/'>Da</option>
+<option value='/commander-tracker/player/Fra/'>Fra</option>
+<option value='/commander-tracker/player/Giamma/'>Giamma</option>
+<option value='/commander-tracker/player/Matti/'>Matti</option>
+<option value='/commander-tracker/player/Stanca/'>Stanca</option>
+<option value='/commander-tracker/player/Teo/'>Teo</option>
+</select>
+</div>
+<script>
+  const sel = document.getElementById('p');
+  sel.addEventListener('change', () => {
+    const v = sel.value;
+    if (v) window.location.href = v;
+  });
+</script>
+</body></html>
