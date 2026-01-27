@@ -12,6 +12,7 @@ from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlalchemy import func
 
 import tempfile
 from typing import Dict, List, Optional, Tuple
@@ -2142,3 +2143,96 @@ def player_dashboard_bracket(
     resp = templates.TemplateResponse("player_dashboard_bracket.html", {"request": request, "chart_data": payload})
     resp.headers["Cache-Control"] = "no-store"
     return resp
+
+
+# =============================================================================
+# COMMANDER BRACKET MANAGEMENT
+# =============================================================================
+
+def commander_bracket_summary() -> List[Dict]:
+    """Return per-commander bracket stats from GameEntry.
+
+    - current_bracket: the modal (most common) non-null bracket, if any
+    - counts: dict {1..5: count, "n/a": count}
+    """
+    with get_session() as session:
+        rows = session.exec(select(GameEntry.commander, GameEntry.bracket)).all()
+
+    agg: Dict[str, Dict] = {}
+    for commander, bracket in rows:
+        if not commander or not commander.strip():
+            continue
+        key = commander.strip()
+        rec = agg.setdefault(key, {"commander": key, "total": 0, "counts": {1:0,2:0,3:0,4:0,5:0,"n/a":0}})
+        rec["total"] += 1
+        if bracket is None:
+            rec["counts"]["n/a"] += 1
+        else:
+            try:
+                b = int(bracket)
+            except Exception:
+                rec["counts"]["n/a"] += 1
+            else:
+                if 1 <= b <= 5:
+                    rec["counts"][b] += 1
+                else:
+                    rec["counts"]["n/a"] += 1
+
+    out: List[Dict] = []
+    for rec in agg.values():
+        # mode among 1..5
+        mode_b = None
+        best = 0
+        for b in (1,2,3,4,5):
+            c = rec["counts"][b]
+            if c > best:
+                best = c
+                mode_b = b
+        rec["current_bracket"] = mode_b  # None if no non-null brackets
+        out.append(rec)
+
+    out.sort(key=lambda r: r["commander"].lower())
+    return out
+
+
+@app.get("/commander_brackets", response_class=HTMLResponse)
+def commander_brackets(request: Request) -> HTMLResponse:
+    summary = commander_bracket_summary()
+    return templates.TemplateResponse(
+        "commander_brackets.html",
+        {"request": request, "summary": summary, "error": None, "ok": request.query_params.get("ok")},
+    )
+
+
+@app.post("/commander_brackets/set")
+def commander_brackets_set(
+    commander: str = Form(...),
+    bracket_value: str = Form(""),
+) -> RedirectResponse:
+    cmd = (commander or "").strip()
+    if not cmd:
+        return RedirectResponse(url="/commander_brackets?ok=0", status_code=303)
+
+    token = (bracket_value or "").strip().lower()
+    if token in {"", "n/a", "na", "none", "null"}:
+        new_b: Optional[int] = None
+    else:
+        try:
+            new_b_int = int(token)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Bracket non valido (usa 1-5 o n/a).")
+        if new_b_int < 1 or new_b_int > 5:
+            raise HTTPException(status_code=400, detail="Bracket fuori range (1-5).")
+        new_b = new_b_int
+
+    # Apply to ALL instances of that commander (case-insensitive match)
+    with get_session() as session:
+        entries = session.exec(
+            select(GameEntry).where(func.lower(GameEntry.commander) == cmd.lower())
+        ).all()
+        for e in entries:
+            e.bracket = new_b
+            session.add(e)
+        session.commit()
+
+    return RedirectResponse(url="/commander_brackets?ok=1", status_code=303)
