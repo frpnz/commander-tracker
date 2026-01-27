@@ -1,4 +1,3 @@
-import os
 import re
 import shutil
 from pathlib import Path
@@ -12,7 +11,13 @@ from app import app, engine, GameEntry
 from sqlmodel import Session, select
 
 
+# === CONFIG ===
 OUT_DIR = Path("docs")  # GitHub Pages può servire /docs
+
+# Nome repo GitHub (quello dopo https://<user>.github.io/<repo>/ )
+REPO_NAME = "commander-tracker"
+REPO_BASE = f"/{REPO_NAME}/"  # usato nel tag <base>
+
 BASE_PAGES = [
     ("/", "index"),  # -> docs/index.html
     ("/stats", "stats"),
@@ -28,6 +33,8 @@ EXTRA_FILES = [
     ("/stats.json", "stats.json"),
 ]
 
+FILE_EXTS = (".csv", ".json", ".pdf", ".html", ".txt")
+
 
 def safe_slug(s: str) -> str:
     """
@@ -37,7 +44,6 @@ def safe_slug(s: str) -> str:
     s = s.strip()
     if not s:
         return "unknown"
-    # sostituisci spazi con underscore e rimuovi caratteri "problematici"
     s2 = re.sub(r"\s+", "_", s)
     s2 = re.sub(r"[^A-Za-z0-9_\-\.]", "", s2)
     if not s2:
@@ -45,37 +51,72 @@ def safe_slug(s: str) -> str:
     return quote(s2)
 
 
+def ensure_base_tag(soup: BeautifulSoup) -> None:
+    """
+    Inietta <base href="/<repo>/"> nel <head>, così tutti i link relativi
+    vengono risolti correttamente su GitHub Pages e NON diventano /summary/summary/.
+    """
+    # prova a trovare/creare <html> e <head>
+    html_tag = soup.html
+    if html_tag is None:
+        html_tag = soup.new_tag("html")
+        # se c’è del contenuto, inglobalo
+        for child in list(soup.contents):
+            html_tag.append(child.extract())
+        soup.append(html_tag)
+
+    head = soup.head
+    if head is None:
+        head = soup.new_tag("head")
+        html_tag.insert(0, head)
+
+    # se già presente, aggiornalo; altrimenti inseriscilo come primo elemento del head
+    base = head.find("base")
+    if base is None:
+        base = soup.new_tag("base", href=REPO_BASE)
+        head.insert(0, base)
+    else:
+        base["href"] = REPO_BASE
+
+
 def make_consultation_only(html: str) -> str:
     soup = BeautifulSoup(html, "html.parser")
+
+    # 0) aggiungi <base href="/repo/"> per fixare link relativi su Pages
+    ensure_base_tag(soup)
 
     # 1) Rimuovi input (form, button, textarea, select, input)
     for tag in soup.find_all(["form", "button", "textarea", "select", "input"]):
         tag.decompose()
 
-    # 2) Riscrivi link assoluti "/xyz" -> "xyz/"
-    #    Nota: GitHub Pages vive sotto /<repo>/, quindi i link assoluti si rompono.
+    # 2) Riscrivi link assoluti "/xyz" -> "xyz/" o "file.ext"
+    #    Con <base>, "xyz/" punta sempre a /<repo>/xyz/
     for a in soup.find_all("a", href=True):
         href = a["href"].strip()
 
         # lascia stare ancore, mailto, http(s)
-        if href.startswith("#") or href.startswith("mailto:") or href.startswith("http://") or href.startswith("https://"):
+        if (
+            href.startswith("#")
+            or href.startswith("mailto:")
+            or href.startswith("http://")
+            or href.startswith("https://")
+        ):
             continue
 
-        # converti href="/"
+        # converti href="/" (home)
         if href == "/":
             a["href"] = "./"
             continue
 
         # converti href="/qualcosa" -> "qualcosa/"
         if href.startswith("/"):
-            # elimina lo slash iniziale
-            href2 = href[1:]
+            href2 = href[1:]  # togli lo slash iniziale
 
-            # se è un file (es. export.csv) lo lasciamo file
-            if href2.endswith(".csv") or href2.endswith(".json") or href2.endswith(".pdf") or href2.endswith(".html"):
+            # file -> lascia come file (export.csv, stats.json, ecc.)
+            if href2.lower().endswith(FILE_EXTS):
                 a["href"] = href2
             else:
-                # pagine -> cartella con trailing slash
+                # pagina -> trailing slash
                 a["href"] = href2.rstrip("/") + "/"
 
     return str(soup)
@@ -123,12 +164,15 @@ def export():
 
     # --- esporta player_dashboard per ogni player (senza input) ---
     with Session(engine) as session:
-        players = sorted({e.player for e in session.exec(select(GameEntry)).all()}, key=lambda s: s.lower())
+        players = sorted(
+            {e.player for e in session.exec(select(GameEntry)).all()},
+            key=lambda s: s.lower(),
+        )
 
     players_index = []
     for p in players:
         slug = safe_slug(p)
-        url = f"/player/{slug}"
+
         # chiama la route con querystring originale
         r = client.get("/player_dashboard", params={"player": p})
         if r.status_code != 200:
@@ -146,20 +190,22 @@ def export():
     players_page = [
         "<!doctype html><html lang='it'><head><meta charset='utf-8'/>",
         "<meta name='viewport' content='width=device-width, initial-scale=1'/>",
+        f"<base href='{REPO_BASE}'>",
         "<title>Players</title>",
         "<style>body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:980px;margin:24px auto;padding:0 16px;} a{display:inline-block;margin:6px 10px 6px 0;}</style>",
         "</head><body>",
         "<h1>Player Dashboard</h1>",
-        "<p><a href='../'>← Home</a></p>",
+        "<p><a href='./'>← Home</a></p>",
         "<div>",
     ]
     for name, href in players_index:
-        players_page.append(f"<a href='../{href}'>{name}</a>")
+        players_page.append(f"<a href='{href}'>{name}</a>")
     players_page += ["</div></body></html>"]
 
     (OUT_DIR / "player" / "index.html").write_text("\n".join(players_page), encoding="utf-8")
 
     print(f"✅ Export completato in: {OUT_DIR.resolve()}")
+    print(f"🌐 Base GitHub Pages usata: {REPO_BASE}")
 
 
 if __name__ == "__main__":
