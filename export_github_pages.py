@@ -42,11 +42,12 @@ FILE_EXTS = (
 )
 
 # Link che vogliamo disabilitare nella versione statica (per evitare 404)
+# Nota: i PDF nella tua app sono tipo /summary.pdf -> verranno disabilitati qui.
 DISABLED_PREFIXES = (
     "edit",
     "match_edit",
     "delete",
-    "pdf",
+    "pdf",          # /pdf/...
     "export_pdf",
     "generate_pdf",
 )
@@ -87,18 +88,17 @@ def _strip_repo_base(path: str) -> str:
     return path
 
 
-def _is_disabled_path(raw: str) -> bool:
+def _normalize_internal_path(raw: str) -> str:
     """
-    True se il link punta a funzionalità non supportate in statico (edit/pdf ecc.).
-    Gestisce anche URL già con /<repo>/...
+    Normalizza un path interno (href) in forma "pulita" (senza query/fragment,
+    senza / iniziale, senza repo base).
     """
     href = (raw or "").strip()
-
     if _is_external(href):
-        return False
+        return ""
 
-    # togli query/fragment
-    href = href.split("#", 1)[0].split("?", 1)[0]
+    # togli fragment/query
+    href = href.split("#", 1)[0].split("?", 1)[0].strip()
 
     # normalizza repo base
     if href.startswith(REPO_BASE):
@@ -106,18 +106,62 @@ def _is_disabled_path(raw: str) -> bool:
     elif href.startswith("/" + REPO_NAME + "/"):
         href = href[len("/" + REPO_NAME + "/"):]
 
-    href = href.lstrip("/").strip()
-    low = href.lower()
+    href = href.lstrip("/")
 
-    # file pdf
+    # togli ./ e ../ in modo semplice
+    while href.startswith("./"):
+        href = href[2:]
+    while href.startswith("../"):
+        href = href[3:]
+
+    href = posixpath.normpath(href).lstrip(".").lstrip("/")
+    return href
+
+
+def _is_disabled_path(raw: str) -> bool:
+    """
+    True se il link punta a funzionalità non supportate in statico (edit/pdf ecc.).
+    """
+    p = _normalize_internal_path(raw)
+    if not p:
+        return False
+
+    low = p.lower()
+
+    # disabilita tutti i .pdf (es: summary.pdf)
     if low.endswith(DISABLED_FILE_EXTS):
         return True
 
-    # prefix disabilitati
     for pref in DISABLED_PREFIXES:
         pref = pref.lower()
         if low == pref or low.startswith(pref + "/"):
             return True
+
+    return False
+
+
+def _onclick_contains_disabled(oc: str) -> bool:
+    """
+    Intercetta navigazioni via onclick tipo:
+    window.location='/summary.pdf'
+    location.href="edit/123"
+    """
+    if not oc:
+        return False
+    s = oc.lower()
+
+    # se contiene un .pdf in qualunque forma, disabilita
+    if ".pdf" in s:
+        return True
+
+    # se contiene riferimenti a route disabilitate
+    for pref in DISABLED_PREFIXES:
+        if pref.lower() in s:
+            return True
+
+    # anche "summary.pdf" è comune
+    if "summary.pdf" in s:
+        return True
 
     return False
 
@@ -140,7 +184,7 @@ def _to_pages_url(raw: str) -> str:
     if _is_external(href):
         return href
 
-    # separa fragment e query (ma per alcune pagine statiche possiamo ignorare la query)
+    # separa fragment e query
     frag = ""
     if "#" in href:
         href, frag_ = href.split("#", 1)
@@ -167,6 +211,7 @@ def _to_pages_url(raw: str) -> str:
 
     # --- ROUTE DINAMICHE -> STATICHE ---
     if href == "player_dashboard" or href.startswith("player_dashboard/"):
+        # ignora query (anche se c'era ?player=...) e manda al selettore
         return f"{REPO_BASE}player_dashboard/{frag}"
 
     if href == "add" or href.startswith("add/"):
@@ -186,7 +231,7 @@ def _to_pages_url(raw: str) -> str:
 def make_consultation_only(html: str) -> str:
     soup = BeautifulSoup(html, "html.parser")
 
-    # 1) disabilita input (consultazione-only) nelle pagine esportate dal backend
+    # 1) consultazione-only: rimuovi input (nelle pagine esportate dal backend)
     for tag in soup.find_all(["form", "button", "textarea", "select", "input"]):
         tag.decompose()
 
@@ -197,11 +242,24 @@ def make_consultation_only(html: str) -> str:
         style.string = ".disabled-link{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}"
         head.append(style)
 
-    # 2) riscrivi *tutti* i link interni
+    # 2) disabilita anche navigazione via onclick verso pdf/edit
+    for tag in soup.find_all(True):
+        if tag.has_attr("onclick") and _onclick_contains_disabled(tag.get("onclick", "")):
+            # se è un <a>, lo rendiamo visivamente disabilitato
+            if tag.name == "a":
+                tag["href"] = "#"
+                tag["title"] = "Non disponibile nella versione statica"
+                cls = tag.get("class", [])
+                if "disabled-link" not in cls:
+                    cls.append("disabled-link")
+                tag["class"] = cls
+            # rimuovi il comportamento
+            del tag["onclick"]
+
+    # 3) riscrivi href (e disabilita pdf/edit)
     for a in soup.find_all("a", href=True):
         raw = a["href"]
 
-        # disabilita edit/pdf ecc. per evitare 404
         if _is_disabled_path(raw):
             a["href"] = "#"
             a["title"] = "Non disponibile nella versione statica"
@@ -213,6 +271,7 @@ def make_consultation_only(html: str) -> str:
 
         a["href"] = _to_pages_url(raw)
 
+    # 4) riscrivi anche risorse statiche (css/js/img ecc.)
     for link in soup.find_all("link", href=True):
         link["href"] = _to_pages_url(link["href"])
 
@@ -221,10 +280,6 @@ def make_consultation_only(html: str) -> str:
 
     for tag in soup.find_all(["img", "source", "iframe"], src=True):
         tag["src"] = _to_pages_url(tag["src"])
-
-    # opzionale: anche action, se in futuro non decomponi i form
-    for f in soup.find_all("form", action=True):
-        f["action"] = _to_pages_url(f["action"])
 
     return str(soup)
 
@@ -244,9 +299,7 @@ def write_page(path_key: str, html: str):
 
 
 def write_player_dashboard_selector(players_index: list[tuple[str, str]]):
-    """
-    Crea /player_dashboard/ con una select (client-side) che porta a /player/<slug>/.
-    """
+    """Crea /player_dashboard/ con una select (client-side) che porta a /player/<slug>/."""
     page = [
         "<!doctype html><html lang='it'><head><meta charset='utf-8'/>",
         "<meta name='viewport' content='width=device-width, initial-scale=1'/>",
@@ -284,10 +337,7 @@ def write_player_dashboard_selector(players_index: list[tuple[str, str]]):
 
 
 def write_add_page():
-    """
-    Crea /add/ in modalità statica:
-    compili campi -> genera JSON o riga CSV, con possibilità di download.
-    """
+    """Crea /add/ statico: genera JSON o CSV + download (client-side)."""
     page = [
         "<!doctype html><html lang='it'><head><meta charset='utf-8'/>",
         "<meta name='viewport' content='width=device-width, initial-scale=1'/>",
