@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Commander Tracker</title>
+<style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 980px; margin: 24px auto; padding: 0 16px; }
+    nav a { margin-right: 12px; }
+    textarea { width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border-bottom: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    .error { background: #ffe8e8; padding: 10px; border: 1px solid #ffb3b3; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin: 12px 0; }
+    .muted { color: #666; }
+    .row { display:flex; gap:12px; flex-wrap: wrap; }
+    .row > div { flex:1; min-width: 220px; }
+    button { cursor:pointer; }
+  </style>
+</head>
+<body>
+<nav>
+<a href="./">Partite</a>
+<a href="add/">Aggiungi</a>
+<a href="stats/">Statistiche</a>
+<a href="dashboard_mini/">Dashboard</a>
+<a href="dashboard_mini_bracket/">Dashboard (Bracket)</a>
+<a href="summary/">Summary</a>
+<a href="commander_brackets/">Bracket Commander</a>
+<a href="player_dashboard/">Player Dashboard</a>
+<!-- <a href="/player_dashboard_bracket">Player Dashboard (Bracket)</a> -->
+<!-- <a href="/dashboard">Dashboard full</a> -->
+<a href="export.csv">Export CSV</a>
+</nav>
+<hr/>
+<div style="display:flex; align-items:center; justify-content:space-between;">
+<h1>Dashboard</h1>
+<div style="display:flex; align-items:center; gap:8px;">
+<a class="button" href="dashboard_mini.pdf">
+      Export PDF
+    </a>
+<!-- <a href="/dashboard_mini.html"
+       class="button">
+      Export HTML
+    </a> -->
+</div>
+</div>
+
+<!-- =========================
+     ROW 1 (TOP): 2 charts + tables
+     ========================= -->
+<div class="row">
+<!-- TOP LEFT -->
+<div class="card" style="flex:1; min-width:340px;">
+<h3>Winrate Player (top 10, min 3 partite)</h3>
+<canvas id="playerWinrateChart"></canvas>
+<table style="margin-top:12px;">
+<thead>
+<tr>
+<th>Player</th><th>#</th><th>W</th><th>WR%</th>
+</tr>
+</thead>
+<tbody id="playerWinrateTable"></tbody>
+</table>
+</div>
+<!-- TOP RIGHT -->
+<div class="card" style="flex:1; min-width:340px;">
+<h3>Top pairing Player+Commander per winrate (min 1 partite)</h3>
+<canvas id="pairingWinrateChart"></canvas>
+<table style="margin-top:12px;">
+<thead>
+<tr>
+<th>Player</th><th>Commander</th><th>#</th><th>W</th><th>WR%</th>
+</tr>
+</thead>
+<tbody id="pairingWinrateTable"></tbody>
+</table>
+</div>
+</div>
+<!-- =========================
+     ROW 2 (BOTTOM): 2 bubble charts
+     ========================= -->
+<div class="row">
+<!-- BOTTOM LEFT -->
+<div class="card" style="flex:1; min-width:340px;">
+<h3>WR% vs #Partite (sample size) — Player</h3>
+<canvas id="playerBubbleChart"></canvas>
+<p class="muted" style="margin-top:8px;">
+      Bubble più grande = più partite (dato più solido). Legenda cliccabile.
+    </p>
+</div>
+<!-- BOTTOM RIGHT -->
+<div class="card" style="flex:1; min-width:340px;">
+<h3>WR% vs #Partite (sample size) — Player+Commander</h3>
+<canvas id="pairingBubbleChart"></canvas>
+<p class="muted" style="margin-top:8px;">
+      Ogni bubble = una coppia Player+Commander. Dimensione = sample size. Colore/legenda = player.
+    </p>
+</div>
+</div>
+<script id="chart-data" type="application/json">
+{"pairingBubble": {"minGames": 1, "rows": [{"commander": "Karn", "games": 1, "player": "Da", "r": 7, "winrate": 100.0, "wins": 1}, {"commander": "Edric", "games": 1, "player": "Fra", "r": 7, "winrate": 100.0, "wins": 1}, {"commander": "Sidisi", "games": 1, "player": "Fra", "r": 7, "winrate": 100.0, "wins": 1}, {"commander": "Sephiroth", "games": 7, "player": "Matti", "r": 11, "winrate": 71.4, "wins": 5}, {"commander": "Magda", "games": 4, "player": "Fra", "r": 10, "winrate": 50.0, "wins": 2}, {"commander": "Purphorose", "games": 2, "player": "Matti", "r": 8, "winrate": 50.0, "wins": 1}, {"commander": "Vivi", "games": 2, "player": "Matti", "r": 8, "winrate": 50.0, "wins": 1}, {"commander": "Arabella", "games": 2, "player": "Teo", "r": 8, "winrate": 50.0, "wins": 1}, {"commander": "K\u0027rrik", "games": 7, "player": "Da", "r": 11, "winrate": 42.9, "wins": 3}, {"commander": "Piedemoccio", "games": 3, "player": "Fra", "r": 9, "winrate": 33.3, "wins": 1}, {"commander": "Galtha", "games": 3, "player": "Giamma", "r": 9, "winrate": 33.3, "wins": 1}, {"commander": "Kruphix", "games": 3, "player": "Giamma", "r": 9, "winrate": 33.3, "wins": 1}, {"commander": "Ivy", "games": 3, "player": "Matti", "r": 9, "winrate": 33.3, "wins": 1}, {"commander": "Sisay", "games": 7, "player": "Da", "r": 11, "winrate": 28.6, "wins": 2}, {"commander": "Hearthhull", "games": 4, "player": "Da", "r": 10, "winrate": 25.0, "wins": 1}, {"commander": "Kaalia", "games": 6, "player": "Stanca", "r": 11, "winrate": 16.7, "wins": 1}, {"commander": "Hylda", "games": 12, "player": "Teo", "r": 14, "winrate": 8.3, "wins": 1}, {"commander": "Halana", "games": 4, "player": "Giamma", "r": 10, "winrate": 0.0, "wins": 0}, {"commander": "Brion", "games": 3, "player": "Giamma", "r": 9, "winrate": 0.0, "wins": 0}, {"commander": "Volo", "games": 3, "player": "Stanca", "r": 9, "winrate": 0.0, "wins": 0}, {"commander": "Abigale", "games": 2, "player": "Fra", "r": 8, "winrate": 0.0, "wins": 0}, {"commander": "Liesa", "games": 2, "player": "Fra", "r": 8, "winrate": 0.0, "wins": 0}, {"commander": "Raffine", "games": 2, "player": "Fra", "r": 8, "winrate": 0.0, "wins": 0}, {"commander": "Flubs", "games": 2, "player": "Matti", "r": 8, "winrate": 0.0, "wins": 0}, {"commander": "Lotho", "games": 1, "player": "Da", "r": 7, "winrate": 0.0, "wins": 0}, {"commander": "Baba", "games": 1, "player": "Fra", "r": 7, "winrate": 0.0, "wins": 0}, {"commander": "Braids", "games": 1, "player": "Fra", "r": 7, "winrate": 0.0, "wins": 0}, {"commander": "Jan Jansen", "games": 1, "player": "Fra", "r": 7, "winrate": 0.0, "wins": 0}, {"commander": "Chandra", "games": 1, "player": "Giamma", "r": 7, "winrate": 0.0, "wins": 0}, {"commander": "Tramutanti", "games": 1, "player": "Matti", "r": 7, "winrate": 0.0, "wins": 0}, {"commander": "Finn", "games": 1, "player": "Stanca", "r": 7, "winrate": 0.0, "wins": 0}, {"commander": "Scrab", "games": 1, "player": "Teo", "r": 7, "winrate": 0.0, "wins": 0}]}, "pairingWinrate": {"labels": ["Da \u2014 Karn", "Fra \u2014 Edric", "Fra \u2014 Sidisi", "Matti \u2014 Sephiroth", "Fra \u2014 Magda", "Matti \u2014 Purphorose", "Matti \u2014 Vivi", "Teo \u2014 Arabella", "Da \u2014 K\u0027rrik", "Fra \u2014 Piedemoccio"], "rows": [{"commander": "Karn", "games": 1, "player": "Da", "winrate": 100.0, "wins": 1}, {"commander": "Edric", "games": 1, "player": "Fra", "winrate": 100.0, "wins": 1}, {"commander": "Sidisi", "games": 1, "player": "Fra", "winrate": 100.0, "wins": 1}, {"commander": "Sephiroth", "games": 7, "player": "Matti", "winrate": 71.4, "wins": 5}, {"commander": "Magda", "games": 4, "player": "Fra", "winrate": 50.0, "wins": 2}, {"commander": "Purphorose", "games": 2, "player": "Matti", "winrate": 50.0, "wins": 1}, {"commander": "Vivi", "games": 2, "player": "Matti", "winrate": 50.0, "wins": 1}, {"commander": "Arabella", "games": 2, "player": "Teo", "winrate": 50.0, "wins": 1}, {"commander": "K\u0027rrik", "games": 7, "player": "Da", "winrate": 42.9, "wins": 3}, {"commander": "Piedemoccio", "games": 3, "player": "Fra", "winrate": 33.3, "wins": 1}], "values": [100.0, 100.0, 100.0, 71.4, 50.0, 50.0, 50.0, 50.0, 42.9, 33.3]}, "params": {"min_pair": 1, "min_pg": 3, "top_pairs": 10, "top_players": 10}, "playerBubble": {"minGames": 3, "rows": [{"games": 17, "player": "Matti", "r": 16, "winrate": 47.1, "wins": 8}, {"games": 20, "player": "Da", "r": 17, "winrate": 35.0, "wins": 7}, {"games": 18, "player": "Fra", "r": 16, "winrate": 27.8, "wins": 5}, {"games": 14, "player": "Giamma", "r": 15, "winrate": 14.3, "wins": 2}, {"games": 15, "player": "Teo", "r": 15, "winrate": 13.3, "wins": 2}, {"games": 10, "player": "Stanca", "r": 13, "winrate": 10.0, "wins": 1}]}, "playerWinrate": {"labels": ["Matti", "Da", "Fra", "Giamma", "Teo", "Stanca"], "rows": [{"games": 17, "player": "Matti", "winrate": 47.1, "wins": 8}, {"games": 20, "player": "Da", "winrate": 35.0, "wins": 7}, {"games": 18, "player": "Fra", "winrate": 27.8, "wins": 5}, {"games": 14, "player": "Giamma", "winrate": 14.3, "wins": 2}, {"games": 15, "player": "Teo", "winrate": 13.3, "wins": 2}, {"games": 10, "player": "Stanca", "winrate": 10.0, "wins": 1}], "values": [47.1, 35.0, 27.8, 14.3, 13.3, 10.0]}}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const data = JSON.parse(document.getElementById("chart-data").textContent);
+
+  function bar(el, labels, values, labelText) {
+    new Chart(document.getElementById(el), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: labelText || '', data: values }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: !!labelText } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
+
+ function colorForIndex(i, alpha = 0.6) {
+  const colors = [
+    [78,121,167],
+    [242,142,43],
+    [225,87,89],
+    [118,183,178],
+    [89,161,79],
+    [237,201,73],
+    [175,122,161],
+    [255,157,167],
+    [156,117,95],
+    [186,176,171]
+  ];
+  const c = colors[i % colors.length];
+  return `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${alpha})`;
+}
+
+  // -------------------------
+  // TOP LEFT: Player winrate + table
+  // -------------------------
+  bar("playerWinrateChart", data.playerWinrate.labels, data.playerWinrate.values, "Winrate %");
+
+  const pbody = document.getElementById("playerWinrateTable");
+  pbody.innerHTML = "";
+  for (const r of (data.playerWinrate?.rows || [])) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${r.player}</b></td>
+      <td>${r.games}</td>
+      <td>${r.wins}</td>
+      <td>${r.winrate}%</td>
+    `;
+    pbody.appendChild(tr);
+  }
+
+  // -------------------------
+  // TOP RIGHT: Pairing winrate + table
+  // -------------------------
+  bar("pairingWinrateChart", data.pairingWinrate.labels, data.pairingWinrate.values, "Winrate %");
+
+  const tbody = document.getElementById("pairingWinrateTable");
+  tbody.innerHTML = "";
+  for (const r of (data.pairingWinrate?.rows || [])) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${r.player}</b></td>
+      <td>${r.commander}</td>
+      <td>${r.games}</td>
+      <td>${r.wins}</td>
+      <td>${r.winrate}%</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // -------------------------
+  // BOTTOM LEFT: Bubble Player (dataset per player)
+  // -------------------------
+  const playerRows = data.playerBubble?.rows || [];
+  const maxWRPlayer = Math.max(...playerRows.map(r => r.winrate), 0);
+
+  const playerBubbleDatasets = playerRows.map((r, i) => ({
+    label: r.player,
+    data: [{ x: r.games, y: r.winrate, r: r.r, _meta: r }],
+    backgroundColor: colorForIndex(i, 0.6), // trasparente
+    borderColor: colorForIndex(i, 1),       // bordo pieno
+    borderWidth: 1
+  }));
+
+  new Chart(document.getElementById("playerBubbleChart"), {
+    type: 'bubble',
+    data: { datasets: playerBubbleDatasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const r = ctx.raw._meta;
+              return `${r.player}: ${r.winrate}% (${r.wins}/${r.games})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: "# Partite" }, beginAtZero: true, grace: "10%" },
+        y: {
+          title: { display: true, text: "Winrate %" },
+          beginAtZero: true,
+          max: Math.min(110, Math.ceil(maxWRPlayer + 5))
+        }
+      }
+    }
+  });
+
+  // -------------------------
+  // BOTTOM RIGHT: Bubble Pairing (raggruppato per player)
+  // -------------------------
+  const pairingRows = data.pairingBubble?.rows || [];
+  const maxWRPair = Math.max(...pairingRows.map(r => r.winrate), 0);
+
+  const pairingByPlayer = {};
+  for (const r of pairingRows) {
+    if (!pairingByPlayer[r.player]) pairingByPlayer[r.player] = [];
+    pairingByPlayer[r.player].push({
+      x: r.games,
+      y: r.winrate,
+      r: r.r,
+      _meta: r
+    });
+  }
+
+  const pairingPlayers = Object.keys(pairingByPlayer).sort((a,b) => a.localeCompare(b));
+  const pairingDatasets = pairingPlayers.map((p, idx) => ({
+    label: p,
+    data: pairingByPlayer[p],
+    backgroundColor: colorForIndex(idx),
+    backgroundColor: colorForIndex(idx, 0.6), // trasparente
+    borderColor: colorForIndex(idx, 1),       // bordo pieno
+    borderWidth: 1
+  }));
+
+  new Chart(document.getElementById("pairingBubbleChart"), {
+    type: 'bubble',
+    data: { datasets: pairingDatasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const r = ctx.raw._meta;
+              return `${r.player} — ${r.commander}: ${r.winrate}% (${r.wins}/${r.games})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: "# Partite (pairing)" }, beginAtZero: true, grace: "10%" },
+        y: {
+          title: { display: true, text: "Winrate % (pairing)" },
+          beginAtZero: true,
+          max: Math.min(110, Math.ceil(maxWRPair + 5))
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>

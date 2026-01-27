@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Commander Tracker</title>
+<style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 980px; margin: 24px auto; padding: 0 16px; }
+    nav a { margin-right: 12px; }
+    textarea { width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border-bottom: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    .error { background: #ffe8e8; padding: 10px; border: 1px solid #ffb3b3; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin: 12px 0; }
+    .muted { color: #666; }
+    .row { display:flex; gap:12px; flex-wrap: wrap; }
+    .row > div { flex:1; min-width: 220px; }
+    button { cursor:pointer; }
+  </style>
+</head>
+<body>
+<nav>
+<a href="./">Partite</a>
+<a href="add/">Aggiungi</a>
+<a href="stats/">Statistiche</a>
+<a href="dashboard_mini/">Dashboard</a>
+<a href="dashboard_mini_bracket/">Dashboard (Bracket)</a>
+<a href="summary/">Summary</a>
+<a href="commander_brackets/">Bracket Commander</a>
+<a href="player_dashboard/">Player Dashboard</a>
+<!-- <a href="/player_dashboard_bracket">Player Dashboard (Bracket)</a> -->
+<!-- <a href="/dashboard">Dashboard full</a> -->
+<a href="export.csv">Export CSV</a>
+</nav>
+<hr/>
+<div style="display:flex; align-items:center; justify-content:space-between;">
+<h1>Dashboard Player</h1>
+<div style="display:flex; align-items:center; gap:8px;">
+<a class="button" href="player_dashboard.pdf?player=Teo/">
+      Export PDF
+    </a>
+<!-- <a href="/player_dashboard.html?player=Teo"
+       class="button">
+      Export HTML
+    </a> -->
+</div>
+</div>
+
+<div class="row">
+<div class="card" style="flex:1; min-width:340px;">
+<h3>Trend winrate cumulativo — Teo</h3>
+<canvas id="trendChart"></canvas>
+</div>
+<div class="card" style="flex:1; min-width:340px;">
+<h3>Winrate per pod size — Teo</h3>
+<canvas id="podChart"></canvas>
+<p class="muted" style="margin-top:8px;">
+      Baseline = 1/N (es. 4p = 25%). Denom = #partite del player in quel pod.
+    </p>
+</div>
+</div>
+<div class="row">
+<div class="card" style="flex:1; min-width:340px;">
+<h3>Top commander per winrate (min 1 partite)</h3>
+<canvas id="cmdChart"></canvas>
+<table style="margin-top:12px;">
+<thead>
+<tr>
+<th>Commander</th><th>#</th><th>W</th><th>WR%</th>
+</tr>
+</thead>
+<tbody id="cmdTable"></tbody>
+</table>
+</div>
+<div class="card" style="flex:1; min-width:340px;">
+<h3>WR% vs #Partite — Teo + Commander</h3>
+<canvas id="pairBubbleChart"></canvas>
+<p class="muted" style="margin-top:8px;">
+      Bubble più grande = più partite (dato più “solido”).
+    </p>
+</div>
+</div>
+<script id="chart-data" type="application/json">
+{"pairingBubble": {"minGames": 1, "rows": [{"commander": "Hylda", "games": 12, "player": "Teo", "r": 14, "winrate": 8.3, "wins": 1}, {"commander": "Arabella", "games": 2, "player": "Teo", "r": 8, "winrate": 50.0, "wins": 1}, {"commander": "Scrab", "games": 1, "player": "Teo", "r": 7, "winrate": 0.0, "wins": 0}]}, "params": {"min_pair": 1, "player": "Teo", "top_cmd": 10, "top_pairs": 30}, "players": ["Da", "Fra", "Giamma", "Matti", "Stanca", "Teo"], "podWinrate": {"baseline": [33.3, 25.0, 20.0], "denom": [2, 8, 5], "labels": ["3p", "4p", "5p"], "values": [0.0, 25.0, 0.0]}, "topCommanders": {"labels": ["Arabella", "Hylda", "Scrab"], "rows": [{"commander": "Arabella", "games": 2, "winrate": 50.0, "wins": 1}, {"commander": "Hylda", "games": 12, "winrate": 8.3, "wins": 1}, {"commander": "Scrab", "games": 1, "winrate": 0.0, "wins": 0}], "values": [50.0, 8.3, 0.0]}, "trend": {"labels": ["2026-01-16", "2026-01-16", "2026-01-16", "2026-01-16", "2026-01-16", "2026-01-16", "2026-01-16", "2026-01-16", "2026-01-18", "2026-01-22", "2026-01-22", "2026-01-22", "2026-01-23", "2026-01-23", "2026-01-23"], "values": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 14.3, 12.5, 11.1, 10.0, 9.1, 8.3, 7.7, 14.3, 13.3]}}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const data = JSON.parse(document.getElementById("chart-data").textContent);
+
+  function bar(el, labels, values, labelText) {
+    return new Chart(document.getElementById(el), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: labelText || '', data: values }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: !!labelText } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
+
+  function line(el, labels, values, labelText) {
+    return new Chart(document.getElementById(el), {
+      type: 'line',
+      data: { labels, datasets: [{ label: labelText || '', data: values, tension: 0.2, fill: false }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: !!labelText } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
+
+  // 1) Trend cumulativo
+  line("trendChart", data.trend.labels, data.trend.values, "Cumulative WR%");
+
+  // 2) Pod winrate + baseline
+  new Chart(document.getElementById("podChart"), {
+    type: 'bar',
+    data: {
+      labels: data.podWinrate.labels,
+      datasets: [
+        { label: "WR%", data: data.podWinrate.values },
+        { label: "Baseline 1/N", data: data.podWinrate.baseline }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true, max: 100 } },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            afterLabel: function(ctx) {
+              const denom = data.podWinrate.denom?.[ctx.dataIndex] ?? 0;
+              return `# partite: ${denom}`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // 3) Top commander per WR
+  bar("cmdChart", data.topCommanders.labels, data.topCommanders.values, "WR%");
+
+  const cmdBody = document.getElementById("cmdTable");
+  cmdBody.innerHTML = "";
+  for (const r of (data.topCommanders.rows || [])) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.commander}</td>
+      <td>${r.games}</td>
+      <td>${r.wins}</td>
+      <td>${r.winrate}%</td>
+    `;
+    cmdBody.appendChild(tr);
+  }
+
+  // 4) Bubble player+commander
+  const bubbleDatasets = (data.pairingBubble.rows || []).map((r) => ({
+    label: r.commander,
+    data: [{ x: r.games, y: r.winrate, r: r.r, _meta: r }],
+  }));
+
+  const maxWR = Math.max(0, ...(data.pairingBubble.rows || []).map(r => r.winrate));
+
+  new Chart(document.getElementById("pairBubbleChart"), {
+    type: 'bubble',
+    data: { datasets: bubbleDatasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const r = ctx.raw._meta;
+              return `${r.player} + ${r.commander}: ${r.winrate}% (${r.wins}/${r.games})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: "# Partite" }, beginAtZero: true },
+        y: {
+          title: { display: true, text: "Winrate %" },
+          beginAtZero: true,
+          max: Math.min(110, Math.ceil(maxWR + 5))
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>
