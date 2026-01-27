@@ -18,7 +18,7 @@
     .row > div { flex:1; min-width: 220px; }
     button { cursor:pointer; }
   </style>
-</head>
+<style>.disabled-link{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}</style></head>
 <body>
 <nav>
 <a href="/commander-tracker/">Partite</a>
@@ -37,7 +37,7 @@
 <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
 <h1 style="margin:0;">Summary Dashboard</h1>
 <div style="display:flex; align-items:center; gap:10px;">
-<a href="/commander-tracker/summary.pdf">Export PDF</a>
+<a class="disabled-link" href="#" title="Non disponibile nella versione statica">Export PDF</a>
 </div>
 </div>
 

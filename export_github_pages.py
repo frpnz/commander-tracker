@@ -41,6 +41,17 @@ FILE_EXTS = (
     ".woff", ".woff2", ".ttf", ".eot", ".map"
 )
 
+# Link che vogliamo disabilitare nella versione statica (per evitare 404)
+DISABLED_PREFIXES = (
+    "edit",
+    "match_edit",
+    "delete",
+    "pdf",
+    "export_pdf",
+    "generate_pdf",
+)
+DISABLED_FILE_EXTS = (".pdf",)
+
 
 def safe_slug(s: str) -> str:
     """Slug semplice + URL-safe per nomi player."""
@@ -76,6 +87,41 @@ def _strip_repo_base(path: str) -> str:
     return path
 
 
+def _is_disabled_path(raw: str) -> bool:
+    """
+    True se il link punta a funzionalità non supportate in statico (edit/pdf ecc.).
+    Gestisce anche URL già con /<repo>/...
+    """
+    href = (raw or "").strip()
+
+    if _is_external(href):
+        return False
+
+    # togli query/fragment
+    href = href.split("#", 1)[0].split("?", 1)[0]
+
+    # normalizza repo base
+    if href.startswith(REPO_BASE):
+        href = href[len(REPO_BASE):]
+    elif href.startswith("/" + REPO_NAME + "/"):
+        href = href[len("/" + REPO_NAME + "/"):]
+
+    href = href.lstrip("/").strip()
+    low = href.lower()
+
+    # file pdf
+    if low.endswith(DISABLED_FILE_EXTS):
+        return True
+
+    # prefix disabilitati
+    for pref in DISABLED_PREFIXES:
+        pref = pref.lower()
+        if low == pref or low.startswith(pref + "/"):
+            return True
+
+    return False
+
+
 def _to_pages_url(raw: str) -> str:
     """
     Converte qualsiasi URL interno (assoluto o relativo) in:
@@ -94,7 +140,7 @@ def _to_pages_url(raw: str) -> str:
     if _is_external(href):
         return href
 
-    # separa fragment e query (ma per le pagine statiche spesso le ignoriamo)
+    # separa fragment e query (ma per alcune pagine statiche possiamo ignorare la query)
     frag = ""
     if "#" in href:
         href, frag_ = href.split("#", 1)
@@ -120,20 +166,19 @@ def _to_pages_url(raw: str) -> str:
         return REPO_BASE + frag
 
     # --- ROUTE DINAMICHE -> STATICHE ---
-    # player_dashboard con o senza query
     if href == "player_dashboard" or href.startswith("player_dashboard/"):
         return f"{REPO_BASE}player_dashboard/{frag}"
-    # add (anche se qualcuno lo scrive add/qualcosa)
+
     if href == "add" or href.startswith("add/"):
         return f"{REPO_BASE}add/{frag}"
 
     lower = href.lower()
 
-    # file: niente slash finale (manteniamo query+frag)
+    # file: niente slash finale
     if lower.endswith(FILE_EXTS):
         return f"{REPO_BASE}{href}{query}{frag}"
 
-    # pagina: forziamo trailing slash (manteniamo query+frag)
+    # pagina: forziamo trailing slash
     href = href.strip("/")
     return f"{REPO_BASE}{href}/{query}{frag}"
 
@@ -145,9 +190,28 @@ def make_consultation_only(html: str) -> str:
     for tag in soup.find_all(["form", "button", "textarea", "select", "input"]):
         tag.decompose()
 
+    # CSS per link disabilitati
+    head = soup.head
+    if head is not None:
+        style = soup.new_tag("style")
+        style.string = ".disabled-link{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}"
+        head.append(style)
+
     # 2) riscrivi *tutti* i link interni
     for a in soup.find_all("a", href=True):
-        a["href"] = _to_pages_url(a["href"])
+        raw = a["href"]
+
+        # disabilita edit/pdf ecc. per evitare 404
+        if _is_disabled_path(raw):
+            a["href"] = "#"
+            a["title"] = "Non disponibile nella versione statica"
+            cls = a.get("class", [])
+            if "disabled-link" not in cls:
+                cls.append("disabled-link")
+            a["class"] = cls
+            continue
+
+        a["href"] = _to_pages_url(raw)
 
     for link in soup.find_all("link", href=True):
         link["href"] = _to_pages_url(link["href"])
@@ -199,7 +263,6 @@ def write_player_dashboard_selector(players_index: list[tuple[str, str]]):
         "<select id='p'><option value=''>— scegli —</option>",
     ]
     for name, href in players_index:
-        # href è tipo "player/<slug>/" -> lo trasformiamo in assoluto con REPO_BASE
         page.append(f"<option value='{REPO_BASE}{href}'>{name}</option>")
 
     page += [
@@ -241,23 +304,19 @@ def write_add_page():
         "<p class='hint'>Su GitHub Pages non esiste backend, quindi non posso salvare nel database. "
         "Qui puoi però generare un JSON/CSV da copiare o scaricare e poi inserirlo nel backend.</p>",
         f"<p><a href='{REPO_BASE}'>← Home</a></p>",
-
         "<div class='grid'>",
         "<div><label>Player</label><input id='player' placeholder='Nome player'></div>",
         "<div><label>Commander</label><input id='commander' placeholder='Nome commander'></div>",
         "<div><label>Posizione (1..N)</label><input id='position' type='number' min='1' step='1'></div>",
         "<div><label>Note</label><input id='notes' placeholder='(opzionale)'></div>",
         "</div>",
-
         "<div style='margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;'>",
         "<button id='make_json' type='button'>Genera JSON</button>",
         "<button id='make_csv' type='button'>Genera riga CSV</button>",
         "<button id='download' type='button'>Scarica JSON</button>",
         "</div>",
-
         "<label style='margin-top:16px;'>Output</label>",
         "<textarea id='out' readonly></textarea>",
-
         "<script>",
         "function getVal(id){return document.getElementById(id).value.trim();}",
         "function payload(){",
