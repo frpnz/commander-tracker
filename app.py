@@ -1241,6 +1241,220 @@ def dashboard_mini(
     resp.headers["Cache-Control"] = "no-store"
     return resp
 
+
+@app.get("/summary", response_class=HTMLResponse)
+def summary_dashboard(
+    request: Request,
+    min_pg: int = 3,
+    top_players: int = 10,
+    alpha: float = 0.5,
+) -> HTMLResponse:
+    """Summary dashboard focused on player winrates.
+
+    Weighted winrate uses the same bracket weighting definition used elsewhere:
+    - Compute table average bracket per game (ignoring n/a)
+    - For a win, compute deltaB = B_winner - B_avg
+    - Apply win_weight_from_delta(deltaB, alpha)
+    - A win with weight w also adds w to the denominator (win-weighted denominator)
+    """
+
+    try:
+        min_pg = int(min_pg)
+    except Exception:
+        min_pg = 3
+    min_pg = max(1, min_pg)
+
+    try:
+        top_players = int(top_players)
+    except Exception:
+        top_players = 10
+    top_players = max(1, min(50, top_players))
+
+    try:
+        alpha = float(alpha)
+    except Exception:
+        alpha = 0.5
+    if alpha < 0:
+        alpha = 0.0
+
+    with get_session() as session:
+        games = session.exec(select(Game)).all()
+        entries = session.exec(select(GameEntry)).all()
+
+    # game_id -> entries
+    entries_by_game: Dict[int, List[GameEntry]] = {}
+    for e in entries:
+        entries_by_game.setdefault(e.game_id, []).append(e)
+
+    # winner per game
+    winner_by_game: Dict[int, Optional[str]] = {g.id: g.winner_player for g in games if g.id is not None}
+
+    # games per player
+    games_by_player: Dict[str, set] = {}
+    for e in entries:
+        games_by_player.setdefault(e.player, set()).add(e.game_id)
+
+    games_count_by_player = {p: len(s) for p, s in games_by_player.items()}
+
+    # wins per player (unweighted)
+    wins_by_player: Dict[str, int] = {}
+    for g in games:
+        if g.winner_player:
+            wins_by_player[g.winner_player] = wins_by_player.get(g.winner_player, 0) + 1
+
+    # table average bracket per game (ignoring n/a)
+    table_avg_by_game: Dict[int, Optional[float]] = {}
+    for gid, es in entries_by_game.items():
+        try:
+            table_avg_by_game[gid] = compute_table_bracket_avg(es)
+        except Exception:
+            table_avg_by_game[gid] = None
+
+    # weighted stats per player
+    weighted_wins_by_player: Dict[str, float] = {}
+    weighted_games_by_player: Dict[str, float] = {}
+
+    for gid, es in entries_by_game.items():
+        winner = winner_by_game.get(gid)
+        bavg = table_avg_by_game.get(gid)
+        for e in es:
+            p = e.player
+            weighted_games_by_player[p] = weighted_games_by_player.get(p, 0.0) + 1.0
+
+            if winner and winner == p:
+                # base win weight
+                w_eff = 1.0
+                if (e.bracket is not None) and (bavg is not None):
+                    delta = float(e.bracket) - float(bavg)
+                    w_eff = float(win_weight_from_delta(delta, alpha=alpha))
+                weighted_wins_by_player[p] = weighted_wins_by_player.get(p, 0.0) + w_eff
+                # win-weighted denominator (keeps WR bounded)
+                weighted_games_by_player[p] += (w_eff - 1.0)
+
+    # -----------------------------
+    # Unweighted: top 10 + scatter
+    # -----------------------------
+    player_wr_rows: List[Tuple[str, int, int, float]] = []
+    player_scatter_rows: List[dict] = []
+
+    for p, games_n in games_count_by_player.items():
+        if games_n < min_pg:
+            continue
+        wins_n = wins_by_player.get(p, 0)
+        wr = (wins_n / games_n) * 100.0 if games_n else 0.0
+        player_wr_rows.append((p, games_n, wins_n, wr))
+
+        r = 4 + min(14, int((games_n ** 0.5) * 3))
+        player_scatter_rows.append({"player": p, "games": games_n, "wins": wins_n, "winrate": round(wr, 1), "r": r})
+
+    player_wr_rows.sort(key=lambda x: (-x[3], -x[1], x[0].lower()))
+    player_top = player_wr_rows[:top_players]
+
+    # -----------------------------
+    # Weighted: top 10 + scatter
+    # -----------------------------
+    player_w_wr_rows: List[Tuple[str, int, int, float, float, float]] = []
+    # (player, games_n, wins_n, wr, weighted_wr, weighted_games)
+    player_w_scatter_rows: List[dict] = []
+
+    for p, games_n in games_count_by_player.items():
+        if games_n < min_pg:
+            continue
+        wins_n = wins_by_player.get(p, 0)
+        wr = (wins_n / games_n) * 100.0 if games_n else 0.0
+        ww = float(weighted_wins_by_player.get(p, 0.0))
+        wg = float(weighted_games_by_player.get(p, float(games_n)))
+        wwr = (ww / wg) * 100.0 if wg else 0.0
+
+        player_w_wr_rows.append((p, games_n, wins_n, wr, wwr, wg))
+
+        r = 4 + min(14, int((games_n ** 0.5) * 3))
+        player_w_scatter_rows.append(
+            {"player": p, "games": games_n, "wins": wins_n, "winrate": round(wwr, 1), "r": r}
+        )
+
+    player_w_wr_rows.sort(key=lambda x: (-x[4], -x[1], x[0].lower()))
+    player_w_top = player_w_wr_rows[:top_players]
+
+    payload = {
+        "params": {
+            "min_pg": min_pg,
+            "top_players": top_players,
+            "alpha": alpha,
+        },
+
+        "playerWinrate": {
+            "labels": [p for (p, _, _, _) in player_top],
+            "values": [round(wr, 1) for (_, _, _, wr) in player_top],
+            "rows": [{"player": p, "games": g, "wins": w, "winrate": round(wr, 1)} for (p, g, w, wr) in player_top],
+        },
+
+        "playerWinrateWeighted": {
+            "labels": [p for (p, _, _, _, _, _) in player_w_top],
+            "values": [round(wwr, 1) for (_, _, _, _, wwr, _) in player_w_top],
+            "rows": [
+                {
+                    "player": p,
+                    "games": g,
+                    "wins": w,
+                    "winrate": round(wr, 1),
+                    "weighted_winrate": round(wwr, 1),
+                    "weighted_games": round(wg, 2),
+                }
+                for (p, g, w, wr, wwr, wg) in player_w_top
+            ],
+        },
+
+        "playerScatter": {
+            "minGames": min_pg,
+            "rows": player_scatter_rows,
+        },
+
+        "playerScatterWeighted": {
+            "minGames": min_pg,
+            "rows": player_w_scatter_rows,
+        },
+    }
+
+    resp = templates.TemplateResponse("summary.html", {"request": request, "chart_data": payload})
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
+@app.get("/summary.pdf")
+def summary_dashboard_pdf(request: Request):
+    # ricostruisci la query string identica alla dashboard
+    qs = request.url.query
+    url = f"http://127.0.0.1:8000/summary"
+    if qs:
+        url += f"?{qs}"
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1684, "height": 1191})
+        page.emulate_media(media="screen")
+        page.goto(url, wait_until="networkidle")
+        page.wait_for_timeout(1800)
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            page.pdf(
+                path=tmp.name,
+                format="A4",
+                landscape=True,
+                print_background=True,
+                prefer_css_page_size=True,
+                margin={"top": "8mm", "bottom": "8mm", "left": "8mm", "right": "8mm"},
+            )
+            pdf_path = tmp.name
+
+        browser.close()
+
+    return StreamingResponse(
+        open(pdf_path, "rb"),
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=commander_summary_dashboard.pdf"},
+    )
+
 @app.get("/dashboard_mini_bracket", response_class=HTMLResponse)
 def dashboard_mini_bracket(
     request: Request,
