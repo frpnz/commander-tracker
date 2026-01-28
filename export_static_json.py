@@ -167,7 +167,7 @@ def _to_pages_url(raw: str) -> str:
 NAV_LINKS = [
     ("Home", "/"),
     ("Summary", "/summary"),
-    ("Info decks", "/triplette"),
+    ("Decks info", "/triplette"),
     ("Statistiche", "/stats"),
     ("Dashboard", "/dashboard_mini"),
     ("Dashboard (Bracket)", "/dashboard_mini_bracket"),
@@ -373,7 +373,7 @@ def write_home_page():
       <li><a href="{REPO_BASE}dashboard_mini/">Dashboard</a> (grafici e tabelle)</li>
       <li><a href="{REPO_BASE}dashboard_mini_bracket/">Dashboard (Bracket)</a></li>
       <li><a href="{REPO_BASE}stats/">Statistiche</a></li>
-      <li><a href="{REPO_BASE}triplette/">Triplette</a></li>
+      <li><a href="{REPO_BASE}triplette/">Decks info</a></li>
       <li><a href="{REPO_BASE}commander_brackets/">Bracket Commander</a></li>
       <li><a href="{REPO_BASE}player_dashboard/">Player (confronto)</a></li>
     </ul>
