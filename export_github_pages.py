@@ -49,13 +49,13 @@ DISABLED_FILE_EXTS = (".pdf",)
 
 # ordine navbar (facoltativo)
 NAV_ORDER = [
-    "",                    # Home (ora = Summary)
-    "player_dashboard",    # Confronto player
+    "",          # Home (Summary)
+    "partite",   # Partite (index)
+    "player_dashboard",
     "dashboard_mini",
     "dashboard_mini_bracket",
     "stats",
     "commander_brackets",
-    "summary",
     "export.csv",
     "add",
 ]
@@ -235,6 +235,23 @@ def _reorder_and_filter_navbar(soup: BeautifulSoup) -> None:
 
 def make_consultation_only(html: str) -> str:
     soup = BeautifulSoup(html, "html.parser")
+
+    # --- NAV FIX per export: separa Home (Summary) da Partite ---
+    nav = soup.find("nav")
+    if nav:
+        for a in nav.find_all("a", href=True):
+            href = a["href"].strip()
+
+            # "Partite" (/) nello statico deve andare a /partite
+            if href == "/":
+                a["href"] = "/partite"
+
+            # "Summary" (/summary) nello statico deve diventare la Home
+            elif href == "/summary":
+                a["href"] = "/"
+                # opzionale: rinomina voce
+                # a.string = "Home"
+
 
     _reorder_and_filter_navbar(soup)
 
@@ -488,6 +505,13 @@ def export():
             write_page("/summary", html)  # alias
         else:
             write_page(route, html)
+
+    # pagina Partite: route dinamica "/" -> pagina statica "/partite/"
+    r = client.get("/")
+    if r.status_code != 200:
+        raise RuntimeError(f"GET / -> {r.status_code}")
+    html = make_consultation_only(r.text)
+    write_page("/partite", html)
 
     # file extra
     for route, filename in EXTRA_FILES:
