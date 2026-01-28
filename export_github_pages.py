@@ -32,7 +32,8 @@ NAV_ORDER = [
 ]
 
 BASE_PAGES = [
-    ("/", "index"),  # -> docs/index.html
+    # ("/", "index"),  # -> docs/index.html
+    ("/summary", "index"),    
     ("/stats", "stats"),
     ("/dashboard_mini", "dashboard"),
     ("/dashboard_mini_bracket", "dashboard_bracket"),
