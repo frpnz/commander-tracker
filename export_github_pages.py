@@ -335,6 +335,120 @@ def write_player_dashboard_selector(players_index: list[tuple[str, str]]):
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(page), encoding="utf-8")
 
+def write_player_compare_page(players_index: list[tuple[str, str]]):
+    """
+    Crea /player_compare/ con 2 select e 2 iframe affiancati per confrontare player.
+    Usa iframe per evitare conflitti JS/ID tra grafici.
+    """
+    page = [
+        "<!doctype html><html lang='it'><head><meta charset='utf-8'/>",
+        "<meta name='viewport' content='width=device-width, initial-scale=1'/>",
+        "<title>Confronto Player</title>",
+        "<style>",
+        "body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:1200px;margin:24px auto;padding:0 16px;}",
+        ".top{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:12px 0 18px;}",
+        "select,input,button{padding:10px;font-size:16px;}",
+        ".grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}",
+        "@media (max-width: 980px){.grid{grid-template-columns:1fr;}}",
+        "iframe{width:100%;border:1px solid #ddd;border-radius:10px;}",
+        ".hint{color:#555;margin-top:0;}",
+        "</style></head><body>",
+        "<h1>Confronto Player</h1>",
+        f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player_dashboard/'>Selettore player</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player/'>Lista player</a></p>",
+        "<p class='hint'>Seleziona due player per vedere le loro dashboard affiancate. Il confronto usa iframe per evitare conflitti tra grafici.</p>",
+        "<div class='top'>",
+        "<label for='a'>Player A</label>",
+        "<select id='a'><option value=''>— scegli —</option>",
+    ]
+
+    # option values: slug (più comodo per querystring)
+    for name, href in players_index:
+        # href è tipo "player/<slug>/"
+        slug = href.strip("/").split("/")[-1]
+        page.append(f"<option value='{slug}'>{name}</option>")
+
+    page += [
+        "</select>",
+        "<label for='b'>Player B</label>",
+        "<select id='b'><option value=''>— scegli —</option>",
+    ]
+
+    for name, href in players_index:
+        slug = href.strip("/").split("/")[-1]
+        page.append(f"<option value='{slug}'>{name}</option>")
+
+    page += [
+        "</select>",
+        "<label for='h'>Altezza</label>",
+        "<input id='h' type='number' min='600' step='100' value='1600' style='width:110px'/>",
+        "<button id='swap' type='button'>Scambia</button>",
+        "</div>",
+
+        "<div class='grid'>",
+        "<div><iframe id='frameA' title='Dashboard A'></iframe></div>",
+        "<div><iframe id='frameB' title='Dashboard B'></iframe></div>",
+        "</div>",
+
+        "<script>",
+        "  const selA = document.getElementById('a');",
+        "  const selB = document.getElementById('b');",
+        "  const frameA = document.getElementById('frameA');",
+        "  const frameB = document.getElementById('frameB');",
+        "  const h = document.getElementById('h');",
+        "  const swap = document.getElementById('swap');",
+
+        "  function getParams(){",
+        "    const p = new URLSearchParams(window.location.search);",
+        "    return { a: p.get('a') || '', b: p.get('b') || '' };",
+        "  }",
+
+        "  function setParams(a, b){",
+        "    const p = new URLSearchParams();",
+        "    if (a) p.set('a', a);",
+        "    if (b) p.set('b', b);",
+        "    const qs = p.toString();",
+        "    const url = window.location.pathname + (qs ? ('?' + qs) : '');",
+        "    history.replaceState(null, '', url);",
+        "  }",
+
+        f"  function playerUrl(slug){{ return slug ? '{REPO_BASE}player/' + encodeURIComponent(slug) + '/' : ''; }}",
+
+        "  function apply(){",
+        "    const a = selA.value;",
+        "    const b = selB.value;",
+        "    frameA.src = playerUrl(a);",
+        "    frameB.src = playerUrl(b);",
+        "    const px = parseInt(h.value || '1600', 10);",
+        "    frameA.style.height = px + 'px';",
+        "    frameB.style.height = px + 'px';",
+        "    setParams(a, b);",
+        "  }",
+
+        "  selA.addEventListener('change', apply);",
+        "  selB.addEventListener('change', apply);",
+        "  h.addEventListener('change', apply);",
+
+        "  swap.addEventListener('click', () => {",
+        "    const tmp = selA.value;",
+        "    selA.value = selB.value;",
+        "    selB.value = tmp;",
+        "    apply();",
+        "  });",
+
+        "  // init da querystring",
+        "  const init = getParams();",
+        "  if (init.a) selA.value = init.a;",
+        "  if (init.b) selB.value = init.b;",
+        "  apply();",
+        "</script>",
+
+        "</body></html>",
+    ]
+
+    out_path = OUT_DIR / "player_compare" / "index.html"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(page), encoding="utf-8")
+
 
 def write_add_page():
     """Crea /add/ statico: genera JSON o CSV + download (client-side)."""
@@ -467,6 +581,7 @@ def export():
         "</head><body>",
         "<h1>Player Dashboard</h1>",
         f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player_dashboard/'>Selettore player</a></p>",
+        f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player/'>Lista player</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player_compare/'>Confronta 2 player</a></p>",
         "<div>",
     ]
     for name, href in players_index:
@@ -476,6 +591,7 @@ def export():
 
     # --- crea /player_dashboard/ con select ---
     write_player_dashboard_selector(players_index)
+    write_player_compare_page(players_index)
 
     # --- crea /add/ statico ---
     write_add_page()
