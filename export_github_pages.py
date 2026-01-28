@@ -600,7 +600,7 @@ def export():
         "<style>body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:980px;margin:24px auto;padding:0 16px;} a{display:inline-block;margin:6px 10px 6px 0;}</style>",
         "</head><body>",
         "<h1>Player Dashboard</h1>",
-        f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player/'>Lista player</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player_compare/'>Confronta 2 player</a></p>",
+        # f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player/'>Lista player</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player_compare/'>Confronta 2 player</a></p>",
         # f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player_dashboard/'>Selettore player</a></p>",
         "<div>",
     ]
