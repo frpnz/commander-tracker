@@ -19,6 +19,18 @@ OUT_DIR = Path("docs")  # GitHub Pages può servire /docs
 REPO_NAME = "commander-tracker"
 REPO_BASE = f"/{REPO_NAME}/"
 
+NAV_ORDER = [
+    "summary",
+    "",                        # Home / Partite (root)
+    "dashboard_mini",
+    "dashboard_mini_bracket",
+    "player_dashboard",        # (nel tuo setup è il confronto)
+    "stats",
+    "commander_brackets",
+    "add",
+    "export.csv",
+]
+
 BASE_PAGES = [
     ("/", "index"),  # -> docs/index.html
     ("/stats", "stats"),
@@ -236,6 +248,33 @@ def _to_pages_url(raw: str) -> str:
 
 def make_consultation_only(html: str) -> str:
     soup = BeautifulSoup(html, "html.parser")
+
+    # --- Riordina voci nella navbar (<nav>) ---
+    nav = soup.find("nav")
+    if nav:
+        links = nav.find_all("a", href=True, recursive=False)
+
+        def nav_key(a):
+            raw = a.get("href", "")
+            p = _normalize_internal_path(raw)  # es: "stats", "dashboard_mini", "" (root)
+            # root: quando href è "/" o "/<repo>/"
+            if p in (".", "/"):
+                p = ""
+
+            for i, wanted in enumerate(NAV_ORDER):
+                # match esatto o prefisso (utile se in futuro aggiungi sottopagine)
+                if wanted == p or (wanted and p.startswith(wanted + "/")):
+                    return (i, p)
+            # tutto il resto in fondo, ordinato alfabeticamente
+            return (999, p)
+
+        links_sorted = sorted(links, key=nav_key)
+
+        # Ricostruisci il <nav> mantenendo una spaziatura simile
+        nav.clear()
+        for i, a in enumerate(links_sorted):
+            nav.append(a)
+            nav.append(soup.new_string("\n"))
 
     # 1) consultazione-only: rimuovi input (nelle pagine esportate dal backend)
     for tag in soup.find_all(["form", "button", "textarea", "select", "input"]):
