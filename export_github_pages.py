@@ -207,7 +207,8 @@ def _reorder_and_filter_navbar(soup: BeautifulSoup) -> None:
     if not nav:
         return
 
-    links = nav.find_all("a", href=True, recursive=False)
+    # links = nav.find_all("a", href=True, recursive=False)
+    links = nav.find_all("a", href=True)  # prende anche quelli annidati
 
     visible = []
     for a in links:
