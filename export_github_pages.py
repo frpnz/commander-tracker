@@ -10,6 +10,9 @@ from fastapi.testclient import TestClient
 from app import app, engine, GameEntry
 from sqlmodel import Session, select
 
+import json
+from collections import Counter
+
 # === CONFIG ===
 OUT_DIR = Path("docs")  # GitHub Pages serve /docs
 REPO_NAME = "commander-tracker"
@@ -50,6 +53,7 @@ DISABLED_FILE_EXTS = (".pdf",)
 # ordine navbar (facoltativo)
 NAV_ORDER = [
     "",          # Home (Summary)
+    "triplette",
     "player_dashboard",
     "dashboard_mini",
     "dashboard_mini_bracket",
@@ -254,6 +258,25 @@ def make_consultation_only(html: str) -> str:
                 a["href"] = "/"
                 # opzionale: rinomina voce
                 # a.string = "Home"
+
+    # aggiungi link "Triplette" solo nello statico (dopo Summary/Home)
+    nav = soup.find("nav")
+    if nav:
+        # evita duplicati
+        exists = any(_normalize_internal_path(a.get("href","")) == "triplette" for a in nav.find_all("a", href=True))
+        if not exists:
+            a = soup.new_tag("a", href="/triplette")
+            a.string = "Triplette"
+            # la inseriamo subito dopo il link a Summary (che nello statico hai rimappato a "/")
+            inserted = False
+            links = nav.find_all("a", href=True)
+            for i, link in enumerate(links):
+                if link.get("href","").strip() in ("/", "/summary"):
+                    link.insert_after(a)
+                    inserted = True
+                    break
+            if not inserted:
+                nav.append(a)
 
 
     _reorder_and_filter_navbar(soup)
@@ -487,6 +510,51 @@ def write_add_page():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(page), encoding="utf-8")
 
+def write_triplette_page():
+    page = [
+        "<!doctype html><html lang='it'><head><meta charset='utf-8'/>",
+        "<meta name='viewport' content='width=device-width, initial-scale=1'/>",
+        "<title>Triplette</title>",
+        "<style>",
+        "body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:1200px;margin:24px auto;padding:0 16px;}",
+        "table{border-collapse:collapse;width:100%;}",
+        "th,td{border-bottom:1px solid #eee;padding:10px 8px;text-align:left;}",
+        "th{position:sticky;top:0;background:#fff;}",
+        "input{padding:10px;font-size:16px;width:320px;max-width:100%;}",
+        ".muted{color:#666;}",
+        "</style></head><body>",
+        f"<p><a href='{REPO_BASE}'>← Home</a></p>",
+        "<h1>Triplette</h1>",
+        "<p class='muted'>Combinazioni Player – Commander – Bracket con numero di partite.</p>",
+        "<input id='q' placeholder='Filtra (player/commander/bracket)…' />",
+        "<div style='margin-top:14px;overflow:auto;'>",
+        "<table>",
+        "<thead><tr><th>Player</th><th>Commander</th><th>Bracket</th><th style='text-align:right;'># Partite</th></tr></thead>",
+        "<tbody id='tb'></tbody>",
+        "</table></div>",
+        "<script>",
+        f"const BASE = {repr(REPO_BASE)};",
+        "let data = [];",
+        "function esc(s){return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');}",
+        "function row(r){",
+        "  const br = r.bracket ?? '-';",
+        "  return `<tr><td>${esc(r.player)}</td><td>${esc(r.commander)}</td><td>${esc(br)}</td><td style='text-align:right;'>${esc(r.games)}</td></tr>`;",
+        "}",
+        "function render(){",
+        "  const q = document.getElementById('q').value.trim().toLowerCase();",
+        "  const tb = document.getElementById('tb');",
+        "  const rows = (q ? data.filter(r => (r.player+' '+r.commander+' '+(r.bracket??'')).toLowerCase().includes(q)) : data);",
+        "  tb.innerHTML = rows.map(row).join('');",
+        "}",
+        "fetch(BASE + 'triplette.json').then(r=>r.json()).then(j=>{data=j; render();});",
+        "document.getElementById('q').addEventListener('input', render);",
+        "</script>",
+        "</body></html>",
+    ]
+    out_path = OUT_DIR / "triplette" / "index.html"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(page), encoding="utf-8")
+
 
 def export():
     if OUT_DIR.exists():
@@ -522,6 +590,24 @@ def export():
         if r.status_code != 200:
             raise RuntimeError(f"GET {route} -> {r.status_code}")
         (OUT_DIR / filename).write_bytes(r.content)
+
+    # triplette: (player, commander, bracket) -> count
+    with Session(engine) as session:
+        entries = session.exec(select(GameEntry.player, GameEntry.commander, GameEntry.bracket)).all()
+
+    c = Counter((p, cmd, br) for (p, cmd, br) in entries)
+    triplette = [
+        {"player": p, "commander": cmd, "bracket": br, "games": n}
+        for (p, cmd, br), n in c.items()
+    ]
+    triplette.sort(key=lambda r: (r["player"].lower(), r["commander"].lower(), (r["bracket"] or "")))
+
+    (OUT_DIR / "triplette.json").write_text(
+        json.dumps(triplette, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+    write_triplette_page()
 
     # player
     with Session(engine) as session:
