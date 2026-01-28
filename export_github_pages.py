@@ -252,6 +252,40 @@ def make_consultation_only(html: str) -> str:
         style2 = soup.new_tag("style")
         style2.string = ".embedded .export-html{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}"
         head.append(style2)
+        # Nascondi menu/link di navigazione quando la pagina è in iframe (confronto)
+        style3 = soup.new_tag("style")
+        style3.string = """
+        /* Modalità embed (iframe): togli chrome di navigazione */
+        .embedded nav,
+        .embedded header,
+        .embedded footer,
+        .embedded aside,
+        .embedded .navbar,
+        .embedded .nav,
+        .embedded .menu,
+        .embedded .sidebar,
+        .embedded .topbar,
+        .embedded .toolbar,
+        .embedded .breadcrumbs,
+        .embedded .links,
+        .embedded .actions {
+          display: none !important;
+        }
+
+        /* Se il template ha una lista link "generica" in alto, spesso è un <ul> o <div> con molti <a>.
+           Questo fallback prova a ridurre l’effetto “elenco link” senza rompere il contenuto. */
+        .embedded .container > ul,
+        .embedded .container > ol {
+          display: none !important;
+        }
+
+        /* Riduci lo spazio vuoto dopo aver nascosto header/nav */
+        .embedded body {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+        }
+        """
+        head.append(style3)
 
         script = soup.new_tag("script")
         script.string = "if (window.self !== window.top) { document.documentElement.classList.add(\"embedded\"); }"
