@@ -16,6 +16,38 @@
     .row { display:flex; gap:12px; flex-wrap: wrap; }
     .row > div { flex:1; min-width: 220px; }
     button { cursor:pointer; }</style>
+<style>
+    /* Layout minimal e robusto */
+    .home{
+      max-width: 860px;
+      margin: 28px auto 0 auto;
+      padding: 0 12px;
+    }
+    .home-hero{
+      width: min(160px, 45vw);
+      height: auto;
+      display: block;
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: #fff;
+    }
+    .home-title{
+      margin: 18px 0 0 0;
+      font-size: clamp(2.2rem, 7vw, 3.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+    .home-subtitle{
+      margin: 10px 0 0 0;
+      font-size: clamp(1.05rem, 3.2vw, 1.25rem);
+      opacity: .82;
+    }
+    .home-note{
+      margin: 12px 0 0 0;
+      font-size: .95rem;
+      opacity: .65;
+    }
+  </style>
 </head>
 <body>
 <nav><a href="/commander-tracker/">Home</a>
@@ -27,22 +59,10 @@
 <a href="/commander-tracker/player_dashboard/">Player</a>
 <a href="/commander-tracker/export.csv">Export CSV</a></nav>
 <hr/>
-<h1>Commander Tracker</h1>
-<p class="muted">Analisi pubbliche in sola lettura. La gestione delle partite e dei bracket è disponibile solo sul servizio locale.</p>
-<div class="card" style="overflow:hidden;">
-<img alt="Hero" src="/commander-tracker/assets/hero.jpg" style="width:100%;display:block;"/>
-</div>
-<div class="card">
-<h3>Sezioni principali</h3>
-<ul>
-<li><a href="/commander-tracker/summary/">Summary</a></li>
-<li><a href="/commander-tracker/dashboard_mini/">Dashboard</a> (grafici e tabelle)</li>
-<li><a href="/commander-tracker/dashboard_mini_bracket/">Dashboard (Bracket)</a></li>
-<li><a href="/commander-tracker/stats/">Statistiche</a></li>
-<li><a href="/commander-tracker/triplette/">Decks info</a></li>
-<li><a href="/commander-tracker/commander_brackets/">Bracket Commander</a></li>
-<li><a href="/commander-tracker/player_dashboard/">Player (confronto)</a></li>
-</ul>
-</div>
+<main class="home">
+<img alt="" class="home-hero" src="/commander-tracker/assets/hero.svg"/>
+<h1 class="home-title">Commander Tracker</h1>
+<p class="home-subtitle">Analisi pubbliche in sola lettura</p>
+</main>
 </body>
 </html>

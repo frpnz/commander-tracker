@@ -23,6 +23,12 @@ REPO_BASE = f"/{REPO_NAME}/"
 DATA_DIR = OUT_DIR / "data"
 ASSETS_DIR = OUT_DIR / "assets"
 
+# === HOME CONFIG ===
+HOME_TITLE = "Commander Tracker"
+HOME_SUBTITLE = "Analisi pubbliche in sola lettura"
+HOME_NOTE = ""  # es: "Versione statica per GitHub Pages"
+HOME_HERO_SVG = "assets/hero.svg"
+
 # Analisi da pubblicare (read-only)
 ANALYSIS_ROUTES = [
     "/summary",
@@ -354,33 +360,68 @@ def write_page(path_key: str, html: str):
 
 def write_home_page():
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
-    hero = ASSETS_DIR / "hero.jpg"
-    if not hero.exists():
-        hero.write_bytes(b"")
+
+    # SVG di default (se non esiste ancora)
+    hero_svg = ASSETS_DIR / "hero.svg"
+    if not hero_svg.exists():
+        hero_svg.write_text(
+            """<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="Hero">
+  <rect width="640" height="360" fill="#f3f4f6"/>
+  <circle cx="320" cy="180" r="110" fill="#e5e7eb"/>
+  <path d="M320 95 L410 245 L230 245 Z" fill="#d1d5db"/>
+</svg>""",
+            encoding="utf-8",
+        )
+
+    note_html = f"<p class='home-note'>{HOME_NOTE}</p>" if (HOME_NOTE or "").strip() else ""
 
     body_html = f"""
-  <h1>Commander Tracker</h1>
-  <p class="muted">Analisi pubbliche in sola lettura. La gestione delle partite e dei bracket è disponibile solo sul servizio locale.</p>
-
-  <div class="card" style="overflow:hidden;">
-    <img src="{REPO_BASE}assets/hero.jpg" alt="Hero" style="width:100%;display:block;" />
-  </div>
-
-  <div class="card">
-    <h3>Sezioni principali</h3>
-    <ul>
-      <li><a href="{REPO_BASE}summary/">Summary</a></li>
-      <li><a href="{REPO_BASE}dashboard_mini/">Dashboard</a> (grafici e tabelle)</li>
-      <li><a href="{REPO_BASE}dashboard_mini_bracket/">Dashboard (Bracket)</a></li>
-      <li><a href="{REPO_BASE}stats/">Statistiche</a></li>
-      <li><a href="{REPO_BASE}triplette/">Decks info</a></li>
-      <li><a href="{REPO_BASE}commander_brackets/">Bracket Commander</a></li>
-      <li><a href="{REPO_BASE}player_dashboard/">Player (confronto)</a></li>
-    </ul>
-  </div>
+  <main class="home">
+    <img class="home-hero" src="{REPO_BASE}{HOME_HERO_SVG}" alt="" />
+    <h1 class="home-title">{HOME_TITLE}</h1>
+    <p class="home-subtitle">{HOME_SUBTITLE}</p>
+    {note_html}
+  </main>
 """
 
-    write_page("/", _wrap_static_page(title="Commander Tracker", body_html=body_html))
+    extra_head = """
+  <style>
+    /* Layout minimal e robusto */
+    .home{
+      max-width: 860px;
+      margin: 28px auto 0 auto;
+      padding: 0 12px;
+    }
+    .home-hero{
+      width: min(160px, 45vw);
+      height: auto;
+      display: block;
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: #fff;
+    }
+    .home-title{
+      margin: 18px 0 0 0;
+      font-size: clamp(2.2rem, 7vw, 3.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+    .home-subtitle{
+      margin: 10px 0 0 0;
+      font-size: clamp(1.05rem, 3.2vw, 1.25rem);
+      opacity: .82;
+    }
+    .home-note{
+      margin: 12px 0 0 0;
+      font-size: .95rem;
+      opacity: .65;
+    }
+  </style>
+"""
+
+    write_page("/", _wrap_static_page(title=HOME_TITLE, body_html=body_html, extra_head=extra_head))
+
+
 
 
 def write_triplette_page():
