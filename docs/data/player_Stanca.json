@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "generated_at": "2026-01-28T23:10:59.174313+00:00",
+  "page": "player_Stanca",
+  "payloads": [
+    {
+      "pairingBubble": {
+        "minGames": 1,
+        "rows": [
+          {
+            "commander": "Kaalia",
+            "games": 6,
+            "player": "Stanca",
+            "r": 11,
+            "winrate": 16.7,
+            "wins": 1
+          },
+          {
+            "commander": "Volo",
+            "games": 3,
+            "player": "Stanca",
+            "r": 9,
+            "winrate": 0.0,
+            "wins": 0
+          },
+          {
+            "commander": "Finn",
+            "games": 1,
+            "player": "Stanca",
+            "r": 7,
+            "winrate": 0.0,
+            "wins": 0
+          }
+        ]
+      },
+      "params": {
+        "min_pair": 1,
+        "player": "Stanca",
+        "top_cmd": 10,
+        "top_pairs": 30
+      },
+      "players": [
+        "Da",
+        "Fra",
+        "Giamma",
+        "Matti",
+        "Stanca",
+        "Teo"
+      ],
+      "podWinrate": {
+        "baseline": [
+          50.0,
+          33.3,
+          25.0,
+          20.0
+        ],
+        "denom": [
+          2,
+          4,
+          2,
+          2
+        ],
+        "labels": [
+          "2p",
+          "3p",
+          "4p",
+          "5p"
+        ],
+        "values": [
+          50.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "topCommanders": {
+        "labels": [
+          "Kaalia",
+          "Volo",
+          "Finn"
+        ],
+        "rows": [
+          {
+            "commander": "Kaalia",
+            "games": 6,
+            "winrate": 16.7,
+            "wins": 1
+          },
+          {
+            "commander": "Volo",
+            "games": 3,
+            "winrate": 0.0,
+            "wins": 0
+          },
+          {
+            "commander": "Finn",
+            "games": 1,
+            "winrate": 0.0,
+            "wins": 0
+          }
+        ],
+        "values": [
+          16.7,
+          0.0,
+          0.0
+        ]
+      },
+      "trend": {
+        "labels": [
+          "2026-01-16",
+          "2026-01-16",
+          "2026-01-22",
+          "2026-01-22",
+          "2026-01-22",
+          "2026-01-23",
+          "2026-01-23",
+          "2026-01-23",
+          "2026-01-26",
+          "2026-01-26"
+        ],
+        "values": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          20.0,
+          16.7,
+          14.3,
+          12.5,
+          11.1,
+          10.0
+        ]
+      }
+    }
+  ]
+}

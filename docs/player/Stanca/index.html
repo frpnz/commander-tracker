@@ -18,7 +18,7 @@
     .row > div { flex:1; min-width: 220px; }
     button { cursor:pointer; }
   </style>
-<style>.disabled-link{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}</style><style>html.embedded .export-html{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}</style><style>
+<style>.disabled-link{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}</style><style>
 html.embedded nav,
 html.embedded hr {
   display:none !important;
@@ -29,14 +29,15 @@ html.embedded body{
 }
 </style><script>if (window.self !== window.top) { document.documentElement.classList.add('embedded'); }</script></head>
 <body>
-<nav><a href="/commander-tracker/">Summary</a>
+<nav><a href="/commander-tracker/">Home</a>
+<a href="/commander-tracker/summary/">Summary</a>
 <a href="/commander-tracker/triplette/">Triplette</a>
-<a href="/commander-tracker/player_dashboard/">Player Dashboard</a>
+<a href="/commander-tracker/stats/">Statistiche</a>
 <a href="/commander-tracker/dashboard_mini/">Dashboard</a>
 <a href="/commander-tracker/dashboard_mini_bracket/">Dashboard (Bracket)</a>
-<a href="/commander-tracker/stats/">Statistiche</a>
-<a href="/commander-tracker/partite/">Partite</a>
-</nav>
+<a href="/commander-tracker/commander_brackets/">Bracket Commander</a>
+<a href="/commander-tracker/player_dashboard/">Player</a>
+<a href="/commander-tracker/export.csv">Export CSV</a></nav>
 <hr/>
 <div style="display:flex; align-items:center; justify-content:space-between;">
 <h1>Dashboard Player</h1>
@@ -44,7 +45,7 @@ html.embedded body{
 <a class="button disabled-link" href="#" title="Non disponibile nella versione statica">
       Export PDF
     </a>
-<a class="button export-html" href="/commander-tracker/player_dashboard.html?player=Stanca" title="Export non disponibile nella vista confronto">
+<a class="button" href="/commander-tracker/player_dashboard.html?player=Stanca">
       Export HTML
     </a>
 </div>

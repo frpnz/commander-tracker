@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "generated_at": "2026-01-28T23:10:57.335506+00:00",
+  "data": [
+    {
+      "player": "Da",
+      "commander": "Hearthhull",
+      "bracket": 4,
+      "games": 4
+    },
+    {
+      "player": "Da",
+      "commander": "K'rrik",
+      "bracket": 5,
+      "games": 7
+    },
+    {
+      "player": "Da",
+      "commander": "Karn",
+      "bracket": 5,
+      "games": 1
+    },
+    {
+      "player": "Da",
+      "commander": "Lotho",
+      "bracket": 4,
+      "games": 1
+    },
+    {
+      "player": "Da",
+      "commander": "Sisay",
+      "bracket": 4,
+      "games": 7
+    },
+    {
+      "player": "Fra",
+      "commander": "Abigale",
+      "bracket": 5,
+      "games": 2
+    },
+    {
+      "player": "Fra",
+      "commander": "Baba",
+      "bracket": 2,
+      "games": 1
+    },
+    {
+      "player": "Fra",
+      "commander": "Braids",
+      "bracket": 5,
+      "games": 1
+    },
+    {
+      "player": "Fra",
+      "commander": "Edric",
+      "bracket": 3,
+      "games": 1
+    },
+    {
+      "player": "Fra",
+      "commander": "Jan Jansen",
+      "bracket": 2,
+      "games": 1
+    },
+    {
+      "player": "Fra",
+      "commander": "Liesa",
+      "bracket": 3,
+      "games": 2
+    },
+    {
+      "player": "Fra",
+      "commander": "Magda",
+      "bracket": 5,
+      "games": 4
+    },
+    {
+      "player": "Fra",
+      "commander": "Piedemoccio",
+      "bracket": 4,
+      "games": 3
+    },
+    {
+      "player": "Fra",
+      "commander": "Raffine",
+      "bracket": 4,
+      "games": 2
+    },
+    {
+      "player": "Fra",
+      "commander": "Sidisi",
+      "bracket": 3,
+      "games": 1
+    },
+    {
+      "player": "Giamma",
+      "commander": "Brion",
+      "bracket": 2,
+      "games": 3
+    },
+    {
+      "player": "Giamma",
+      "commander": "Chandra",
+      "bracket": 4,
+      "games": 1
+    },
+    {
+      "player": "Giamma",
+      "commander": "Galtha",
+      "bracket": 3,
+      "games": 3
+    },
+    {
+      "player": "Giamma",
+      "commander": "Halana",
+      "bracket": 5,
+      "games": 4
+    },
+    {
+      "player": "Giamma",
+      "commander": "Kruphix",
+      "bracket": 4,
+      "games": 3
+    },
+    {
+      "player": "Matti",
+      "commander": "Flubs",
+      "bracket": 3,
+      "games": 2
+    },
+    {
+      "player": "Matti",
+      "commander": "Ivy",
+      "bracket": 2,
+      "games": 3
+    },
+    {
+      "player": "Matti",
+      "commander": "Purphorose",
+      "bracket": 4,
+      "games": 2
+    },
+    {
+      "player": "Matti",
+      "commander": "Sephiroth",
+      "bracket": 5,
+      "games": 7
+    },
+    {
+      "player": "Matti",
+      "commander": "Tramutanti",
+      "bracket": 3,
+      "games": 1
+    },
+    {
+      "player": "Matti",
+      "commander": "Vivi",
+      "bracket": 5,
+      "games": 2
+    },
+    {
+      "player": "Stanca",
+      "commander": "Finn",
+      "bracket": 2,
+      "games": 1
+    },
+    {
+      "player": "Stanca",
+      "commander": "Kaalia",
+      "bracket": 5,
+      "games": 6
+    },
+    {
+      "player": "Stanca",
+      "commander": "Volo",
+      "bracket": 3,
+      "games": 3
+    },
+    {
+      "player": "Teo",
+      "commander": "Arabella",
+      "bracket": 3,
+      "games": 2
+    },
+    {
+      "player": "Teo",
+      "commander": "Hylda",
+      "bracket": 3,
+      "games": 12
+    },
+    {
+      "player": "Teo",
+      "commander": "Scrab",
+      "bracket": 4,
+      "games": 1
+    }
+  ]
+}

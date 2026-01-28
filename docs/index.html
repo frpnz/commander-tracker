@@ -5,8 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>Commander Tracker</title>
-<style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 980px; margin: 24px auto; padding: 0 16px; }
+<style>body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 980px; margin: 24px auto; padding: 0 16px; }
     nav a { margin-right: 12px; }
     textarea { width: 100%; }
     table { width: 100%; border-collapse: collapse; margin-top: 12px; }
@@ -16,255 +15,35 @@
     .muted { color: #666; }
     .row { display:flex; gap:12px; flex-wrap: wrap; }
     .row > div { flex:1; min-width: 220px; }
-    button { cursor:pointer; }
-  </style>
-<style>.disabled-link{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}</style><style>html.embedded .export-html{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}</style><style>
-html.embedded nav,
-html.embedded hr {
-  display:none !important;
-}
-html.embedded body{
-  margin-top:0 !important;
-  padding-top:0 !important;
-}
-</style><script>if (window.self !== window.top) { document.documentElement.classList.add('embedded'); }</script></head>
+    button { cursor:pointer; }</style>
+</head>
 <body>
-<nav><a href="/commander-tracker/">Summary</a>
+<nav><a href="/commander-tracker/">Home</a>
+<a href="/commander-tracker/summary/">Summary</a>
 <a href="/commander-tracker/triplette/">Triplette</a>
-<a href="/commander-tracker/player_dashboard/">Player Dashboard</a>
+<a href="/commander-tracker/stats/">Statistiche</a>
 <a href="/commander-tracker/dashboard_mini/">Dashboard</a>
 <a href="/commander-tracker/dashboard_mini_bracket/">Dashboard (Bracket)</a>
-<a href="/commander-tracker/stats/">Statistiche</a>
-<a href="/commander-tracker/partite/">Partite</a>
-</nav>
+<a href="/commander-tracker/commander_brackets/">Bracket Commander</a>
+<a href="/commander-tracker/player_dashboard/">Player</a>
+<a href="/commander-tracker/export.csv">Export CSV</a></nav>
 <hr/>
-<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-<h1 style="margin:0;">Summary Dashboard</h1>
-<div style="display:flex; align-items:center; gap:10px;">
-<a class="disabled-link" href="#" title="Non disponibile nella versione statica">Export PDF</a>
-</div>
-</div>
-
-<style>
-  .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  @media (max-width: 820px) { .grid2 { grid-template-columns: 1fr; } }
-  .chartWrap { height: 320px; }
-  .chartWrap canvas { width:100% !important; height:100% !important; }
-  .small th, .small td { padding: 6px; font-size: 14px; }
-</style>
-<div class="grid2">
-<div class="card">
-<h2 style="margin-top:0;">Winrate Player — Top 10</h2>
-<div class="chartWrap"><canvas id="wrBar"></canvas></div>
-<table class="small">
-<thead>
-<tr>
-<th>Player</th>
-<th style="text-align:right;">#Partite</th>
-<th style="text-align:right;">Vittorie</th>
-<th style="text-align:right;">WR%</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Matti</td>
-<td style="text-align:right;">17</td>
-<td style="text-align:right;">8</td>
-<td style="text-align:right;">47.1</td>
-</tr>
-<tr>
-<td>Da</td>
-<td style="text-align:right;">20</td>
-<td style="text-align:right;">7</td>
-<td style="text-align:right;">35.0</td>
-</tr>
-<tr>
-<td>Fra</td>
-<td style="text-align:right;">18</td>
-<td style="text-align:right;">5</td>
-<td style="text-align:right;">27.8</td>
-</tr>
-<tr>
-<td>Giamma</td>
-<td style="text-align:right;">14</td>
-<td style="text-align:right;">2</td>
-<td style="text-align:right;">14.3</td>
-</tr>
-<tr>
-<td>Teo</td>
-<td style="text-align:right;">15</td>
-<td style="text-align:right;">2</td>
-<td style="text-align:right;">13.3</td>
-</tr>
-<tr>
-<td>Stanca</td>
-<td style="text-align:right;">10</td>
-<td style="text-align:right;">1</td>
-<td style="text-align:right;">10.0</td>
-</tr>
-</tbody>
-</table>
-<div class="muted">Filtro: min 3 partite.</div>
+<h1>Commander Tracker</h1>
+<p class="muted">Analisi pubbliche in sola lettura. La gestione delle partite e dei bracket è disponibile solo sul servizio locale.</p>
+<div class="card" style="overflow:hidden;">
+<img alt="Hero" src="/commander-tracker/assets/hero.jpg" style="width:100%;display:block;"/>
 </div>
 <div class="card">
-<h2 style="margin-top:0;">Winrate Player — Top 10 (pesato da bracket)</h2>
-<div class="chartWrap"><canvas id="wrBarWeighted"></canvas></div>
-<table class="small">
-<thead>
-<tr>
-<th>Player</th>
-<th style="text-align:right;">#Partite</th>
-<th style="text-align:right;">Vittorie</th>
-<th style="text-align:right;">WR% pesato</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Matti</td>
-<td style="text-align:right;">17</td>
-<td style="text-align:right;">8</td>
-<td style="text-align:right;">34.8</td>
-</tr>
-<tr>
-<td>Da</td>
-<td style="text-align:right;">20</td>
-<td style="text-align:right;">7</td>
-<td style="text-align:right;">29.5</td>
-</tr>
-<tr>
-<td>Fra</td>
-<td style="text-align:right;">18</td>
-<td style="text-align:right;">5</td>
-<td style="text-align:right;">26.6</td>
-</tr>
-<tr>
-<td>Giamma</td>
-<td style="text-align:right;">14</td>
-<td style="text-align:right;">2</td>
-<td style="text-align:right;">20.2</td>
-</tr>
-<tr>
-<td>Teo</td>
-<td style="text-align:right;">15</td>
-<td style="text-align:right;">2</td>
-<td style="text-align:right;">15.0</td>
-</tr>
-<tr>
-<td>Stanca</td>
-<td style="text-align:right;">10</td>
-<td style="text-align:right;">1</td>
-<td style="text-align:right;">10.0</td>
-</tr>
-</tbody>
-</table>
-<div class="muted">Peso come definito da bracket: deltaB = B_winner − B_avg pod, con alpha=0.5.</div>
+<h3>Sezioni principali</h3>
+<ul>
+<li><a href="/commander-tracker/summary/">Summary</a></li>
+<li><a href="/commander-tracker/dashboard_mini/">Dashboard</a> (grafici e tabelle)</li>
+<li><a href="/commander-tracker/dashboard_mini_bracket/">Dashboard (Bracket)</a></li>
+<li><a href="/commander-tracker/stats/">Statistiche</a></li>
+<li><a href="/commander-tracker/triplette/">Triplette</a></li>
+<li><a href="/commander-tracker/commander_brackets/">Bracket Commander</a></li>
+<li><a href="/commander-tracker/player_dashboard/">Player (confronto)</a></li>
+</ul>
 </div>
-</div>
-<div style="height:12px;"></div>
-<div class="grid2">
-<div class="card">
-<h2 style="margin-top:0;">WR% vs #Partite (sample size) — Player</h2>
-<div class="chartWrap"><canvas id="wrScatter"></canvas></div>
-</div>
-<div class="card">
-<h2 style="margin-top:0;">WR% vs #Partite (sample size) — Player (pesato da bracket)</h2>
-<div class="chartWrap"><canvas id="wrScatterWeighted"></canvas></div>
-</div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script>
-  const data = {"params": {"alpha": 0.5, "min_pg": 3, "top_players": 10}, "playerScatter": {"minGames": 3, "rows": [{"games": 17, "player": "Matti", "r": 16, "winrate": 47.1, "wins": 8}, {"games": 20, "player": "Da", "r": 17, "winrate": 35.0, "wins": 7}, {"games": 18, "player": "Fra", "r": 16, "winrate": 27.8, "wins": 5}, {"games": 14, "player": "Giamma", "r": 15, "winrate": 14.3, "wins": 2}, {"games": 15, "player": "Teo", "r": 15, "winrate": 13.3, "wins": 2}, {"games": 10, "player": "Stanca", "r": 13, "winrate": 10.0, "wins": 1}]}, "playerScatterWeighted": {"minGames": 3, "rows": [{"games": 17, "player": "Matti", "r": 16, "weighted_games": 17.0, "weighted_winrate": 34.8, "winrate": 47.1, "wins": 8}, {"games": 20, "player": "Da", "r": 17, "weighted_games": 20.0, "weighted_winrate": 29.5, "winrate": 35.0, "wins": 7}, {"games": 18, "player": "Fra", "r": 16, "weighted_games": 18.0, "weighted_winrate": 26.6, "winrate": 27.8, "wins": 5}, {"games": 14, "player": "Giamma", "r": 15, "weighted_games": 14.0, "weighted_winrate": 20.2, "winrate": 14.3, "wins": 2}, {"games": 15, "player": "Teo", "r": 15, "weighted_games": 15.0, "weighted_winrate": 15.0, "winrate": 13.3, "wins": 2}, {"games": 10, "player": "Stanca", "r": 13, "weighted_games": 10.0, "weighted_winrate": 10.0, "winrate": 10.0, "wins": 1}]}, "playerWinrate": {"labels": ["Matti", "Da", "Fra", "Giamma", "Teo", "Stanca"], "rows": [{"games": 17, "player": "Matti", "winrate": 47.1, "wins": 8}, {"games": 20, "player": "Da", "winrate": 35.0, "wins": 7}, {"games": 18, "player": "Fra", "winrate": 27.8, "wins": 5}, {"games": 14, "player": "Giamma", "winrate": 14.3, "wins": 2}, {"games": 15, "player": "Teo", "winrate": 13.3, "wins": 2}, {"games": 10, "player": "Stanca", "winrate": 10.0, "wins": 1}], "values": [47.1, 35.0, 27.8, 14.3, 13.3, 10.0]}, "playerWinrateWeighted": {"labels": ["Matti", "Da", "Fra", "Giamma", "Teo", "Stanca"], "rows": [{"games": 17, "player": "Matti", "weighted_games": 17.0, "weighted_winrate": 34.8, "winrate": 47.1, "wins": 8}, {"games": 20, "player": "Da", "weighted_games": 20.0, "weighted_winrate": 29.5, "winrate": 35.0, "wins": 7}, {"games": 18, "player": "Fra", "weighted_games": 18.0, "weighted_winrate": 26.6, "winrate": 27.8, "wins": 5}, {"games": 14, "player": "Giamma", "weighted_games": 14.0, "weighted_winrate": 20.2, "winrate": 14.3, "wins": 2}, {"games": 15, "player": "Teo", "weighted_games": 15.0, "weighted_winrate": 15.0, "winrate": 13.3, "wins": 2}, {"games": 10, "player": "Stanca", "weighted_games": 10.0, "weighted_winrate": 10.0, "winrate": 10.0, "wins": 1}], "values": [34.8, 29.5, 26.6, 20.2, 15.0, 10.0]}};
-
-  function bar(el, labels, values, labelText) {
-    return new Chart(document.getElementById(el), {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{ label: labelText, data: values }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: true } },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { callback: (v) => v + '%' }
-          }
-        }
-      }
-    });
-  }
-
-  bar('wrBar', data.playerWinrate.labels, data.playerWinrate.values, 'WR%');
-  bar('wrBarWeighted', data.playerWinrateWeighted.labels, data.playerWinrateWeighted.values, 'WR% pesato');
-
-  // Deterministic color per player so the same player keeps the same color across the two bubble plots.
-  // (Same idea as the other dashboards: semi-transparent fill + solid border.)
-  function playerColor(player, fillAlpha = 0.6, borderAlpha = 1.0) {
-    let hash = 0;
-    for (let i = 0; i < player.length; i++) {
-      hash = player.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const r = (hash >> 0) & 255;
-    const g = (hash >> 8) & 255;
-    const b = (hash >> 16) & 255;
-    return {
-      fill: `rgba(${r}, ${g}, ${b}, ${fillAlpha})`,
-      border: `rgba(${r}, ${g}, ${b}, ${borderAlpha})`
-    };
-  }
-
-  // One dataset per player -> legend shows a color chip for each player.
-  function bubbleDatasets(rows) {
-    // Sort by player name so the legend order is stable across both charts.
-    const sorted = [...(rows || [])].sort((a, b) => (a.player || '').localeCompare(b.player || ''));
-    return sorted.map(r => {
-      const c = playerColor(r.player);
-      return {
-        label: r.player,
-        data: [{ x: r.games, y: r.winrate, r: r.r, player: r.player, wins: r.wins }],
-        backgroundColor: c.fill,
-        borderColor: c.border,
-        borderWidth: 1
-      };
-    });
-  }
-
-  function bubble(el, rows, labelText) {
-    return new Chart(document.getElementById(el), {
-      type: 'bubble',
-      data: {
-        datasets: bubbleDatasets(rows)
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'bottom',
-            labels: { usePointStyle: true, boxWidth: 10 }
-          },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const d = ctx.raw;
-                return `${d.player}: ${d.y}% (W ${d.wins} / G ${d.x})`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: { title: { display: true, text: '#Partite' }, beginAtZero: true },
-          y: { title: { display: true, text: 'WR%' }, beginAtZero: true, ticks: { callback: (v)=> v + '%' } }
-        }
-      }
-    });
-  }
-
-  bubble('wrScatter', data.playerScatter.rows, 'Player');
-  bubble('wrScatterWeighted', data.playerScatterWeighted.rows, 'Player (pesato)');
-</script>
 </body>
 </html>
