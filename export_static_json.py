@@ -396,7 +396,7 @@ def write_triplette_page():
         trip_file.write_text(json.dumps({"version":1,"generated_at":datetime.now(timezone.utc).isoformat(),"data":rows}, ensure_ascii=False, indent=2), encoding="utf-8")
 
     body_html = f"""
-  <h1>Triplette</h1>
+  <h1>Decks info</h1>
   <p class="muted">Combinazioni Player – Commander – Bracket con numero di partite.</p>
   <input id="q" placeholder="Filtra (player/commander/bracket)…" />
   <table>
