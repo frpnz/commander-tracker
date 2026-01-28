@@ -172,9 +172,7 @@ def _to_pages_url(raw: str) -> str:
     - pagine:  /<repo>/qualcosa/
     - file:    /<repo>/qualcosa.ext
 
-    In più: forza route dinamiche su equivalenti statici:
-    - player_dashboard?...  -> /<repo>/player_dashboard/
-    - add                  -> /<repo>/add/
+    In più: forza route dinamiche su equivalenti statici.
     """
     href = (raw or "").strip()
 
@@ -210,8 +208,16 @@ def _to_pages_url(raw: str) -> str:
         return REPO_BASE + frag
 
     # --- ROUTE DINAMICHE -> STATICHE ---
+    # Entry point: porta SEMPRE al confronto (player_dashboard)
+    # Attenzione: NON dobbiamo redirectare /player/<slug>/ (che è la dashboard statica del player)
+    parts = [p for p in href.strip("/").split("/") if p]
+
+    # /player o /player/  -> /player_dashboard/ (confronto)
+    if parts and parts[0] == "player" and len(parts) == 1:
+        return f"{REPO_BASE}player_dashboard/{frag}"
+
+    # /player_dashboard (con o senza query) -> /player_dashboard/ (confronto)
     if href == "player_dashboard" or href.startswith("player_dashboard/"):
-        # ignora query (anche se c'era ?player=...) e manda al selettore
         return f"{REPO_BASE}player_dashboard/{frag}"
 
     if href == "add" or href.startswith("add/"):
@@ -316,9 +322,9 @@ def write_page(path_key: str, html: str):
     out_path.write_text(html, encoding="utf-8")
 
 
-def write_player_compare_page(players_index: list[tuple[str, str]]):
+def write_player_compare_page(players_index: list[tuple[str, str]], out_folder: str = "player_compare"):
     """
-    Crea /player_compare/ con 2 select e 2 iframe affiancati per confrontare player.
+    Crea /<out_folder>/ con 2 select e 2 iframe affiancati per confrontare player.
     Usa iframe per evitare conflitti JS/ID tra grafici.
     """
     page = [
@@ -335,7 +341,7 @@ def write_player_compare_page(players_index: list[tuple[str, str]]):
         ".hint{color:#555;margin-top:0;}",
         "</style></head><body>",
         "<h1>Confronto Player</h1>",
-        f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player_dashboard/'>Selettore player</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player/'>Lista player</a></p>",
+        f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player/'>Lista player</a></p>",
         "<p class='hint'>Seleziona due player per vedere le loro dashboard affiancate. Il confronto usa iframe per evitare conflitti tra grafici.</p>",
         "<div class='top'>",
         "<label for='a'>Player A</label>",
@@ -426,46 +432,7 @@ def write_player_compare_page(players_index: list[tuple[str, str]]):
         "</body></html>",
     ]
 
-    out_path = OUT_DIR / "player_compare" / "index.html"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text("\n".join(page), encoding="utf-8")
-
-
-
-def write_player_dashboard_selector(players_index: list[tuple[str, str]]):
-    """Crea /player_dashboard/ con una select (client-side) che porta a /player/<slug>/."""
-    page = [
-        "<!doctype html><html lang='it'><head><meta charset='utf-8'/>",
-        "<meta name='viewport' content='width=device-width, initial-scale=1'/>",
-        "<title>Player Dashboard</title>",
-        "<style>",
-        "body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:980px;margin:24px auto;padding:0 16px;}",
-        "select{padding:10px;font-size:16px;min-width:280px;}",
-        ".row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}",
-        "</style></head><body>",
-        "<h1>Player Dashboard</h1>",
-        f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player/'>Lista player</a></p>",
-        "<div class='row'>",
-        "<label for='p'>Seleziona player:</label>",
-        "<select id='p'><option value=''>— scegli —</option>",
-    ]
-    for name, href in players_index:
-        page.append(f"<option value='{REPO_BASE}{href}'>{name}</option>")
-
-    page += [
-        "</select>",
-        "</div>",
-        "<script>",
-        "  const sel = document.getElementById('p');",
-        "  sel.addEventListener('change', () => {",
-        "    const v = sel.value;",
-        "    if (v) window.location.href = v;",
-        "  });",
-        "</script>",
-        "</body></html>",
-    ]
-
-    out_path = OUT_DIR / "player_dashboard" / "index.html"
+    out_path = OUT_DIR / out_folder / "index.html"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(page), encoding="utf-8")
 
@@ -592,16 +559,15 @@ def export():
 
         players_index.append((p, f"player/{slug}/"))
 
-    # --- crea una pagina indice players cliccabile ---
+    # --- crea una pagina indice players cliccabile (resta utile, ma i link "interni" dell'app vanno al confronto) ---
     players_page = [
         "<!doctype html><html lang='it'><head><meta charset='utf-8'/>",
         "<meta name='viewport' content='width=device-width, initial-scale=1'/>",
         "<title>Players</title>",
         "<style>body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:980px;margin:24px auto;padding:0 16px;} a{display:inline-block;margin:6px 10px 6px 0;}</style>",
         "</head><body>",
-        "<h1>Player Dashboard</h1>",
-        # f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player/'>Lista player</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player_compare/'>Confronta 2 player</a></p>",
-        # f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player_dashboard/'>Selettore player</a></p>",
+        "<h1>Players</h1>",
+        f"<p><a href='{REPO_BASE}'>← Home</a> &nbsp;|&nbsp; <a href='{REPO_BASE}player_dashboard/'>Confronta 2 player</a></p>",
         "<div>",
     ]
     for name, href in players_index:
@@ -609,9 +575,10 @@ def export():
     players_page += ["</div></body></html>"]
     (OUT_DIR / "player" / "index.html").write_text("\n".join(players_page), encoding="utf-8")
 
-    # --- crea /player_dashboard/ con select ---
-    write_player_dashboard_selector(players_index)
-    write_player_compare_page(players_index)
+    # --- entry point: /player_dashboard/ è il confronto ---
+    write_player_compare_page(players_index, out_folder="player_dashboard")
+    # alias opzionale
+    write_player_compare_page(players_index, out_folder="player_compare")
 
     # --- crea /add/ statico ---
     write_add_page()
