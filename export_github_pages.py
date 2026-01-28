@@ -32,12 +32,10 @@ NAV_ORDER = [
 ]
 
 BASE_PAGES = [
-    # ("/", "index"),  # -> docs/index.html
-    ("/summary", "index"),    
+    ("/summary", "summary"),  # il secondo campo è ininfluente nel tuo script attuale
     ("/stats", "stats"),
     ("/dashboard_mini", "dashboard"),
     ("/dashboard_mini_bracket", "dashboard_bracket"),
-    ("/summary", "summary"),
     ("/commander_brackets", "commander_brackets"),
 ]
 
@@ -602,7 +600,13 @@ def export():
         if r.status_code != 200:
             raise RuntimeError(f"GET {route} -> {r.status_code}")
         html = make_consultation_only(r.text)
-        write_page(route, html)
+
+        # ✅ fai diventare /summary la home
+        if route == "/summary":
+            write_page("/", html)  # -> docs/index.html (HOME)
+            write_page("/summary", html)  # -> docs/summary/index.html (alias)
+        else:
+            write_page(route, html)
 
     # --- esporta files (csv/json) ---
     for route, filename in EXTRA_FILES:
