@@ -27,38 +27,10 @@ textarea{width:100%;min-height:160px;}
 <textarea id='out' readonly></textarea>
 <script>
 function getVal(id){return document.getElementById(id).value.trim();}
-function payload(){
-  return {
-    player: getVal('player'),
-    commander: getVal('commander'),
-    position: Number(getVal('position') || 0),
-    notes: getVal('notes')
-  };
-}
-function validate(p){
-  if(!p.player || !p.commander || !p.position){
-    alert('Compila almeno Player, Commander e Posizione');
-    return false;
-  }
-  return true;
-}
-document.getElementById('make_json').onclick = () => {
-  const p = payload(); if(!validate(p)) return;
-  document.getElementById('out').value = JSON.stringify(p, null, 2);
-};
-document.getElementById('make_csv').onclick = () => {
-  const p = payload(); if(!validate(p)) return;
-  const esc = (s)=>('"'+String(s).replaceAll('"','""')+'"');
-  document.getElementById('out').value = [esc(p.player),esc(p.commander),p.position,esc(p.notes)].join(',');
-};
-document.getElementById('download').onclick = () => {
-  const p = payload(); if(!validate(p)) return;
-  const blob = new Blob([JSON.stringify(p, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'new_game_entry.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
-};
+function payload(){return {player:getVal('player'), commander:getVal('commander'), position:Number(getVal('position')||0), notes:getVal('notes')};}
+function validate(p){if(!p.player||!p.commander||!p.position){alert('Compila almeno Player, Commander e Posizione');return false;}return true;}
+document.getElementById('make_json').onclick=()=>{const p=payload();if(!validate(p))return;document.getElementById('out').value=JSON.stringify(p,null,2);};
+document.getElementById('make_csv').onclick=()=>{const p=payload();if(!validate(p))return;const esc=s=>'"'+String(s).replaceAll('"','""')+'"';document.getElementById('out').value=[esc(p.player),esc(p.commander),p.position,esc(p.notes)].join(',');};
+document.getElementById('download').onclick=()=>{const p=payload();if(!validate(p))return;const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='new_game_entry.json';a.click();URL.revokeObjectURL(a.href);};
 </script>
 </body></html>

@@ -19,46 +19,25 @@
     button { cursor:pointer; }
   </style>
 <style>.disabled-link{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}</style><style>html.embedded .export-html{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}</style><style>
-        /* Modalità embed (iframe): togli chrome di navigazione */
-        html.embedded nav,
-        html.embedded header,
-        html.embedded footer,
-        html.embedded aside,
-        html.embedded .navbar,
-        html.embedded .nav,
-        html.embedded .menu,
-        html.embedded .sidebar,
-        html.embedded .topbar,
-        html.embedded .toolbar,
-        html.embedded .breadcrumbs,
-        html.embedded .links,
-        html.embedded .actions {
-          display: none !important;
-        }
-
-        /* Se il template ha una lista link "generica" in alto, spesso è un <ul> o <div> con molti <a>.
-           Questo fallback prova a ridurre l’effetto “elenco link” senza rompere il contenuto. */
-        html.embedded .container > ul,
-        html.embedded .container > ol {
-          display: none !important;
-        }
-
-        /* Riduci lo spazio vuoto dopo aver nascosto header/nav */
-        html.embedded body {
-          margin-top: 0 !important;
-          padding-top: 0 !important;
-        }
-        </style><script>if (window.self !== window.top) { document.documentElement.classList.add("embedded"); }</script></head>
+html.embedded nav,
+html.embedded hr {
+  display:none !important;
+}
+html.embedded body{
+  margin-top:0 !important;
+  padding-top:0 !important;
+}
+</style><script>if (window.self !== window.top) { document.documentElement.classList.add('embedded'); }</script></head>
 <body>
-<nav><a href="/commander-tracker/summary/">Summary</a>
-<a href="/commander-tracker/">Partite</a>
+<nav><a href="/commander-tracker/">Partite</a>
+<a href="/commander-tracker/player_dashboard/">Player Dashboard</a>
 <a href="/commander-tracker/dashboard_mini/">Dashboard</a>
 <a href="/commander-tracker/dashboard_mini_bracket/">Dashboard (Bracket)</a>
-<a href="/commander-tracker/player_dashboard/">Player Dashboard</a>
 <a href="/commander-tracker/stats/">Statistiche</a>
 <a href="/commander-tracker/commander_brackets/">Bracket Commander</a>
-<a href="/commander-tracker/add/">Aggiungi</a>
+<a href="/commander-tracker/summary/">Summary</a>
 <a href="/commander-tracker/export.csv">Export CSV</a>
+<a href="/commander-tracker/add/">Aggiungi</a>
 </nav>
 <hr/>
 <h1>Gestione Bracket Commander</h1>

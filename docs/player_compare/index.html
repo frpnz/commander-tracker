@@ -12,7 +12,7 @@ iframe{width:100%;border:1px solid #ddd;border-radius:10px;}
 </style></head><body>
 <h1>Confronto Player</h1>
 <p><a href='/commander-tracker/'>← Home</a> &nbsp;|&nbsp; <a href='/commander-tracker/player/'>Lista player</a></p>
-<p class='hint'>Seleziona due player per vedere le loro dashboard affiancate. Il confronto usa iframe per evitare conflitti tra grafici.</p>
+<p class='hint'>Seleziona due player per vedere le loro dashboard affiancate.</p>
 <div class='top'>
 <label for='a'>Player A</label>
 <select id='a'><option value=''>— scegli —</option>
@@ -79,7 +79,6 @@ iframe{width:100%;border:1px solid #ddd;border-radius:10px;}
     selB.value = tmp;
     apply();
   });
-  // init da querystring
   const init = getParams();
   if (init.a) selA.value = init.a;
   if (init.b) selB.value = init.b;
