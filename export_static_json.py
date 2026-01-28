@@ -55,7 +55,7 @@ DISABLED_PREFIXES = (
     "generate_pdf",
     "import",
 )
-DISABLED_FILE_EXTS = (".pdf",)
+DISABLED_FILE_EXTS = [".pdf",".html"]
 
 # ===== Helpers URL / slug =====
 
@@ -107,12 +107,13 @@ def _is_disabled_path(raw: str) -> bool:
     if not p:
         return False
     low = p.lower()
-    if low.endswith(DISABLED_FILE_EXTS):
-        return True
-    for pref in DISABLED_PREFIXES:
-        pref = pref.lower()
-        if low == pref or low.startswith(pref + "/"):
+    for d in DISABLED_FILE_EXTS:
+        if low.endswith(d):
             return True
+        for pref in DISABLED_PREFIXES:
+            pref = pref.lower()
+            if low == pref or low.startswith(pref + "/"):
+                return True
     return False
 
 
