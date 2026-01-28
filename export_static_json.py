@@ -29,7 +29,7 @@ ANALYSIS_ROUTES = [
     "/stats",
     "/dashboard_mini",
     "/dashboard_mini_bracket",
-    "/commander_brackets",
+    # "/commander_brackets",
 ]
 
 # file scaricabili
@@ -167,11 +167,11 @@ def _to_pages_url(raw: str) -> str:
 NAV_LINKS = [
     ("Home", "/"),
     ("Summary", "/summary"),
-    ("Triplette", "/triplette"),
+    ("Info decks", "/triplette"),
     ("Statistiche", "/stats"),
     ("Dashboard", "/dashboard_mini"),
     ("Dashboard (Bracket)", "/dashboard_mini_bracket"),
-    ("Bracket Commander", "/commander_brackets"),
+    # ("Bracket Commander", "/commander_brackets"),
     ("Player", "/player_dashboard"),
     ("Export CSV", "/export.csv"),
 ]
