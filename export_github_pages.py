@@ -50,18 +50,20 @@ DISABLED_FILE_EXTS = (".pdf",)
 # ordine navbar (facoltativo)
 NAV_ORDER = [
     "",          # Home (Summary)
-    "partite",   # Partite (index)
     "player_dashboard",
     "dashboard_mini",
     "dashboard_mini_bracket",
     "stats",
     "commander_brackets",
+    "partite",   # Partite (index)
     "export.csv",
     "add",
 ]
 # nascondi voci navbar (facoltativo)
 NAV_HIDE = {
-    # "add",
+    "add",
+    "commander_brackets",
+    "export.csv"
 }
 
 
