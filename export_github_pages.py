@@ -250,37 +250,37 @@ def make_consultation_only(html: str) -> str:
 
         # Disabilita Export HTML quando la pagina è embeddeda (es. confronto side-by-side)
         style2 = soup.new_tag("style")
-        style2.string = ".embedded .export-html{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}"
+        style2.string = "html.embedded .export-html{pointer-events:none;opacity:.45;cursor:not-allowed;text-decoration:none}"
         head.append(style2)
         # Nascondi menu/link di navigazione quando la pagina è in iframe (confronto)
         style3 = soup.new_tag("style")
         style3.string = """
         /* Modalità embed (iframe): togli chrome di navigazione */
-        .embedded nav,
-        .embedded header,
-        .embedded footer,
-        .embedded aside,
-        .embedded .navbar,
-        .embedded .nav,
-        .embedded .menu,
-        .embedded .sidebar,
-        .embedded .topbar,
-        .embedded .toolbar,
-        .embedded .breadcrumbs,
-        .embedded .links,
-        .embedded .actions {
+        html.embedded nav,
+        html.embedded header,
+        html.embedded footer,
+        html.embedded aside,
+        html.embedded .navbar,
+        html.embedded .nav,
+        html.embedded .menu,
+        html.embedded .sidebar,
+        html.embedded .topbar,
+        html.embedded .toolbar,
+        html.embedded .breadcrumbs,
+        html.embedded .links,
+        html.embedded .actions {
           display: none !important;
         }
 
         /* Se il template ha una lista link "generica" in alto, spesso è un <ul> o <div> con molti <a>.
            Questo fallback prova a ridurre l’effetto “elenco link” senza rompere il contenuto. */
-        .embedded .container > ul,
-        .embedded .container > ol {
+        html.embedded .container > ul,
+        html.embedded .container > ol {
           display: none !important;
         }
 
         /* Riduci lo spazio vuoto dopo aver nascosto header/nav */
-        .embedded body {
+        html.embedded body {
           margin-top: 0 !important;
           padding-top: 0 !important;
         }
