@@ -1697,10 +1697,197 @@ def dashboard_mini_html(
     resp.headers["Content-Disposition"] = "attachment; filename=dashboard_mini.html"
     return resp
 
+
+# =============================================================================
+# PLAYER DASHBOARD (single + compare helpers)
+# =============================================================================
+
+def build_player_dashboard_payload_legacy_single(
+    player: str,
+    min_pair: int = 1,
+    top_cmd: int = 10,
+    top_pairs: int = 30,
+) -> dict:
+    """Legacy player dashboard payload used by templates/player_dashboard.html.
+
+    Returns keys:
+      params, players, trend, podWinrate, topCommanders, pairingBubble
+    """
+    min_pair = max(1, int(min_pair))
+    top_cmd = max(1, min(50, int(top_cmd)))
+    top_pairs = max(1, min(200, int(top_pairs)))
+
+    with get_session() as session:
+        games = session.exec(select(Game)).all()
+        entries = session.exec(select(GameEntry)).all()
+
+    # game_id -> entries
+    entries_by_game: Dict[int, List[GameEntry]] = {}
+    for e in entries:
+        entries_by_game.setdefault(e.game_id, []).append(e)
+
+    # winner + played_at
+    winner_by_game: Dict[int, Optional[str]] = {g.id: g.winner_player for g in games if g.id is not None}
+    time_by_game: Dict[int, datetime] = {g.id: g.played_at for g in games if g.id is not None}
+
+    # players list
+    games_by_player: Dict[str, set] = {}
+    for e in entries:
+        games_by_player.setdefault(e.player, set()).add(e.game_id)
+    all_players = sorted(games_by_player.keys(), key=lambda s: s.lower())
+
+    # normalize selected player
+    player = (player or "").strip()
+    if not player:
+        player = all_players[0] if all_players else ""
+
+    if player not in games_by_player:
+        player = all_players[0] if all_players else ""
+
+    # empty DB
+    if not player:
+        return {
+            "params": {"player": "", "min_pair": min_pair, "top_cmd": top_cmd, "top_pairs": top_pairs},
+            "players": [],
+            "trend": {"labels": [], "values": []},
+            "podWinrate": {"labels": [], "values": [], "baseline": [], "denom": []},
+            "topCommanders": {"labels": [], "values": [], "rows": []},
+            "pairingBubble": {"minGames": min_pair, "rows": []},
+        }
+
+    # game_ids where player participated
+    player_game_ids = sorted(
+        list(games_by_player.get(player, set())),
+        key=lambda gid: time_by_game.get(gid, datetime.min),
+    )
+
+    # 1) Trend winrate cumulativo
+    trend_labels: List[str] = []
+    trend_values: List[float] = []
+    total = 0
+    wins = 0
+    for gid in player_game_ids:
+        total += 1
+        if winner_by_game.get(gid) == player:
+            wins += 1
+        wr = (wins / total) * 100.0 if total else 0.0
+        dt = time_by_game.get(gid)
+        trend_labels.append(dt.strftime("%Y-%m-%d") if dt else f"game {gid}")
+        trend_values.append(round(wr, 1))
+
+    # 2) Winrate per pod size
+    by_pod: Dict[int, Tuple[int, int]] = {}  # n_players -> (games, wins)
+    for gid in player_game_ids:
+        es = entries_by_game.get(gid, [])
+        pod_n = len(es)
+        g, w = by_pod.get(pod_n, (0, 0))
+        g += 1
+        if winner_by_game.get(gid) == player:
+            w += 1
+        by_pod[pod_n] = (g, w)
+
+    pod_labels: List[str] = []
+    pod_values: List[float] = []
+    pod_baseline: List[float] = []
+    pod_denoms: List[int] = []
+    for pod_n in sorted(by_pod.keys()):
+        g, w = by_pod[pod_n]
+        wr = (w / g) * 100.0 if g else 0.0
+        pod_labels.append(str(pod_n))
+        pod_values.append(round(wr, 1))
+        pod_baseline.append(round((1.0 / pod_n) * 100.0, 1) if pod_n else 0.0)
+        pod_denoms.append(int(g))
+
+    # 3) Top commanders per winrate (min games)
+    cmd_counts: Dict[str, Tuple[int, int]] = {}  # commander -> (games, wins)
+    for gid in player_game_ids:
+        es = entries_by_game.get(gid, [])
+        # find commander's name for this player in this game
+        commander = None
+        for e in es:
+            if e.player == player:
+                commander = e.commander
+                break
+        if not commander:
+            continue
+        g, w = cmd_counts.get(commander, (0, 0))
+        g += 1
+        if winner_by_game.get(gid) == player:
+            w += 1
+        cmd_counts[commander] = (g, w)
+
+    cmd_rows: List[Tuple[str, int, int, float]] = []
+    for c, (g, w) in cmd_counts.items():
+        if g < min_pair:
+            continue
+        wr = (w / g) * 100.0 if g else 0.0
+        cmd_rows.append((c, int(g), int(w), float(wr)))
+    cmd_rows.sort(key=lambda x: (-x[3], -x[1], (x[0] or "").lower()))
+    cmd_rows = cmd_rows[:top_cmd]
+
+    # 4) Bubble: WR vs #games per commander for this player
+    bubble_rows: List[dict] = []
+    max_games = max([g for (g, _) in cmd_counts.values()], default=0)
+    for c, (games_n, wins_n) in cmd_counts.items():
+        if games_n < min_pair:
+            continue
+        wr = (wins_n / games_n) * 100.0 if games_n else 0.0
+        # radius scaling
+        r = 6
+        if max_games > 0:
+            r = 6 + int(18 * (games_n / max_games))
+        bubble_rows.append(
+            {"player": player, "commander": c, "games": int(games_n), "wins": int(wins_n), "winrate": round(wr, 1), "r": r}
+        )
+
+    bubble_rows.sort(key=lambda x: (-x["games"], -x["winrate"], x["commander"].lower()))
+    bubble_rows = bubble_rows[:top_pairs]
+
+    return {
+        "params": {"player": player, "min_pair": min_pair, "top_cmd": top_cmd, "top_pairs": top_pairs},
+        "players": all_players,
+        "trend": {"labels": trend_labels, "values": trend_values},
+        "podWinrate": {"labels": pod_labels, "values": pod_values, "baseline": pod_baseline, "denom": pod_denoms},
+        "topCommanders": {
+            "labels": [c for (c, _, _, _) in cmd_rows],
+            "values": [round(wr, 1) for (_, _, _, wr) in cmd_rows],
+            "rows": [{"commander": c, "games": g, "wins": w, "winrate": round(wr, 1)} for (c, g, w, wr) in cmd_rows],
+        },
+        "pairingBubble": {"minGames": min_pair, "rows": bubble_rows},
+    }
+
+
+def build_player_dashboard_payload_legacy_compare(
+    player1: str,
+    player2: str,
+    min_pair: int = 1,
+    top_cmd: int = 10,
+    top_pairs: int = 30,
+) -> dict:
+    p1 = build_player_dashboard_payload_legacy_single(player1, min_pair, top_cmd, top_pairs)
+    p2_clean = (player2 or "").strip()
+    if not p2_clean or p2_clean == p1.get("params", {}).get("player"):
+        p2 = None
+    else:
+        p2 = build_player_dashboard_payload_legacy_single(p2_clean, min_pair, top_cmd, top_pairs)
+
+    return {
+        "players": p1.get("players", []),
+        "params": {
+            "player": p1.get("params", {}).get("player", ""),
+            "player2": p2.get("params", {}).get("player", "") if p2 else "",
+            "min_pair": p1.get("params", {}).get("min_pair", min_pair),
+            "top_cmd": p1.get("params", {}).get("top_cmd", top_cmd),
+            "top_pairs": p1.get("params", {}).get("top_pairs", top_pairs),
+        },
+        "dashboards": {"a": p1, "b": p2},
+    }
+
 @app.get("/player_dashboard", response_class=HTMLResponse)
 def player_dashboard(
     request: Request,
     player: str = "",
+    player2: str = "",
     min_pair: int = 1,
     top_cmd: int = 10,
     top_pairs: int = 30,
@@ -1887,7 +2074,7 @@ from starlette.responses import HTMLResponse
 import tempfile
 from playwright.sync_api import sync_playwright
 
-def build_player_dashboard_payload(
+def build_player_dashboard_payload_single(
     player: str,
     min_pair: int,
     top_cmd: int,
@@ -2011,15 +2198,49 @@ def build_player_dashboard_payload(
     }
     return payload
 
+
+def build_player_dashboard_compare_payload(
+    player1: str,
+    player2: str,
+    min_pair: int,
+    top_cmd: int,
+    top_pairs: int,
+) -> dict:
+    """Build payload for the player dashboard allowing comparison of two players.
+
+    The returned object is backward-compatible with the previous template by
+    nesting individual dashboards under the `dashboards` key.
+    """
+    p1 = build_player_dashboard_payload_single(player1, min_pair, top_cmd, top_pairs)
+
+    p2_clean = (player2 or "").strip()
+    if not p2_clean or p2_clean == p1.get("params", {}).get("player"):
+        p2 = None
+    else:
+        p2 = build_player_dashboard_payload_single(p2_clean, min_pair, top_cmd, top_pairs)
+
+    return {
+        "players": p1.get("players", []),
+        "params": {
+            "player": p1.get("params", {}).get("player", ""),
+            "player2": p2.get("params", {}).get("player", "") if p2 else "",
+            "min_pair": p1.get("params", {}).get("min_pair", min_pair),
+            "top_cmd": p1.get("params", {}).get("top_cmd", top_cmd),
+            "top_pairs": p1.get("params", {}).get("top_pairs", top_pairs),
+        },
+        "dashboards": {"a": p1, "b": p2},
+    }
+
 @app.get("/player_dashboard", response_class=HTMLResponse)
 def player_dashboard(
     request: Request,
     player: str = "",
+    player2: str = "",
     min_pair: int = 1,
     top_cmd: int = 10,
     top_pairs: int = 30,
 ) -> HTMLResponse:
-    payload = build_player_dashboard_payload(player, min_pair, top_cmd, top_pairs)
+    payload = build_player_dashboard_compare_payload(player, player2, min_pair, top_cmd, top_pairs)
     resp = templates.TemplateResponse("player_dashboard.html", {"request": request, "chart_data": payload})
     resp.headers["Cache-Control"] = "no-store"
     return resp
@@ -2027,6 +2248,7 @@ def player_dashboard(
 def player_dashboard_pdf(
     request: Request,
     player: str = "",
+    player2: str = "",
     min_pair: int = 1,
     top_cmd: int = 10,
     top_pairs: int = 30,
@@ -2079,11 +2301,12 @@ def player_dashboard_pdf(
 def player_dashboard_export_html(
     request: Request,
     player: str = "",
+    player2: str = "",
     min_pair: int = 1,
     top_cmd: int = 10,
     top_pairs: int = 30,
 ) -> Response:
-    payload = build_player_dashboard_payload(player, min_pair, top_cmd, top_pairs)
+    payload = build_player_dashboard_payload_legacy_compare(player, player2, min_pair, top_cmd, top_pairs)
     rendered = templates.get_template("player_dashboard.html").render({"request": request, "chart_data": payload})
 
     return Response(
