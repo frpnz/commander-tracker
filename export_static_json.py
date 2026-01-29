@@ -27,7 +27,7 @@ ASSETS_DIR = OUT_DIR / "assets"
 HOME_TITLE = "Tempio Tracker"
 HOME_SUBTITLE = ""
 HOME_NOTE = ""  # es: "Versione statica per GitHub Pages"
-HOME_HERO_PNG = "assets/tempio.jpeg"
+HOME_HERO_PNG = "assets/tempio-gray-h.jpeg"
 
 HOME_TAGLINE = "Statistiche, partite e leggenda."
 HOME_QUOTE = "«La statistica è il grimorio: più lo consulti, più il meta si rivela.»"
