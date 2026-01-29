@@ -27,7 +27,7 @@ ASSETS_DIR = OUT_DIR / "assets"
 HOME_TITLE = "Tempio Tracker"
 HOME_SUBTITLE = ""
 HOME_NOTE = ""  # es: "Versione statica per GitHub Pages"
-HOME_HERO_PNG = "assets/hero.png"
+HOME_HERO_PNG = "assets/hero.jpeg"
 
 # Analisi da pubblicare (read-only)
 ANALYSIS_ROUTES = [
