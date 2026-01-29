@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T15:32:55.716478+00:00",
+  "generated_at": "2026-01-29T15:46:05.456257+00:00",
   "page": "dashboard_mini_bracket",
   "payloads": [
     {
@@ -16,10 +16,10 @@
           },
           {
             "commander": "Kaalia",
-            "games": 6,
+            "games": 7,
             "player": "Stanca",
             "r": 11,
-            "weighted_winrate": 16.7
+            "weighted_winrate": 14.3
           },
           {
             "commander": "Kruphix",
@@ -212,9 +212,16 @@
           },
           {
             "commander": "Volo",
-            "games": 3,
+            "games": 2,
             "player": "Stanca",
-            "r": 9,
+            "r": 8,
+            "weighted_winrate": 0.0
+          },
+          {
+            "commander": "Abigale",
+            "games": 2,
+            "player": "Fra",
+            "r": 8,
             "weighted_winrate": 0.0
           },
           {
@@ -223,13 +230,6 @@
             "player": "Matti",
             "r": 8,
             "weighted_winrate": 43.5
-          },
-          {
-            "commander": "Abigale",
-            "games": 2,
-            "player": "Fra",
-            "r": 8,
-            "weighted_winrate": 0.0
           }
         ]
       },

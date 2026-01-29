@@ -16,44 +16,6 @@
     .row { display:flex; gap:12px; flex-wrap: wrap; }
     .row > div { flex:1; min-width: 220px; }
     button { cursor:pointer; }</style>
-<style>
-    .home{
-      max-width: 860px;
-      margin: 28px auto 0 auto;
-      padding: 0 12px;
-      text-align: left;
-    }
-
-    /* Hero PNG – mobile first */
-    .home-hero{
-      width: min(180px, 55vw);
-      height: auto;
-      display: block;
-      margin-bottom: 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(0,0,0,.08);
-      background: #fff;
-    }
-
-    .home-title{
-      margin: 18px 0 0 0;
-      font-size: clamp(2.2rem, 7vw, 3.6rem);
-      line-height: 1.05;
-      letter-spacing: -0.02em;
-    }
-
-    .home-subtitle{
-      margin: 10px 0 0 0;
-      font-size: clamp(1.05rem, 3.2vw, 1.25rem);
-      opacity: .82;
-    }
-
-    .home-note{
-      margin: 12px 0 0 0;
-      font-size: .95rem;
-      opacity: .65;
-    }
-  </style>
 </head>
 <body>
 <nav><a href="/commander-tracker/">Home</a>
@@ -69,72 +31,6 @@
 <main class="home">
 <img alt="Tempio" class="home-hero" decoding="async" loading="eager" src="/commander-tracker/assets/tempio.jpeg"/>
 <h1 class="home-title">Tempio Tracker</h1>
-<p class="home-subtitle"></p>
-<section class="card" style="margin-top:18px;">
-<h2 style="margin:0 0 10px 0;">Ultime 30 partite</h2>
-<div class="muted" style="margin-bottom:10px;">
-        Vista statica: elenco delle partite più recenti (max 30). <a href="/commander-tracker/recent/">Apri pagina completa</a>.
-      </div>
-<label for="home-q"><b>Filtro</b></label><br/>
-<input id="home-q" placeholder="Cerca (player / commander / winner / id)…" style="width:min(520px, 100%);"/>
-<div style="overflow:auto; margin-top:12px;">
-<table style="min-width:720px;">
-<thead>
-<tr>
-<th>Data (UTC)</th>
-<th>Game</th>
-<th>Winner</th>
-<th>Lineup</th>
-</tr>
-</thead>
-<tbody id="home-tb"></tbody>
-</table>
-</div>
-</section>
 </main>
-<script>
-    const BASE = "/commander-tracker/";
-    let games = [];
-
-    function esc(s) {
-      return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-    }
-
-    function fmtLineup(lineup) {
-      if (!Array.isArray(lineup) || !lineup.length) return '';
-      return lineup.map(e => {
-        const br = (e.bracket === null || e.bracket === undefined || e.bracket === '') ? '' : ` (B${e.bracket})`;
-        return `${esc(e.player)} = ${esc(e.commander)}${esc(br)}`;
-      }).join('<br/>');
-    }
-
-    function row(g) {
-      return `<tr>
-        <td style="white-space:nowrap;">${esc(g.played_at_utc || '')}</td>
-        <td style="white-space:nowrap;">#${esc(g.game_id)}</td>
-        <td>${esc(g.winner_player || '')}</td>
-        <td>${fmtLineup(g.lineup)}</td>
-      </tr>`;
-    }
-
-    function render() {
-      const q = (document.getElementById('home-q').value || '').trim().toLowerCase();
-      const rows = q
-        ? games.filter(g => {
-            const blob = `${g.game_id} ${g.played_at_utc} ${g.winner_player} ${g.notes} ` +
-              (Array.isArray(g.lineup) ? g.lineup.map(e => `${e.player} ${e.commander} ${e.bracket ?? ''}`).join(' ') : '');
-            return blob.toLowerCase().includes(q);
-          })
-        : games;
-      // sulla home mostriamo max 10 righe
-      document.getElementById('home-tb').innerHTML = rows.slice(0, 10).map(row).join('');
-    }
-
-    fetch(BASE + 'data/recent_games.json')
-      .then(r => r.json())
-      .then(j => { games = j.games || []; render(); });
-
-    document.getElementById('home-q').addEventListener('input', render);
-  </script>
 </body>
 </html>

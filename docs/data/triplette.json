@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T15:32:54.896418+00:00",
+  "generated_at": "2026-01-29T15:46:04.536594+00:00",
   "data": [
     {
       "player": "Da",
@@ -167,6 +167,12 @@
     {
       "player": "Stanca",
       "commander": "Kaalia",
+      "bracket": 3,
+      "games": 1
+    },
+    {
+      "player": "Stanca",
+      "commander": "Kaalia",
       "bracket": 5,
       "games": 6
     },
@@ -174,7 +180,7 @@
       "player": "Stanca",
       "commander": "Volo",
       "bracket": 3,
-      "games": 3
+      "games": 2
     },
     {
       "player": "Teo",

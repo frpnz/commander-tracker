@@ -33,13 +33,12 @@
 <div class="card">
 <label for="q"><b>Filtro</b></label><br/>
 <input id="q" placeholder="Es: Luca / Atraxa / bracket 3…" style="width:min(520px, 100%);"/>
-<div class="muted" style="margin-top:8px;">Suggerimento: puoi cercare anche per <i>winner</i> e per <i>game_id</i>.</div>
+<div class="muted" style="margin-top:8px;">Suggerimento: puoi cercare anche per <i>winner</i> e per <i>note</i>.</div>
 </div>
 <table>
 <thead>
 <tr>
 <th>Data (UTC)</th>
-<th>Game</th>
 <th>Partecipanti</th>
 <th>Winner</th>
 <th>Lineup</th>
@@ -66,13 +65,11 @@
 
     function row(g) {
       const dt = esc(g.played_at_utc || '');
-      const id = esc(g.game_id);
       const parts = esc(g.participants ?? '');
       const win = esc(g.winner_player || '');
       const notes = esc(g.notes || '');
       return `<tr>
         <td style="white-space:nowrap;">${dt}</td>
-        <td style="white-space:nowrap;">#${id}</td>
         <td style="text-align:right;">${parts}</td>
         <td>${win}</td>
         <td>${fmtLineup(g.lineup)}</td>
@@ -84,7 +81,7 @@
       const q = document.getElementById('q').value.trim().toLowerCase();
       const rows = q
         ? games.filter(g => {
-            const blob = `${g.game_id} ${g.played_at_utc} ${g.winner_player} ${g.notes} ` +
+            const blob = `${g.played_at_utc} ${g.winner_player} ${g.notes} ` +
               (Array.isArray(g.lineup) ? g.lineup.map(e => `${e.player} ${e.commander} ${e.bracket ?? ''}`).join(' ') : '');
             return blob.toLowerCase().includes(q);
           })

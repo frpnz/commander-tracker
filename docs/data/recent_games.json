@@ -1,10 +1,9 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T15:32:55.022447+00:00",
+  "generated_at": "2026-01-29T15:46:04.589256+00:00",
   "limit": 30,
   "games": [
     {
-      "game_id": 29,
       "played_at_utc": "2026-01-26T22:44:53.575494",
       "winner_player": "Giamma",
       "notes": "",
@@ -38,7 +37,6 @@
       ]
     },
     {
-      "game_id": 28,
       "played_at_utc": "2026-01-26T21:10:06.544060",
       "winner_player": "Matti",
       "notes": "",
@@ -66,13 +64,12 @@
         },
         {
           "player": "Stanca",
-          "commander": "Volo",
+          "commander": "Kaalia",
           "bracket": 3
         }
       ]
     },
     {
-      "game_id": 27,
       "played_at_utc": "2026-01-23T01:07:03.671656",
       "winner_player": "Da",
       "notes": "",
@@ -91,7 +88,6 @@
       ]
     },
     {
-      "game_id": 26,
       "played_at_utc": "2026-01-23T00:57:49.963903",
       "winner_player": "Matti",
       "notes": "",
@@ -120,7 +116,6 @@
       ]
     },
     {
-      "game_id": 25,
       "played_at_utc": "2026-01-23T00:55:55.195762",
       "winner_player": "Teo",
       "notes": "",
@@ -149,7 +144,6 @@
       ]
     },
     {
-      "game_id": 24,
       "played_at_utc": "2026-01-23T00:30:14.307356",
       "winner_player": "Da",
       "notes": "",
@@ -173,7 +167,6 @@
       ]
     },
     {
-      "game_id": 23,
       "played_at_utc": "2026-01-23T00:05:47.544434",
       "winner_player": "Giamma",
       "notes": "",
@@ -197,7 +190,6 @@
       ]
     },
     {
-      "game_id": 22,
       "played_at_utc": "2026-01-23T00:05:13.937452",
       "winner_player": "Fra",
       "notes": "",
@@ -221,7 +213,6 @@
       ]
     },
     {
-      "game_id": 21,
       "played_at_utc": "2026-01-22T23:21:15.079285",
       "winner_player": "Da",
       "notes": "",
@@ -240,7 +231,6 @@
       ]
     },
     {
-      "game_id": 20,
       "played_at_utc": "2026-01-22T23:06:58.828257",
       "winner_player": "Stanca",
       "notes": "",
@@ -259,7 +249,6 @@
       ]
     },
     {
-      "game_id": 19,
       "played_at_utc": "2026-01-22T22:22:36.472304",
       "winner_player": "Fra",
       "notes": "",
@@ -283,7 +272,6 @@
       ]
     },
     {
-      "game_id": 18,
       "played_at_utc": "2026-01-22T22:14:46.239174",
       "winner_player": "Da",
       "notes": "",
@@ -307,7 +295,6 @@
       ]
     },
     {
-      "game_id": 17,
       "played_at_utc": "2026-01-22T22:14:19.850506",
       "winner_player": "Matti",
       "notes": "",
@@ -331,7 +318,6 @@
       ]
     },
     {
-      "game_id": 16,
       "played_at_utc": "2026-01-22T20:29:14.381165",
       "winner_player": "Matti",
       "notes": "",
@@ -365,7 +351,6 @@
       ]
     },
     {
-      "game_id": 15,
       "played_at_utc": "2026-01-22T18:20:19.634751",
       "winner_player": "Fra",
       "notes": "",
@@ -399,7 +384,6 @@
       ]
     },
     {
-      "game_id": 14,
       "played_at_utc": "2026-01-19T23:06:06.941684",
       "winner_player": "Da",
       "notes": "",
@@ -423,7 +407,6 @@
       ]
     },
     {
-      "game_id": 13,
       "played_at_utc": "2026-01-18T00:19:14.861992",
       "winner_player": "Matti",
       "notes": "",
@@ -452,7 +435,6 @@
       ]
     },
     {
-      "game_id": 12,
       "played_at_utc": "2026-01-16T22:31:09.194452",
       "winner_player": "Da",
       "notes": "",
@@ -481,7 +463,6 @@
       ]
     },
     {
-      "game_id": 11,
       "played_at_utc": "2026-01-16T22:30:23.902491",
       "winner_player": "Teo",
       "notes": "",
@@ -510,7 +491,6 @@
       ]
     },
     {
-      "game_id": 10,
       "played_at_utc": "2026-01-16T22:26:10.692681",
       "winner_player": "Da",
       "notes": "",
@@ -539,7 +519,6 @@
       ]
     },
     {
-      "game_id": 9,
       "played_at_utc": "2026-01-16T22:24:05.057988",
       "winner_player": "Matti",
       "notes": "",
@@ -573,7 +552,6 @@
       ]
     },
     {
-      "game_id": 8,
       "played_at_utc": "2026-01-16T22:22:37.755855",
       "winner_player": "Fra",
       "notes": "",
@@ -607,7 +585,6 @@
       ]
     },
     {
-      "game_id": 7,
       "played_at_utc": "2026-01-16T14:52:58.013098",
       "winner_player": "Matti",
       "notes": "",
@@ -641,7 +618,6 @@
       ]
     },
     {
-      "game_id": 4,
       "played_at_utc": "2026-01-16T14:49:56.567006",
       "winner_player": "Matti",
       "notes": "",
@@ -670,7 +646,6 @@
       ]
     },
     {
-      "game_id": 1,
       "played_at_utc": "2026-01-16T14:14:19.371139",
       "winner_player": "Fra",
       "notes": "",

@@ -360,9 +360,11 @@ def write_page(path_key: str, html: str):
 
 
 def write_home_page():
+    """
+    Home statica per GitHub Pages: pagina pulita con solo titolo + immagine hero.
+    (Niente widget / form per evitare UI "interattive" in Home.)
+    """
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
-
-    note_html = f"<p class='home-note'>{HOME_NOTE}</p>" if (HOME_NOTE or "").strip() else ""
 
     body_html = f"""
   <main class="home">
@@ -374,126 +376,12 @@ def write_home_page():
       decoding="async"
     />
     <h1 class="home-title">{HOME_TITLE}</h1>
-    <p class="home-subtitle">{HOME_SUBTITLE}</p>
-    {note_html}
-
-    <section class="card" style="margin-top:18px;">
-      <h2 style="margin:0 0 10px 0;">Ultime 30 partite</h2>
-      <div class="muted" style="margin-bottom:10px;">
-        Vista statica: elenco delle partite più recenti (max 30). <a href="{REPO_BASE}recent/">Apri pagina completa</a>.
-      </div>
-
-      <label for="home-q"><b>Filtro</b></label><br/>
-      <input id="home-q" placeholder="Cerca (player / commander / winner / id)…" style="width:min(520px, 100%);" />
-
-      <div style="overflow:auto; margin-top:12px;">
-        <table style="min-width:720px;">
-          <thead>
-            <tr>
-              <th>Data (UTC)</th>
-              <th>Game</th>
-              <th>Winner</th>
-              <th>Lineup</th>
-            </tr>
-          </thead>
-          <tbody id="home-tb"></tbody>
-        </table>
-      </div>
-    </section>
   </main>
-
-  <script>
-    const BASE = {json.dumps(REPO_BASE)};
-    let games = [];
-
-    function esc(s) {{
-      return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-    }}
-
-    function fmtLineup(lineup) {{
-      if (!Array.isArray(lineup) || !lineup.length) return '';
-      return lineup.map(e => {{
-        const br = (e.bracket === null || e.bracket === undefined || e.bracket === '') ? '' : ` (B${{e.bracket}})`;
-        return `${{esc(e.player)}} = ${{esc(e.commander)}}${{esc(br)}}`;
-      }}).join('<br/>');
-    }}
-
-    function row(g) {{
-      return `<tr>
-        <td style="white-space:nowrap;">${{esc(g.played_at_utc || '')}}</td>
-        <td style="white-space:nowrap;">#${{esc(g.game_id)}}</td>
-        <td>${{esc(g.winner_player || '')}}</td>
-        <td>${{fmtLineup(g.lineup)}}</td>
-      </tr>`;
-    }}
-
-    function render() {{
-      const q = (document.getElementById('home-q').value || '').trim().toLowerCase();
-      const rows = q
-        ? games.filter(g => {{
-            const blob = `${{g.game_id}} ${{g.played_at_utc}} ${{g.winner_player}} ${{g.notes}} ` +
-              (Array.isArray(g.lineup) ? g.lineup.map(e => `${{e.player}} ${{e.commander}} ${{e.bracket ?? ''}}`).join(' ') : '');
-            return blob.toLowerCase().includes(q);
-          }})
-        : games;
-      // sulla home mostriamo max 10 righe
-      document.getElementById('home-tb').innerHTML = rows.slice(0, 10).map(row).join('');
-    }}
-
-    fetch(BASE + 'data/recent_games.json')
-      .then(r => r.json())
-      .then(j => {{ games = j.games || []; render(); }});
-
-    document.getElementById('home-q').addEventListener('input', render);
-  </script>
 """
+    write_page("/", _wrap_static_page(title=HOME_TITLE, body_html=body_html))
 
-    extra_head = """
-  <style>
-    .home{
-      max-width: 860px;
-      margin: 28px auto 0 auto;
-      padding: 0 12px;
-      text-align: left;
-    }
 
-    /* Hero PNG – mobile first */
-    .home-hero{
-      width: min(180px, 55vw);
-      height: auto;
-      display: block;
-      margin-bottom: 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(0,0,0,.08);
-      background: #fff;
-    }
 
-    .home-title{
-      margin: 18px 0 0 0;
-      font-size: clamp(2.2rem, 7vw, 3.6rem);
-      line-height: 1.05;
-      letter-spacing: -0.02em;
-    }
-
-    .home-subtitle{
-      margin: 10px 0 0 0;
-      font-size: clamp(1.05rem, 3.2vw, 1.25rem);
-      opacity: .82;
-    }
-
-    .home-note{
-      margin: 12px 0 0 0;
-      font-size: .95rem;
-      opacity: .65;
-    }
-  </style>
-"""
-
-    write_page("/", _wrap_static_page(
-        title=HOME_TITLE,
-        body_html=body_html,
-        extra_head=extra_head,
-    ))
 
 
 
@@ -602,8 +490,7 @@ def write_recent_games_json(limit: int = 30):
         lineup.sort(key=lambda r: (str(r.get("player") or "").lower(), str(r.get("commander") or "").lower()))
         data.append(
             {
-                "game_id": gid,
-                "played_at_utc": _iso(getattr(g, "played_at", None)),
+            "played_at_utc": _iso(getattr(g, "played_at", None)),
                 "winner_player": getattr(g, "winner_player", None) or "",
                 "notes": getattr(g, "notes", None) or "",
                 "participants": len(lineup),
@@ -624,14 +511,13 @@ def write_recent_games_page():
   <div class="card">
     <label for="q"><b>Filtro</b></label><br/>
     <input id="q" placeholder="Es: Luca / Atraxa / bracket 3…" style="width:min(520px, 100%);" />
-    <div class="muted" style="margin-top:8px;">Suggerimento: puoi cercare anche per <i>winner</i> e per <i>game_id</i>.</div>
+    <div class="muted" style="margin-top:8px;">Suggerimento: puoi cercare anche per <i>winner</i> e per <i>note</i>.</div>
   </div>
 
   <table>
     <thead>
       <tr>
         <th>Data (UTC)</th>
-        <th>Game</th>
         <th>Partecipanti</th>
         <th>Winner</th>
         <th>Lineup</th>
@@ -659,13 +545,11 @@ def write_recent_games_page():
 
     function row(g) {{
       const dt = esc(g.played_at_utc || '');
-      const id = esc(g.game_id);
       const parts = esc(g.participants ?? '');
       const win = esc(g.winner_player || '');
       const notes = esc(g.notes || '');
       return `<tr>
         <td style="white-space:nowrap;">${{dt}}</td>
-        <td style="white-space:nowrap;">#${{id}}</td>
         <td style="text-align:right;">${{parts}}</td>
         <td>${{win}}</td>
         <td>${{fmtLineup(g.lineup)}}</td>
@@ -677,7 +561,7 @@ def write_recent_games_page():
       const q = document.getElementById('q').value.trim().toLowerCase();
       const rows = q
         ? games.filter(g => {{
-            const blob = `${{g.game_id}} ${{g.played_at_utc}} ${{g.winner_player}} ${{g.notes}} ` +
+            const blob = `${{g.played_at_utc}} ${{g.winner_player}} ${{g.notes}} ` +
               (Array.isArray(g.lineup) ? g.lineup.map(e => `${{e.player}} ${{e.commander}} ${{e.bracket ?? ''}}`).join(' ') : '');
             return blob.toLowerCase().includes(q);
           }})
@@ -820,7 +704,7 @@ def export_static() -> None:
     write_triplette_json()
     write_triplette_page()
 
-    # 2b) Ultime partite (JSON + pagina + widget in Home)
+    # 2b) Ultime partite (JSON + pagina)
     write_recent_games_json(limit=30)
     write_recent_games_page()
 
