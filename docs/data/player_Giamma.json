@@ -1,12 +1,20 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T17:23:33.632803+00:00",
+  "generated_at": "2026-01-29T21:24:30.479499+00:00",
   "page": "player_Giamma",
   "payloads": [
     {
       "pairingBubble": {
         "minGames": 1,
         "rows": [
+          {
+            "commander": "Kruphix",
+            "games": 5,
+            "player": "Giamma",
+            "r": 10,
+            "winrate": 20.0,
+            "wins": 1
+          },
           {
             "commander": "Halana",
             "games": 4,
@@ -24,14 +32,6 @@
             "wins": 1
           },
           {
-            "commander": "Kruphix",
-            "games": 3,
-            "player": "Giamma",
-            "r": 9,
-            "winrate": 33.3,
-            "wins": 1
-          },
-          {
             "commander": "Brion",
             "games": 3,
             "player": "Giamma",
@@ -41,9 +41,9 @@
           },
           {
             "commander": "Chandra",
-            "games": 1,
+            "games": 2,
             "player": "Giamma",
-            "r": 7,
+            "r": 8,
             "winrate": 0.0,
             "wins": 0
           }
@@ -71,9 +71,9 @@
           20.0
         ],
         "denom": [
-          1,
-          4,
           2,
+          4,
+          4,
           7
         ],
         "labels": [
@@ -106,8 +106,8 @@
           },
           {
             "commander": "Kruphix",
-            "games": 3,
-            "winrate": 33.3,
+            "games": 5,
+            "winrate": 20.0,
             "wins": 1
           },
           {
@@ -124,14 +124,14 @@
           },
           {
             "commander": "Chandra",
-            "games": 1,
+            "games": 2,
             "winrate": 0.0,
             "wins": 0
           }
         ],
         "values": [
           33.3,
-          33.3,
+          20.0,
           0.0,
           0.0,
           0.0
@@ -152,7 +152,10 @@
           "2026-01-23",
           "2026-01-23",
           "2026-01-26",
-          "2026-01-26"
+          "2026-01-26",
+          "2026-01-29",
+          "2026-01-29",
+          "2026-01-29"
         ],
         "values": [
           0.0,
@@ -168,7 +171,10 @@
           9.1,
           8.3,
           7.7,
-          14.3
+          14.3,
+          13.3,
+          12.5,
+          11.8
         ]
       }
     }

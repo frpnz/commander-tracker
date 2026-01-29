@@ -1,8 +1,105 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T17:23:33.451653+00:00",
+  "generated_at": "2026-01-29T21:24:30.294755+00:00",
   "limit": 30,
   "games": [
+    {
+      "played_at_utc": "2026-01-29T20:45:54.013593",
+      "winner_player": "Da",
+      "notes": "",
+      "participants": 4,
+      "lineup": [
+        {
+          "player": "Da",
+          "commander": "K'rrik",
+          "bracket": 5
+        },
+        {
+          "player": "Fra",
+          "commander": "Abigale",
+          "bracket": 5
+        },
+        {
+          "player": "Giamma",
+          "commander": "Kruphix",
+          "bracket": 4
+        },
+        {
+          "player": "Matti",
+          "commander": "Sephiroth",
+          "bracket": 5
+        }
+      ]
+    },
+    {
+      "played_at_utc": "2026-01-29T20:39:36.052589",
+      "winner_player": "Da",
+      "notes": "",
+      "participants": 2,
+      "lineup": [
+        {
+          "player": "Da",
+          "commander": "Karn",
+          "bracket": 5
+        },
+        {
+          "player": "Giamma",
+          "commander": "Chandra",
+          "bracket": 4
+        }
+      ]
+    },
+    {
+      "played_at_utc": "2026-01-29T20:24:46.282571",
+      "winner_player": "Fra",
+      "notes": "",
+      "participants": 4,
+      "lineup": [
+        {
+          "player": "Da",
+          "commander": "Hearthhull",
+          "bracket": 4
+        },
+        {
+          "player": "Fra",
+          "commander": "Abigale",
+          "bracket": 5
+        },
+        {
+          "player": "Giamma",
+          "commander": "Kruphix",
+          "bracket": 4
+        },
+        {
+          "player": "Matti",
+          "commander": "Vivi",
+          "bracket": 5
+        }
+      ]
+    },
+    {
+      "played_at_utc": "2026-01-29T18:36:01.370837",
+      "winner_player": "Fra",
+      "notes": "",
+      "participants": 3,
+      "lineup": [
+        {
+          "player": "Da",
+          "commander": "Hearthhull",
+          "bracket": 4
+        },
+        {
+          "player": "Fra",
+          "commander": "Abigale",
+          "bracket": 5
+        },
+        {
+          "player": "Matti",
+          "commander": "Sephiroth",
+          "bracket": 5
+        }
+      ]
+    },
     {
       "played_at_utc": "2026-01-26T22:44:53.575494",
       "winner_player": "Giamma",

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T17:23:33.613084+00:00",
+  "generated_at": "2026-01-29T21:24:30.459549+00:00",
   "page": "player_Da",
   "payloads": [
     {
@@ -9,11 +9,11 @@
         "rows": [
           {
             "commander": "K'rrik",
-            "games": 7,
+            "games": 8,
             "player": "Da",
-            "r": 11,
-            "winrate": 42.9,
-            "wins": 3
+            "r": 12,
+            "winrate": 50.0,
+            "wins": 4
           },
           {
             "commander": "Sisay",
@@ -25,19 +25,19 @@
           },
           {
             "commander": "Hearthhull",
-            "games": 4,
+            "games": 6,
             "player": "Da",
-            "r": 10,
-            "winrate": 25.0,
+            "r": 11,
+            "winrate": 16.7,
             "wins": 1
           },
           {
             "commander": "Karn",
-            "games": 1,
+            "games": 2,
             "player": "Da",
-            "r": 7,
+            "r": 8,
             "winrate": 100.0,
-            "wins": 1
+            "wins": 2
           },
           {
             "commander": "Lotho",
@@ -71,9 +71,9 @@
           20.0
         ],
         "denom": [
-          2,
-          5,
+          3,
           6,
+          8,
           7
         ],
         "labels": [
@@ -84,8 +84,8 @@
         ],
         "values": [
           100.0,
-          60.0,
-          33.3,
+          50.0,
+          37.5,
           0.0
         ]
       },
@@ -100,15 +100,15 @@
         "rows": [
           {
             "commander": "Karn",
-            "games": 1,
+            "games": 2,
             "winrate": 100.0,
-            "wins": 1
+            "wins": 2
           },
           {
             "commander": "K'rrik",
-            "games": 7,
-            "winrate": 42.9,
-            "wins": 3
+            "games": 8,
+            "winrate": 50.0,
+            "wins": 4
           },
           {
             "commander": "Sisay",
@@ -118,8 +118,8 @@
           },
           {
             "commander": "Hearthhull",
-            "games": 4,
-            "winrate": 25.0,
+            "games": 6,
+            "winrate": 16.7,
             "wins": 1
           },
           {
@@ -131,9 +131,9 @@
         ],
         "values": [
           100.0,
-          42.9,
+          50.0,
           28.6,
-          25.0,
+          16.7,
           0.0
         ]
       },
@@ -158,7 +158,11 @@
           "2026-01-23",
           "2026-01-23",
           "2026-01-26",
-          "2026-01-26"
+          "2026-01-26",
+          "2026-01-29",
+          "2026-01-29",
+          "2026-01-29",
+          "2026-01-29"
         ],
         "values": [
           0.0,
@@ -180,7 +184,11 @@
           35.3,
           38.9,
           36.8,
-          35.0
+          35.0,
+          33.3,
+          31.8,
+          34.8,
+          37.5
         ]
       }
     }

@@ -1,24 +1,24 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T17:23:33.446186+00:00",
+  "generated_at": "2026-01-29T21:24:30.289123+00:00",
   "data": [
     {
       "player": "Da",
       "commander": "Hearthhull",
       "bracket": 4,
-      "games": 4
+      "games": 6
     },
     {
       "player": "Da",
       "commander": "K'rrik",
       "bracket": 5,
-      "games": 7
+      "games": 8
     },
     {
       "player": "Da",
       "commander": "Karn",
       "bracket": 5,
-      "games": 1
+      "games": 2
     },
     {
       "player": "Da",
@@ -36,7 +36,7 @@
       "player": "Fra",
       "commander": "Abigale",
       "bracket": 5,
-      "games": 2
+      "games": 5
     },
     {
       "player": "Fra",
@@ -102,7 +102,7 @@
       "player": "Giamma",
       "commander": "Chandra",
       "bracket": 4,
-      "games": 1
+      "games": 2
     },
     {
       "player": "Giamma",
@@ -120,7 +120,7 @@
       "player": "Giamma",
       "commander": "Kruphix",
       "bracket": 4,
-      "games": 3
+      "games": 5
     },
     {
       "player": "Matti",
@@ -144,7 +144,7 @@
       "player": "Matti",
       "commander": "Sephiroth",
       "bracket": 5,
-      "games": 7
+      "games": 9
     },
     {
       "player": "Matti",
@@ -156,7 +156,7 @@
       "player": "Matti",
       "commander": "Vivi",
       "bracket": 5,
-      "games": 2
+      "games": 3
     },
     {
       "player": "Stanca",
