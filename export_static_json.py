@@ -24,8 +24,8 @@ DATA_DIR = OUT_DIR / "data"
 ASSETS_DIR = OUT_DIR / "assets"
 
 # === HOME CONFIG ===
-HOME_TITLE = "Commander Tracker"
-HOME_SUBTITLE = "Analisi pubbliche in sola lettura"
+HOME_TITLE = "Tempio Tracker"
+HOME_SUBTITLE = ""
 HOME_NOTE = ""  # es: "Versione statica per GitHub Pages"
 HOME_HERO_SVG = "assets/hero.svg"
 
