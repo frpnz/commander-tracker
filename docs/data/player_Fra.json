@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:42:03.739554+00:00",
+  "generated_at": "2026-01-29T16:49:06.595537+00:00",
   "page": "player_Fra",
   "payloads": [
     {
@@ -49,14 +49,6 @@
           },
           {
             "commander": "Edric",
-            "games": 1,
-            "player": "Fra",
-            "r": 7,
-            "winrate": 100.0,
-            "wins": 1
-          },
-          {
-            "commander": "Finn",
             "games": 1,
             "player": "Fra",
             "r": 7,
@@ -120,7 +112,7 @@
         ],
         "denom": [
           1,
-          5,
+          4,
           6,
           7
         ],
@@ -132,7 +124,7 @@
         ],
         "values": [
           0.0,
-          60.0,
+          50.0,
           16.7,
           28.6
         ]
@@ -140,7 +132,6 @@
       "topCommanders": {
         "labels": [
           "Edric",
-          "Finn",
           "Sidisi",
           "Magda",
           "Piedemoccio",
@@ -148,17 +139,12 @@
           "Liesa",
           "Raffine",
           "Baba",
-          "Braids"
+          "Braids",
+          "Jan Jansen"
         ],
         "rows": [
           {
             "commander": "Edric",
-            "games": 1,
-            "winrate": 100.0,
-            "wins": 1
-          },
-          {
-            "commander": "Finn",
             "games": 1,
             "winrate": 100.0,
             "wins": 1
@@ -210,14 +196,20 @@
             "games": 1,
             "winrate": 0.0,
             "wins": 0
+          },
+          {
+            "commander": "Jan Jansen",
+            "games": 1,
+            "winrate": 0.0,
+            "wins": 0
           }
         ],
         "values": [
           100.0,
           100.0,
-          100.0,
           50.0,
           33.3,
+          0.0,
           0.0,
           0.0,
           0.0,
@@ -244,8 +236,7 @@
           "2026-01-23",
           "2026-01-23",
           "2026-01-26",
-          "2026-01-26",
-          "2026-01-29"
+          "2026-01-26"
         ],
         "values": [
           100.0,
@@ -265,8 +256,7 @@
           33.3,
           31.2,
           29.4,
-          27.8,
-          31.6
+          27.8
         ]
       }
     }

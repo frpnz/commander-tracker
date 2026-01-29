@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:42:03.747954+00:00",
+  "generated_at": "2026-01-29T16:49:06.606138+00:00",
   "page": "player_Giamma",
   "payloads": [
     {
@@ -40,22 +40,6 @@
             "wins": 0
           },
           {
-            "commander": "Arabella",
-            "games": 1,
-            "player": "Giamma",
-            "r": 7,
-            "winrate": 0.0,
-            "wins": 0
-          },
-          {
-            "commander": "Baba",
-            "games": 1,
-            "player": "Giamma",
-            "r": 7,
-            "winrate": 0.0,
-            "wins": 0
-          },
-          {
             "commander": "Chandra",
             "games": 1,
             "player": "Giamma",
@@ -87,8 +71,8 @@
           20.0
         ],
         "denom": [
-          2,
-          5,
+          1,
+          4,
           2,
           7
         ],
@@ -100,7 +84,7 @@
         ],
         "values": [
           0.0,
-          20.0,
+          25.0,
           0.0,
           14.3
         ]
@@ -111,8 +95,6 @@
           "Kruphix",
           "Halana",
           "Brion",
-          "Arabella",
-          "Baba",
           "Chandra"
         ],
         "rows": [
@@ -141,18 +123,6 @@
             "wins": 0
           },
           {
-            "commander": "Arabella",
-            "games": 1,
-            "winrate": 0.0,
-            "wins": 0
-          },
-          {
-            "commander": "Baba",
-            "games": 1,
-            "winrate": 0.0,
-            "wins": 0
-          },
-          {
             "commander": "Chandra",
             "games": 1,
             "winrate": 0.0,
@@ -162,8 +132,6 @@
         "values": [
           33.3,
           33.3,
-          0.0,
-          0.0,
           0.0,
           0.0,
           0.0
@@ -184,9 +152,7 @@
           "2026-01-23",
           "2026-01-23",
           "2026-01-26",
-          "2026-01-26",
-          "2026-01-29",
-          "2026-01-29"
+          "2026-01-26"
         ],
         "values": [
           0.0,
@@ -202,9 +168,7 @@
           9.1,
           8.3,
           7.7,
-          14.3,
-          13.3,
-          12.5
+          14.3
         ]
       }
     }

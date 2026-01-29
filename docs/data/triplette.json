@@ -1,13 +1,7 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:42:03.554862+00:00",
+  "generated_at": "2026-01-29T16:49:06.406253+00:00",
   "data": [
-    {
-      "player": "Da",
-      "commander": "Chandra",
-      "bracket": 3,
-      "games": 1
-    },
     {
       "player": "Da",
       "commander": "Hearthhull",
@@ -64,12 +58,6 @@
     },
     {
       "player": "Fra",
-      "commander": "Finn",
-      "bracket": 1,
-      "games": 1
-    },
-    {
-      "player": "Fra",
       "commander": "Jan Jansen",
       "bracket": 2,
       "games": 1
@@ -106,18 +94,6 @@
     },
     {
       "player": "Giamma",
-      "commander": "Arabella",
-      "bracket": 4,
-      "games": 1
-    },
-    {
-      "player": "Giamma",
-      "commander": "Baba",
-      "bracket": 4,
-      "games": 1
-    },
-    {
-      "player": "Giamma",
       "commander": "Brion",
       "bracket": 2,
       "games": 3
@@ -145,12 +121,6 @@
       "commander": "Kruphix",
       "bracket": 4,
       "games": 3
-    },
-    {
-      "player": "Matti",
-      "commander": "Brion",
-      "bracket": 4,
-      "games": 1
     },
     {
       "player": "Matti",
