@@ -1,7 +1,13 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:14:12.916456+00:00",
+  "generated_at": "2026-01-29T16:21:47.831850+00:00",
   "data": [
+    {
+      "player": "Da",
+      "commander": "Chandra",
+      "bracket": 3,
+      "games": 1
+    },
     {
       "player": "Da",
       "commander": "Hearthhull",
@@ -58,6 +64,12 @@
     },
     {
       "player": "Fra",
+      "commander": "Finn",
+      "bracket": 1,
+      "games": 1
+    },
+    {
+      "player": "Fra",
       "commander": "Jan Jansen",
       "bracket": 2,
       "games": 1
@@ -90,6 +102,12 @@
       "player": "Fra",
       "commander": "Sidisi",
       "bracket": 3,
+      "games": 1
+    },
+    {
+      "player": "Giamma",
+      "commander": "Baba",
+      "bracket": 4,
       "games": 1
     },
     {

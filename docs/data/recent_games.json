@@ -1,8 +1,31 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:14:12.969251+00:00",
+  "generated_at": "2026-01-29T16:21:47.837395+00:00",
   "limit": 30,
   "games": [
+    {
+      "played_at_utc": "2026-01-29T16:16:00.810877",
+      "winner_player": "Fra",
+      "notes": "",
+      "participants": 3,
+      "lineup": [
+        {
+          "player": "Da",
+          "commander": "Chandra",
+          "bracket": 3
+        },
+        {
+          "player": "Fra",
+          "commander": "Finn",
+          "bracket": 1
+        },
+        {
+          "player": "Giamma",
+          "commander": "Baba",
+          "bracket": 4
+        }
+      ]
+    },
     {
       "played_at_utc": "2026-01-26T22:44:53.575494",
       "winner_player": "Giamma",
