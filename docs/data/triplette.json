@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T17:19:26.020775+00:00",
+  "generated_at": "2026-01-29T17:23:33.446186+00:00",
   "data": [
     {
       "player": "Da",
@@ -58,12 +58,6 @@
     },
     {
       "player": "Fra",
-      "commander": "Hylda",
-      "bracket": 4,
-      "games": 1
-    },
-    {
-      "player": "Fra",
       "commander": "Jan Jansen",
       "bracket": 2,
       "games": 1
@@ -107,12 +101,6 @@
     {
       "player": "Giamma",
       "commander": "Chandra",
-      "bracket": 4,
-      "games": 1
-    },
-    {
-      "player": "Giamma",
-      "commander": "Edric",
       "bracket": 4,
       "games": 1
     },
