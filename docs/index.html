@@ -23,14 +23,24 @@
       margin: 28px auto 0 auto;
       padding: 0 12px;
     }
-    .home-hero{
-      width: min(160px, 45vw);
-      height: auto;
-      display: block;
+
+    /* Hero ASCII "tempio" */
+    .home-hero-ascii{
+      width: fit-content;
+      max-width: 100%;
+      overflow-x: auto;
+      margin: 0;
+      padding: 14px 16px;
       border-radius: 18px;
       border: 1px solid rgba(0,0,0,.08);
       background: #fff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: clamp(12px, 2.5vw, 16px);
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+      user-select: none;
     }
+
     .home-title{
       margin: 18px 0 0 0;
       font-size: clamp(2.2rem, 7vw, 3.6rem);
@@ -60,7 +70,17 @@
 <a href="/commander-tracker/export.csv">Export CSV</a></nav>
 <hr/>
 <main class="home">
-<img alt="" class="home-hero" src="/commander-tracker/assets/hero.svg"/>
+<pre aria-label="Tempio" class="home-hero-ascii" role="img">               _________
+              /_________\
+             /_____^_____\
+            |  |  | |  |  |
+            |  |  | |  |  |
+            |__|__|_|__|__|
+               _|_____|_
+            __/_________\__
+         __/______________\__
+      __/____________________\__
+    </pre>
 <h1 class="home-title">Tempio Tracker</h1>
 <p class="home-subtitle"></p>
 </main>

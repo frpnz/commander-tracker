@@ -359,25 +359,25 @@ def write_page(path_key: str, html: str):
 
 
 def write_home_page():
-    ASSETS_DIR.mkdir(parents=True, exist_ok=True)
-
-    # SVG di default (se non esiste ancora)
-    hero_svg = ASSETS_DIR / "hero.svg"
-    if not hero_svg.exists():
-        hero_svg.write_text(
-            """<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="Hero">
-  <rect width="640" height="360" fill="#f3f4f6"/>
-  <circle cx="320" cy="180" r="110" fill="#e5e7eb"/>
-  <path d="M320 95 L410 245 L230 245 Z" fill="#d1d5db"/>
-</svg>""",
-            encoding="utf-8",
-        )
-
+    # Non serve più generare asset SVG
     note_html = f"<p class='home-note'>{HOME_NOTE}</p>" if (HOME_NOTE or "").strip() else ""
+
+    temple_ascii = r"""
+               _________
+              /_________\
+             /_____^_____\
+            |  |  | |  |  |
+            |  |  | |  |  |
+            |__|__|_|__|__|
+               _|_____|_
+            __/_________\__
+         __/______________\__
+      __/____________________\__
+    """.strip("\n")
 
     body_html = f"""
   <main class="home">
-    <img class="home-hero" src="{REPO_BASE}{HOME_HERO_SVG}" alt="" />
+    <pre class="home-hero-ascii" role="img" aria-label="Tempio">{temple_ascii}</pre>
     <h1 class="home-title">{HOME_TITLE}</h1>
     <p class="home-subtitle">{HOME_SUBTITLE}</p>
     {note_html}
@@ -392,14 +392,24 @@ def write_home_page():
       margin: 28px auto 0 auto;
       padding: 0 12px;
     }
-    .home-hero{
-      width: min(160px, 45vw);
-      height: auto;
-      display: block;
+
+    /* Hero ASCII "tempio" */
+    .home-hero-ascii{
+      width: fit-content;
+      max-width: 100%;
+      overflow-x: auto;
+      margin: 0;
+      padding: 14px 16px;
       border-radius: 18px;
       border: 1px solid rgba(0,0,0,.08);
       background: #fff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: clamp(12px, 2.5vw, 16px);
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+      user-select: none;
     }
+
     .home-title{
       margin: 18px 0 0 0;
       font-size: clamp(2.2rem, 7vw, 3.6rem);
@@ -420,6 +430,7 @@ def write_home_page():
 """
 
     write_page("/", _wrap_static_page(title=HOME_TITLE, body_html=body_html, extra_head=extra_head))
+
 
 
 
