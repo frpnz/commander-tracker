@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ==== CONFIG (modifica se serve) ====
+REPO_DIR="${REPO_DIR:-$(pwd)}"          # se lo lanci dalla root repo, va bene così
+EXPORT_CMD="${EXPORT_CMD:-python3 export_static_json.py}"
+REMOTE="${REMOTE:-origin}"
+BRANCH="${BRANCH:-main}"               # cambia in master se usi master
+DO_PULL="${DO_PULL:-1}"                # 1 = pull prima, 0 = no pull
+# ===================================
+
+usage() {
+  cat <<'EOF'
+Uso:
+  ./deploy_pages.sh [messaggio commit]
+
+Env opzionali:
+  REPO_DIR=/path/al/repo
+  EXPORT_CMD="python3 export_static_json.py"
+  REMOTE=origin
+  BRANCH=main
+  DO_PULL=1|0
+
+Esempi:
+  ./deploy_pages.sh
+  ./deploy_pages.sh "Update partite"
+  DO_PULL=0 ./deploy_pages.sh "Export only"
+EOF
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+MSG="${1:-}"
+if [[ -z "$MSG" ]]; then
+  TS="$(date '+%Y-%m-%d %H:%M:%S')"
+  MSG="Export static (Pages) - ${TS}"
+fi
+
+cd "$REPO_DIR"
+
+# Safety: assicurati di essere in un repo git
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+  echo "Errore: non sei dentro un repository git (REPO_DIR=$REPO_DIR)"
+  exit 1
+}
+
+echo "== Repo: $(pwd)"
+echo "== Branch target: $BRANCH"
+echo "== Export: $EXPORT_CMD"
+
+# Passo 0: opzionale pull
+if [[ "$DO_PULL" == "1" ]]; then
+  echo "== Git pull ($REMOTE/$BRANCH)"
+  git fetch "$REMOTE" "$BRANCH" --prune
+  git pull --rebase "$REMOTE" "$BRANCH"
+fi
+
+# Passo 1: export
+echo "== Running export"
+eval "$EXPORT_CMD"
+
+# Passo 2: git add/commit (solo se ci sono cambi)
+echo "== Git status"
+if git status --porcelain | grep -q .; then
+  echo "== Changes detected: committing"
+  git add -A
+  git commit -m "$MSG"
+else
+  echo "== No changes to commit. Skipping commit."
+fi
+
+# Passo 3: push
+echo "== Pushing to $REMOTE/$BRANCH"
+git push "$REMOTE" "$BRANCH"
+
+echo "✅ Done."
