@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:30:16.076880+00:00",
+  "generated_at": "2026-01-29T16:42:03.685600+00:00",
   "page": "dashboard_mini",
   "payloads": [
     {
@@ -35,6 +35,14 @@
             "commander": "Sidisi",
             "games": 1,
             "player": "Fra",
+            "r": 7,
+            "winrate": 100.0,
+            "wins": 1
+          },
+          {
+            "commander": "Brion",
+            "games": 1,
+            "player": "Matti",
             "r": 7,
             "winrate": 100.0,
             "wins": 1
@@ -248,6 +256,14 @@
             "wins": 0
           },
           {
+            "commander": "Arabella",
+            "games": 1,
+            "player": "Giamma",
+            "r": 7,
+            "winrate": 0.0,
+            "wins": 0
+          },
+          {
             "commander": "Baba",
             "games": 1,
             "player": "Giamma",
@@ -295,12 +311,12 @@
           "Fra — Edric",
           "Fra — Finn",
           "Fra — Sidisi",
+          "Matti — Brion",
           "Matti — Sephiroth",
           "Fra — Magda",
           "Matti — Purphorose",
           "Matti — Vivi",
-          "Teo — Arabella",
-          "Da — K'rrik"
+          "Teo — Arabella"
         ],
         "rows": [
           {
@@ -328,6 +344,13 @@
             "commander": "Sidisi",
             "games": 1,
             "player": "Fra",
+            "winrate": 100.0,
+            "wins": 1
+          },
+          {
+            "commander": "Brion",
+            "games": 1,
+            "player": "Matti",
             "winrate": 100.0,
             "wins": 1
           },
@@ -365,16 +388,10 @@
             "player": "Teo",
             "winrate": 50.0,
             "wins": 1
-          },
-          {
-            "commander": "K'rrik",
-            "games": 7,
-            "player": "Da",
-            "winrate": 42.9,
-            "wins": 3
           }
         ],
         "values": [
+          100.0,
           100.0,
           100.0,
           100.0,
@@ -383,8 +400,7 @@
           50.0,
           50.0,
           50.0,
-          50.0,
-          42.9
+          50.0
         ]
       },
       "params": {
@@ -397,11 +413,11 @@
         "minGames": 3,
         "rows": [
           {
-            "games": 17,
+            "games": 18,
             "player": "Matti",
             "r": 16,
-            "winrate": 47.1,
-            "wins": 8
+            "winrate": 50.0,
+            "wins": 9
           },
           {
             "games": 21,
@@ -419,16 +435,16 @@
           },
           {
             "games": 15,
-            "player": "Giamma",
+            "player": "Teo",
             "r": 15,
             "winrate": 13.3,
             "wins": 2
           },
           {
-            "games": 15,
-            "player": "Teo",
-            "r": 15,
-            "winrate": 13.3,
+            "games": 16,
+            "player": "Giamma",
+            "r": 16,
+            "winrate": 12.5,
             "wins": 2
           },
           {
@@ -445,16 +461,16 @@
           "Matti",
           "Da",
           "Fra",
-          "Giamma",
           "Teo",
+          "Giamma",
           "Stanca"
         ],
         "rows": [
           {
-            "games": 17,
+            "games": 18,
             "player": "Matti",
-            "winrate": 47.1,
-            "wins": 8
+            "winrate": 50.0,
+            "wins": 9
           },
           {
             "games": 21,
@@ -470,14 +486,14 @@
           },
           {
             "games": 15,
-            "player": "Giamma",
+            "player": "Teo",
             "winrate": 13.3,
             "wins": 2
           },
           {
-            "games": 15,
-            "player": "Teo",
-            "winrate": 13.3,
+            "games": 16,
+            "player": "Giamma",
+            "winrate": 12.5,
             "wins": 2
           },
           {
@@ -488,11 +504,11 @@
           }
         ],
         "values": [
-          47.1,
+          50.0,
           33.3,
           31.6,
           13.3,
-          13.3,
+          12.5,
           10.0
         ]
       }

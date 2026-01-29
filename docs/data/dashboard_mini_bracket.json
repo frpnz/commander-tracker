@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:30:16.090706+00:00",
+  "generated_at": "2026-01-29T16:42:03.701045+00:00",
   "page": "dashboard_mini_bracket",
   "payloads": [
     {
@@ -251,6 +251,20 @@
             "player": "Fra",
             "r": 7,
             "weighted_winrate": 100.0
+          },
+          {
+            "commander": "Brion",
+            "games": 1,
+            "player": "Matti",
+            "r": 7,
+            "weighted_winrate": 100.0
+          },
+          {
+            "commander": "Arabella",
+            "games": 1,
+            "player": "Giamma",
+            "r": 7,
+            "weighted_winrate": 0.0
           }
         ]
       },
@@ -260,12 +274,12 @@
           "Fra — Edric",
           "Fra — Finn",
           "Fra — Sidisi",
+          "Matti — Brion",
           "Matti — Sephiroth",
           "Teo — Arabella",
           "Fra — Magda",
           "Matti — Purphorose",
-          "Matti — Vivi",
-          "Giamma — Galtha"
+          "Matti — Vivi"
         ],
         "rows": [
           {
@@ -290,6 +304,12 @@
             "commander": "Sidisi",
             "games": 1,
             "player": "Fra",
+            "weighted_winrate": 100.0
+          },
+          {
+            "commander": "Brion",
+            "games": 1,
+            "player": "Matti",
             "weighted_winrate": 100.0
           },
           {
@@ -321,15 +341,10 @@
             "games": 2,
             "player": "Matti",
             "weighted_winrate": 43.5
-          },
-          {
-            "commander": "Galtha",
-            "games": 3,
-            "player": "Giamma",
-            "weighted_winrate": 42.9
           }
         ],
         "values": [
+          100.0,
           100.0,
           100.0,
           100.0,
@@ -338,8 +353,7 @@
           55.6,
           44.8,
           44.4,
-          43.5,
-          42.9
+          43.5
         ]
       },
       "params": {
@@ -365,10 +379,10 @@
             "weighted_winrate": 10.0
           },
           {
-            "games": 15,
+            "games": 16,
             "player": "Giamma",
-            "r": 15,
-            "weighted_winrate": 17.9
+            "r": 16,
+            "weighted_winrate": 16.8
           },
           {
             "games": 19,
@@ -383,10 +397,10 @@
             "weighted_winrate": 14.8
           },
           {
-            "games": 17,
+            "games": 18,
             "player": "Matti",
             "r": 16,
-            "weighted_winrate": 39.7
+            "weighted_winrate": 43.5
           }
         ]
       },
@@ -401,10 +415,10 @@
         ],
         "rows": [
           {
-            "games": 17,
-            "meta_impact": 0.34,
+            "games": 18,
+            "meta_impact": 0.32,
             "player": "Matti",
-            "weighted_winrate": 39.7
+            "weighted_winrate": 43.5
           },
           {
             "games": 19,
@@ -419,10 +433,10 @@
             "weighted_winrate": 29.6
           },
           {
-            "games": 15,
+            "games": 16,
             "meta_impact": -0.1,
             "player": "Giamma",
-            "weighted_winrate": 17.9
+            "weighted_winrate": 16.8
           },
           {
             "games": 15,
@@ -438,10 +452,10 @@
           }
         ],
         "values": [
-          39.7,
+          43.5,
           33.7,
           29.6,
-          17.9,
+          16.8,
           14.8,
           10.0
         ]

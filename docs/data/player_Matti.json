@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:30:16.149886+00:00",
+  "generated_at": "2026-01-29T16:42:03.757036+00:00",
   "page": "player_Matti",
   "payloads": [
     {
@@ -48,6 +48,14 @@
             "wins": 0
           },
           {
+            "commander": "Brion",
+            "games": 1,
+            "player": "Matti",
+            "r": 7,
+            "winrate": 100.0,
+            "wins": 1
+          },
+          {
             "commander": "Tramutanti",
             "games": 1,
             "player": "Matti",
@@ -73,21 +81,25 @@
       ],
       "podWinrate": {
         "baseline": [
+          50.0,
           33.3,
           25.0,
           20.0
         ],
         "denom": [
+          1,
           2,
           8,
           7
         ],
         "labels": [
+          "2p",
           "3p",
           "4p",
           "5p"
         ],
         "values": [
+          100.0,
           50.0,
           37.5,
           57.1
@@ -95,6 +107,7 @@
       },
       "topCommanders": {
         "labels": [
+          "Brion",
           "Sephiroth",
           "Purphorose",
           "Vivi",
@@ -103,6 +116,12 @@
           "Tramutanti"
         ],
         "rows": [
+          {
+            "commander": "Brion",
+            "games": 1,
+            "winrate": 100.0,
+            "wins": 1
+          },
           {
             "commander": "Sephiroth",
             "games": 7,
@@ -141,6 +160,7 @@
           }
         ],
         "values": [
+          100.0,
           71.4,
           50.0,
           50.0,
@@ -167,7 +187,8 @@
           "2026-01-23",
           "2026-01-23",
           "2026-01-26",
-          "2026-01-26"
+          "2026-01-26",
+          "2026-01-29"
         ],
         "values": [
           0.0,
@@ -186,7 +207,8 @@
           42.9,
           46.7,
           50.0,
-          47.1
+          47.1,
+          50.0
         ]
       }
     }

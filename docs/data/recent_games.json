@@ -1,8 +1,26 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:30:15.946995+00:00",
+  "generated_at": "2026-01-29T16:42:03.560480+00:00",
   "limit": 30,
   "games": [
+    {
+      "played_at_utc": "2026-01-29T16:39:40.442671",
+      "winner_player": "Matti",
+      "notes": "",
+      "participants": 2,
+      "lineup": [
+        {
+          "player": "Giamma",
+          "commander": "Arabella",
+          "bracket": 4
+        },
+        {
+          "player": "Matti",
+          "commander": "Brion",
+          "bracket": 4
+        }
+      ]
+    },
     {
       "played_at_utc": "2026-01-29T16:16:00.810877",
       "winner_player": "Fra",
