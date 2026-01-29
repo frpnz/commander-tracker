@@ -172,6 +172,7 @@ def _to_pages_url(raw: str) -> str:
 
 NAV_LINKS = [
     ("Home", "/"),
+    ("Ultime 30", "/recent"),
     ("Summary", "/summary"),
     ("Decks info", "/triplette"),
     ("Statistiche", "/stats"),
@@ -375,7 +376,76 @@ def write_home_page():
     <h1 class="home-title">{HOME_TITLE}</h1>
     <p class="home-subtitle">{HOME_SUBTITLE}</p>
     {note_html}
+
+    <section class="card" style="margin-top:18px;">
+      <h2 style="margin:0 0 10px 0;">Ultime 30 partite</h2>
+      <div class="muted" style="margin-bottom:10px;">
+        Vista statica: elenco delle partite più recenti (max 30). <a href="{REPO_BASE}recent/">Apri pagina completa</a>.
+      </div>
+
+      <label for="home-q"><b>Filtro</b></label><br/>
+      <input id="home-q" placeholder="Cerca (player / commander / winner / id)…" style="width:min(520px, 100%);" />
+
+      <div style="overflow:auto; margin-top:12px;">
+        <table style="min-width:720px;">
+          <thead>
+            <tr>
+              <th>Data (UTC)</th>
+              <th>Game</th>
+              <th>Winner</th>
+              <th>Lineup</th>
+            </tr>
+          </thead>
+          <tbody id="home-tb"></tbody>
+        </table>
+      </div>
+    </section>
   </main>
+
+  <script>
+    const BASE = {json.dumps(REPO_BASE)};
+    let games = [];
+
+    function esc(s) {{
+      return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    }}
+
+    function fmtLineup(lineup) {{
+      if (!Array.isArray(lineup) || !lineup.length) return '';
+      return lineup.map(e => {{
+        const br = (e.bracket === null || e.bracket === undefined || e.bracket === '') ? '' : ` (B${{e.bracket}})`;
+        return `${{esc(e.player)}} = ${{esc(e.commander)}}${{esc(br)}}`;
+      }}).join('<br/>');
+    }}
+
+    function row(g) {{
+      return `<tr>
+        <td style="white-space:nowrap;">${{esc(g.played_at_utc || '')}}</td>
+        <td style="white-space:nowrap;">#${{esc(g.game_id)}}</td>
+        <td>${{esc(g.winner_player || '')}}</td>
+        <td>${{fmtLineup(g.lineup)}}</td>
+      </tr>`;
+    }}
+
+    function render() {{
+      const q = (document.getElementById('home-q').value || '').trim().toLowerCase();
+      const rows = q
+        ? games.filter(g => {{
+            const blob = `${{g.game_id}} ${{g.played_at_utc}} ${{g.winner_player}} ${{g.notes}} ` +
+              (Array.isArray(g.lineup) ? g.lineup.map(e => `${{e.player}} ${{e.commander}} ${{e.bracket ?? ''}}`).join(' ') : '');
+            return blob.toLowerCase().includes(q);
+          }})
+        : games;
+      // sulla home mostriamo max 10 righe
+      document.getElementById('home-tb').innerHTML = rows.slice(0, 10).map(row).join('');
+    }}
+
+    fetch(BASE + 'data/recent_games.json')
+      .then(r => r.json())
+      .then(j => {{ games = j.games || []; render(); }});
+
+    document.getElementById('home-q').addEventListener('input', render);
+  </script>
 """
 
     extra_head = """
@@ -485,6 +555,144 @@ def write_triplette_json():
     rows.sort(key=lambda r: (r["player"].lower(), r["commander"].lower(), (r["bracket"] or "")))
     out = {"version": 1, "generated_at": datetime.now(timezone.utc).isoformat(), "data": rows}
     (DATA_DIR / "triplette.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def write_recent_games_json(limit: int = 30):
+    """Write docs/data/recent_games.json with the latest games + full lineups."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with Session(engine) as session:
+        # Latest games first
+        from app import Game  # local import to avoid circulars at module import time
+
+        latest_games = session.exec(
+            select(Game).order_by(Game.played_at.desc(), Game.id.desc()).limit(limit)
+        ).all()
+
+        game_ids = [int(g.id) for g in latest_games if g.id is not None]
+        if game_ids:
+            entries = session.exec(
+                select(GameEntry).where(GameEntry.game_id.in_(game_ids)).order_by(GameEntry.game_id.asc())
+            ).all()
+        else:
+            entries = []
+
+    entries_by_game: dict[int, list[dict]] = {}
+    for e in entries:
+        gid = int(e.game_id)
+        entries_by_game.setdefault(gid, []).append(
+            {
+                "player": e.player,
+                "commander": e.commander,
+                "bracket": e.bracket,
+            }
+        )
+
+    def _iso(dt):
+        try:
+            return dt.isoformat() if dt else ""
+        except Exception:
+            return ""
+
+    data = []
+    for g in latest_games:
+        if g.id is None:
+            continue
+        gid = int(g.id)
+        lineup = entries_by_game.get(gid, [])
+        lineup.sort(key=lambda r: (str(r.get("player") or "").lower(), str(r.get("commander") or "").lower()))
+        data.append(
+            {
+                "game_id": gid,
+                "played_at_utc": _iso(getattr(g, "played_at", None)),
+                "winner_player": getattr(g, "winner_player", None) or "",
+                "notes": getattr(g, "notes", None) or "",
+                "participants": len(lineup),
+                "lineup": lineup,
+            }
+        )
+
+    out = {"version": 1, "generated_at": datetime.now(timezone.utc).isoformat(), "limit": limit, "games": data}
+    (DATA_DIR / "recent_games.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def write_recent_games_page():
+    """Static page with a small filter form + table (latest 30 games)."""
+    body_html = f"""
+  <h1>Ultime 30 partite</h1>
+  <p class="muted">Pagina statica (GitHub Pages). Filtra per player o commander e scorri le partite più recenti.</p>
+
+  <div class="card">
+    <label for="q"><b>Filtro</b></label><br/>
+    <input id="q" placeholder="Es: Luca / Atraxa / bracket 3…" style="width:min(520px, 100%);" />
+    <div class="muted" style="margin-top:8px;">Suggerimento: puoi cercare anche per <i>winner</i> e per <i>game_id</i>.</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Data (UTC)</th>
+        <th>Game</th>
+        <th>Partecipanti</th>
+        <th>Winner</th>
+        <th>Lineup</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody id="tb"></tbody>
+  </table>
+
+  <script>
+    const BASE = {json.dumps(REPO_BASE)};
+    let games = [];
+
+    function esc(s) {{
+      return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    }}
+
+    function fmtLineup(lineup) {{
+      if (!Array.isArray(lineup) || !lineup.length) return '';
+      return lineup.map(e => {{
+        const br = (e.bracket === null || e.bracket === undefined || e.bracket === '') ? '' : ` (B${{e.bracket}})`;
+        return `${{esc(e.player)}} = ${{esc(e.commander)}}${{esc(br)}}`;
+      }}).join('<br/>');
+    }}
+
+    function row(g) {{
+      const dt = esc(g.played_at_utc || '');
+      const id = esc(g.game_id);
+      const parts = esc(g.participants ?? '');
+      const win = esc(g.winner_player || '');
+      const notes = esc(g.notes || '');
+      return `<tr>
+        <td style="white-space:nowrap;">${{dt}}</td>
+        <td style="white-space:nowrap;">#${{id}}</td>
+        <td style="text-align:right;">${{parts}}</td>
+        <td>${{win}}</td>
+        <td>${{fmtLineup(g.lineup)}}</td>
+        <td>${{notes}}</td>
+      </tr>`;
+    }}
+
+    function render() {{
+      const q = document.getElementById('q').value.trim().toLowerCase();
+      const rows = q
+        ? games.filter(g => {{
+            const blob = `${{g.game_id}} ${{g.played_at_utc}} ${{g.winner_player}} ${{g.notes}} ` +
+              (Array.isArray(g.lineup) ? g.lineup.map(e => `${{e.player}} ${{e.commander}} ${{e.bracket ?? ''}}`).join(' ') : '');
+            return blob.toLowerCase().includes(q);
+          }})
+        : games;
+      document.getElementById('tb').innerHTML = rows.map(row).join('');
+    }}
+
+    fetch(BASE + 'data/recent_games.json')
+      .then(r => r.json())
+      .then(j => {{ games = j.games || []; render(); }});
+
+    document.getElementById('q').addEventListener('input', render);
+  </script>
+"""
+    write_page("/recent", _wrap_static_page(title="Ultime 30 partite", body_html=body_html))
 
 
 def write_player_compare_page(players: list[str]):
@@ -611,6 +819,10 @@ def export_static() -> None:
     # 2) JSON extra (triplette) + pagina
     write_triplette_json()
     write_triplette_page()
+
+    # 2b) Ultime partite (JSON + pagina + widget in Home)
+    write_recent_games_json(limit=30)
+    write_recent_games_page()
 
     # 3) Analisi HTML "identiche" (rendering attuale) in sola lettura
     for route in ANALYSIS_ROUTES:
