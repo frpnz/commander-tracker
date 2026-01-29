@@ -27,7 +27,7 @@ ASSETS_DIR = OUT_DIR / "assets"
 HOME_TITLE = "Tempio Tracker"
 HOME_SUBTITLE = ""
 HOME_NOTE = ""  # es: "Versione statica per GitHub Pages"
-HOME_HERO_SVG = "assets/hero.svg"
+HOME_HERO_PNG = "assets/hero.png"
 
 # Analisi da pubblicare (read-only)
 ANALYSIS_ROUTES = [
@@ -359,25 +359,19 @@ def write_page(path_key: str, html: str):
 
 
 def write_home_page():
-    # Non serve più generare asset SVG
-    note_html = f"<p class='home-note'>{HOME_NOTE}</p>" if (HOME_NOTE or "").strip() else ""
+    ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
-    temple_ascii = r"""
-               _________
-              /_________\
-             /_____^_____\
-            |  |  | |  |  |
-            |  |  | |  |  |
-            |__|__|_|__|__|
-               _|_____|_
-            __/_________\__
-         __/______________\__
-      __/____________________\__
-    """.strip("\n")
+    note_html = f"<p class='home-note'>{HOME_NOTE}</p>" if (HOME_NOTE or "").strip() else ""
 
     body_html = f"""
   <main class="home">
-    <pre class="home-hero-ascii" role="img" aria-label="Tempio">{temple_ascii}</pre>
+    <img
+      class="home-hero"
+      src="{REPO_BASE}{HOME_HERO_PNG}"
+      alt="Tempio"
+      loading="eager"
+      decoding="async"
+    />
     <h1 class="home-title">{HOME_TITLE}</h1>
     <p class="home-subtitle">{HOME_SUBTITLE}</p>
     {note_html}
@@ -386,28 +380,22 @@ def write_home_page():
 
     extra_head = """
   <style>
-    /* Layout minimal e robusto */
     .home{
       max-width: 860px;
       margin: 28px auto 0 auto;
       padding: 0 12px;
+      text-align: left;
     }
 
-    /* Hero ASCII "tempio" */
-    .home-hero-ascii{
-      width: fit-content;
-      max-width: 100%;
-      overflow-x: auto;
-      margin: 0;
-      padding: 14px 16px;
-      border-radius: 18px;
+    /* Hero PNG – mobile first */
+    .home-hero{
+      width: min(180px, 55vw);
+      height: auto;
+      display: block;
+      margin-bottom: 14px;
+      border-radius: 16px;
       border: 1px solid rgba(0,0,0,.08);
       background: #fff;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: clamp(12px, 2.5vw, 16px);
-      line-height: 1.15;
-      letter-spacing: 0.02em;
-      user-select: none;
     }
 
     .home-title{
@@ -416,11 +404,13 @@ def write_home_page():
       line-height: 1.05;
       letter-spacing: -0.02em;
     }
+
     .home-subtitle{
       margin: 10px 0 0 0;
       font-size: clamp(1.05rem, 3.2vw, 1.25rem);
       opacity: .82;
     }
+
     .home-note{
       margin: 12px 0 0 0;
       font-size: .95rem;
@@ -429,7 +419,12 @@ def write_home_page():
   </style>
 """
 
-    write_page("/", _wrap_static_page(title=HOME_TITLE, body_html=body_html, extra_head=extra_head))
+    write_page("/", _wrap_static_page(
+        title=HOME_TITLE,
+        body_html=body_html,
+        extra_head=extra_head,
+    ))
+
 
 
 
