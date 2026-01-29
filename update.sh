@@ -2,11 +2,11 @@
 set -euo pipefail
 
 # ==== CONFIG (modifica se serve) ====
-REPO_DIR="${REPO_DIR:-$(pwd)}"          # se lo lanci dalla root repo, va bene così
+REPO_DIR="${REPO_DIR:-$(pwd)}"                 # se lo lanci dalla root repo, va bene così
 EXPORT_CMD="${EXPORT_CMD:-python3 export_static_json.py}"
 REMOTE="${REMOTE:-origin}"
-BRANCH="${BRANCH:-main}"               # cambia in master se usi master
-DO_PULL="${DO_PULL:-1}"                # 1 = pull prima, 0 = no pull
+BRANCH="${BRANCH:-main}"                      # cambia in master se usi master
+DO_PULL="${DO_PULL:-0}"                       # 0 = default: NO pull (per lavorare con modifiche locali)
 # ===================================
 
 usage() {
@@ -19,12 +19,12 @@ Env opzionali:
   EXPORT_CMD="python3 export_static_json.py"
   REMOTE=origin
   BRANCH=main
-  DO_PULL=1|0
+  DO_PULL=0|1
 
 Esempi:
   ./deploy_pages.sh
   ./deploy_pages.sh "Update partite"
-  DO_PULL=0 ./deploy_pages.sh "Export only"
+  DO_PULL=1 ./deploy_pages.sh "Sync + export"
 EOF
 }
 
@@ -48,14 +48,16 @@ git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
 }
 
 echo "== Repo: $(pwd)"
-echo "== Branch target: $BRANCH"
+echo "== Target push: $REMOTE/$BRANCH"
 echo "== Export: $EXPORT_CMD"
+echo "== DO_PULL: $DO_PULL"
 
-# Passo 0: opzionale pull
+# Passo 0: pull opzionale (DISABILITATO DI DEFAULT)
+# Nota: se lo abiliti e hai modifiche locali, usiamo autostash per non bloccare.
 if [[ "$DO_PULL" == "1" ]]; then
-  echo "== Git pull ($REMOTE/$BRANCH)"
+  echo "== Git pull --rebase (autostash) from $REMOTE/$BRANCH"
   git fetch "$REMOTE" "$BRANCH" --prune
-  git pull --rebase "$REMOTE" "$BRANCH"
+  git pull --rebase --autostash "$REMOTE" "$BRANCH"
 fi
 
 # Passo 1: export
