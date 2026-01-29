@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:14:14.169975+00:00",
+  "generated_at": "2026-01-29T16:21:48.028609+00:00",
   "page": "player_Giamma",
   "payloads": [
     {
@@ -40,6 +40,14 @@
             "wins": 0
           },
           {
+            "commander": "Baba",
+            "games": 1,
+            "player": "Giamma",
+            "r": 7,
+            "winrate": 0.0,
+            "wins": 0
+          },
+          {
             "commander": "Chandra",
             "games": 1,
             "player": "Giamma",
@@ -72,7 +80,7 @@
         ],
         "denom": [
           1,
-          4,
+          5,
           2,
           7
         ],
@@ -84,7 +92,7 @@
         ],
         "values": [
           0.0,
-          25.0,
+          20.0,
           0.0,
           14.3
         ]
@@ -95,6 +103,7 @@
           "Kruphix",
           "Halana",
           "Brion",
+          "Baba",
           "Chandra"
         ],
         "rows": [
@@ -123,6 +132,12 @@
             "wins": 0
           },
           {
+            "commander": "Baba",
+            "games": 1,
+            "winrate": 0.0,
+            "wins": 0
+          },
+          {
             "commander": "Chandra",
             "games": 1,
             "winrate": 0.0,
@@ -132,6 +147,7 @@
         "values": [
           33.3,
           33.3,
+          0.0,
           0.0,
           0.0,
           0.0
@@ -152,7 +168,8 @@
           "2026-01-23",
           "2026-01-23",
           "2026-01-26",
-          "2026-01-26"
+          "2026-01-26",
+          "2026-01-29"
         ],
         "values": [
           0.0,
@@ -168,7 +185,8 @@
           9.1,
           8.3,
           7.7,
-          14.3
+          14.3,
+          13.3
         ]
       }
     }

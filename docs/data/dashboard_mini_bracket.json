@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T16:14:13.569392+00:00",
+  "generated_at": "2026-01-29T16:21:47.979214+00:00",
   "page": "dashboard_mini_bracket",
   "payloads": [
     {
@@ -230,6 +230,27 @@
             "player": "Matti",
             "r": 8,
             "weighted_winrate": 43.5
+          },
+          {
+            "commander": "Chandra",
+            "games": 1,
+            "player": "Da",
+            "r": 7,
+            "weighted_winrate": 0.0
+          },
+          {
+            "commander": "Baba",
+            "games": 1,
+            "player": "Giamma",
+            "r": 7,
+            "weighted_winrate": 0.0
+          },
+          {
+            "commander": "Finn",
+            "games": 1,
+            "player": "Fra",
+            "r": 7,
+            "weighted_winrate": 100.0
           }
         ]
       },
@@ -237,14 +258,14 @@
         "labels": [
           "Da — Karn",
           "Fra — Edric",
+          "Fra — Finn",
           "Fra — Sidisi",
           "Matti — Sephiroth",
           "Teo — Arabella",
           "Fra — Magda",
           "Matti — Purphorose",
           "Matti — Vivi",
-          "Giamma — Galtha",
-          "Giamma — Kruphix"
+          "Giamma — Galtha"
         ],
         "rows": [
           {
@@ -255,6 +276,12 @@
           },
           {
             "commander": "Edric",
+            "games": 1,
+            "player": "Fra",
+            "weighted_winrate": 100.0
+          },
+          {
+            "commander": "Finn",
             "games": 1,
             "player": "Fra",
             "weighted_winrate": 100.0
@@ -300,15 +327,10 @@
             "games": 3,
             "player": "Giamma",
             "weighted_winrate": 42.9
-          },
-          {
-            "commander": "Kruphix",
-            "games": 3,
-            "player": "Giamma",
-            "weighted_winrate": 40.0
           }
         ],
         "values": [
+          100.0,
           100.0,
           100.0,
           100.0,
@@ -317,8 +339,7 @@
           44.8,
           44.4,
           43.5,
-          42.9,
-          40.0
+          42.9
         ]
       },
       "params": {
@@ -332,10 +353,10 @@
         "minGames": 3,
         "rows": [
           {
-            "games": 20,
+            "games": 21,
             "player": "Da",
             "r": 17,
-            "weighted_winrate": 31.2
+            "weighted_winrate": 29.6
           },
           {
             "games": 10,
@@ -344,16 +365,16 @@
             "weighted_winrate": 10.0
           },
           {
-            "games": 14,
+            "games": 15,
             "player": "Giamma",
             "r": 15,
-            "weighted_winrate": 19.1
+            "weighted_winrate": 17.9
           },
           {
-            "games": 18,
+            "games": 19,
             "player": "Fra",
-            "r": 16,
-            "weighted_winrate": 26.9
+            "r": 17,
+            "weighted_winrate": 33.7
           },
           {
             "games": 15,
@@ -372,8 +393,8 @@
       "playerWinrate": {
         "labels": [
           "Matti",
-          "Da",
           "Fra",
+          "Da",
           "Giamma",
           "Teo",
           "Stanca"
@@ -386,22 +407,22 @@
             "weighted_winrate": 39.7
           },
           {
-            "games": 20,
+            "games": 19,
+            "meta_impact": -0.11,
+            "player": "Fra",
+            "weighted_winrate": 33.7
+          },
+          {
+            "games": 21,
             "meta_impact": 0.36,
             "player": "Da",
-            "weighted_winrate": 31.2
+            "weighted_winrate": 29.6
           },
           {
-            "games": 18,
-            "meta_impact": -0.02,
-            "player": "Fra",
-            "weighted_winrate": 26.9
-          },
-          {
-            "games": 14,
-            "meta_impact": -0.21,
+            "games": 15,
+            "meta_impact": -0.1,
             "player": "Giamma",
-            "weighted_winrate": 19.1
+            "weighted_winrate": 17.9
           },
           {
             "games": 15,
@@ -418,9 +439,9 @@
         ],
         "values": [
           39.7,
-          31.2,
-          26.9,
-          19.1,
+          33.7,
+          29.6,
+          17.9,
           14.8,
           10.0
         ]
