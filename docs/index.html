@@ -16,6 +16,52 @@
     .row { display:flex; gap:12px; flex-wrap: wrap; }
     .row > div { flex:1; min-width: 220px; }
     button { cursor:pointer; }</style>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<style>
+  .home {
+    display: grid;
+    gap: 18px;
+    justify-items: center;
+    text-align: center;
+    padding: 28px 0 8px;
+  }
+  .home-hero {
+    width: min(920px, 92vw);
+    max-height: 48vh;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  }
+  .home-title {
+    font-family: 'Cinzel', ui-serif, Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin: 0;
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+  }
+  .home-tagline {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-weight: 600;
+    opacity: .9;
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .home-quote {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    max-width: 70ch;
+    margin: 10px 0 0;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    .home-quote { background: rgba(255,255,255,.08); }
+    .home-hero { box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+  }
+</style>
 </head>
 <body>
 <nav><a href="/commander-tracker/">Home</a>
@@ -31,6 +77,8 @@
 <main class="home">
 <img alt="Tempio" class="home-hero" decoding="async" loading="eager" src="/commander-tracker/assets/tempio.jpeg"/>
 <h1 class="home-title">Tempio Tracker</h1>
+<p class="home-tagline">Statistiche, partite e leggenda.</p>
+<p class="home-quote">«La statistica è il grimorio: più lo consulti, più il meta si rivela.»</p>
 </main>
 </body>
 </html>

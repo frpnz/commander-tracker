@@ -29,6 +29,9 @@ HOME_SUBTITLE = ""
 HOME_NOTE = ""  # es: "Versione statica per GitHub Pages"
 HOME_HERO_PNG = "assets/tempio.jpeg"
 
+HOME_TAGLINE = "Statistiche, partite e leggenda."
+HOME_QUOTE = "«La statistica è il grimorio: più lo consulti, più il meta si rivela.»"
+
 # Analisi da pubblicare (read-only)
 ANALYSIS_ROUTES = [
     "/summary",
@@ -361,24 +364,79 @@ def write_page(path_key: str, html: str):
 
 def write_home_page():
     """
-    Home statica per GitHub Pages: pagina pulita con solo titolo + immagine hero.
-    (Niente widget / form per evitare UI "interattive" in Home.)
+    Home statica per GitHub Pages.
+    - Hero immagine (gestita a mano in docs/assets, non rigenerata dall'export)
+    - Titolo più "accattivante"
+    - Spazio per una massima / tagline
     """
+    # NOTA: assets/ (inclusa l'immagine hero) viene preservata dall'export_static()
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
+    extra_head = f"""
+<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">
+<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>
+<link href=\"https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;600&display=swap\" rel=\"stylesheet\">
+<style>
+  .home {{
+    display: grid;
+    gap: 18px;
+    justify-items: center;
+    text-align: center;
+    padding: 28px 0 8px;
+  }}
+  .home-hero {{
+    width: min(920px, 92vw);
+    max-height: 48vh;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  }}
+  .home-title {{
+    font-family: 'Cinzel', ui-serif, Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin: 0;
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+  }}
+  .home-tagline {{
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-weight: 600;
+    opacity: .9;
+    margin: 0;
+    font-size: 1.05rem;
+  }}
+  .home-quote {{
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    max-width: 70ch;
+    margin: 10px 0 0;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(0,0,0,.04);
+  }}
+  @media (prefers-color-scheme: dark) {{
+    .home-quote {{ background: rgba(255,255,255,.08); }}
+    .home-hero {{ box-shadow: 0 10px 30px rgba(0,0,0,.45); }}
+  }}
+</style>
+"""
+
     body_html = f"""
-  <main class="home">
+  <main class=\"home\">
     <img
-      class="home-hero"
-      src="{REPO_BASE}{HOME_HERO_PNG}"
-      alt="Tempio"
-      loading="eager"
-      decoding="async"
+      class=\"home-hero\"
+      src=\"{REPO_BASE}{HOME_HERO_PNG}\"
+      alt=\"Tempio\"
+      loading=\"eager\"
+      decoding=\"async\"
     />
-    <h1 class="home-title">{HOME_TITLE}</h1>
+    <h1 class=\"home-title\">{HOME_TITLE}</h1>
+    <p class=\"home-tagline\">{HOME_TAGLINE}</p>
+    <p class=\"home-quote\">{HOME_QUOTE}</p>
   </main>
 """
-    write_page("/", _wrap_static_page(title=HOME_TITLE, body_html=body_html))
+
+    write_page("/", _wrap_static_page(title=HOME_TITLE, body_html=body_html, extra_head=extra_head))
 
 
 
@@ -690,8 +748,15 @@ def write_player_compare_page(players: list[str]):
 
 
 def export_static() -> None:
+    # Manteniamo docs/assets (es. immagine home) gestita a mano e non rigenerata dall'export.
     if OUT_DIR.exists():
-        shutil.rmtree(OUT_DIR)
+        for child in OUT_DIR.iterdir():
+            if child.name in ("assets",):
+                continue
+            if child.is_dir():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / ".nojekyll").write_text("", encoding="utf-8")
 
