@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between;">
+  <h1>Dashboard</h1>
+
+  <a href="/dashboard.pdf{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+     class="button">
+    Export PDF
+  </a>
+</div>
+
+
+<form method="get" action="/dashboard" class="card" style="margin-bottom:16px;">
+  <div class="row" style="gap:12px; align-items:end; flex-wrap:wrap;">
+    <div style="min-width:240px;">
+      <label>Player (pod + trend)</label><br>
+      <select name="player">
+        <option value="__all__" {% if chart_data.params.player == "__all__" %}selected{% endif %}>Tutti i player</option>
+        {% for p in chart_data.players %}
+          <option value="{{ p }}" {% if chart_data.params.player == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label>Min partite (player)</label><br>
+      <input type="number" name="min_pg" value="{{ chart_data.params.min_pg }}" min="1" style="width:90px;">
+    </div>
+
+    <div>
+      <label>Min partite (pairing)</label><br>
+      <input type="number" name="min_pair" value="{{ chart_data.params.min_pair }}" min="1" style="width:90px;">
+    </div>
+
+    <div>
+      <label>Min partite (commander)</label><br>
+      <input type="number" name="min_cmd" value="{{ chart_data.params.min_cmd }}" min="1" style="width:90px;">
+    </div>
+
+    <div>
+      <label>Top players</label><br>
+      <input type="number" name="top_players" value="{{ chart_data.params.top_players }}" min="1" max="50" style="width:90px;">
+    </div>
+
+    <div>
+      <label>Top pairs</label><br>
+      <input type="number" name="top_pairs" value="{{ chart_data.params.top_pairs }}" min="1" max="50" style="width:90px;">
+    </div>
+
+    <div>
+      <label>Top commanders</label><br>
+      <input type="number" name="top_cmd" value="{{ chart_data.params.top_cmd }}" min="1" max="50" style="width:110px;">
+    </div>
+
+    <div>
+      <button type="submit">Aggiorna</button>
+    </div>
+  </div>
+</form>
+
+<div class="row">
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>Winrate Player (top {{ chart_data.params.top_players }}, min {{ chart_data.params.min_pg }} partite)</h3>
+    <canvas id="playerWinrateChart"></canvas>
+  </div>
+
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>WR% vs #Partite (sample size)</h3>
+    <canvas id="playerScatterChart"></canvas>
+    <p class="muted" style="margin-top:8px;">
+      Ogni punto = un player. Più a destra = più partite (dato più “solido”).
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>Top Commander per winrate (min {{ chart_data.params.min_cmd }} partite)</h3>
+    <canvas id="commanderWinrateChart"></canvas>
+  </div>
+
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>
+      Winrate per pod size —
+      {% if chart_data.podWinrate.player == "__all__" %}Tutti i player{% else %}{{ chart_data.podWinrate.player }}{% endif %}
+    </h3>
+    <canvas id="podWinrateChart"></canvas>
+    <p class="muted" style="margin-top:8px;">
+      Baseline = 1/N (es. in 4p è 25%).
+      {% if chart_data.podWinrate.mode == "all" %}
+        (WR = wins / partecipazioni nel pod)
+      {% else %}
+        (WR = wins / partite del player nel pod)
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>Trend winrate cumulativo</h3>
+    {% if chart_data.trend.player == "__all__" %}
+      <p class="muted">Seleziona un player specifico per vedere il trend cumulativo.</p>
+    {% else %}
+      <p class="muted" style="margin-top:-8px;">Player: <b>{{ chart_data.trend.player }}</b></p>
+      <canvas id="trendChart"></canvas>
+    {% endif %}
+  </div>
+
+  <div class="card" style="flex:1; min-width:340px;">
+    <h3>Top pairing Player+Commander per winrate (min {{ chart_data.params.min_pair }} partite)</h3>
+    <canvas id="pairingWinrateChart"></canvas>
+
+    <table style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Player</th><th>Commander</th><th>#</th><th>W</th><th>WR%</th>
+        </tr>
+      </thead>
+      <tbody id="pairingWinrateTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<script id="chart-data" type="application/json">
+{{ chart_data | tojson }}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const data = JSON.parse(document.getElementById("chart-data").textContent);
+
+  function bar(el, labels, values, labelText) {
+    new Chart(document.getElementById(el), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: labelText || '', data: values }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: !!labelText } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
+
+  function line(el, labels, values, labelText) {
+    new Chart(document.getElementById(el), {
+      type: 'line',
+      data: { labels, datasets: [{ label: labelText || '', data: values, tension: 0.2, fill: false }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: !!labelText } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
+
+  // 1a) Player winrate bar
+  bar("playerWinrateChart", data.playerWinrate.labels, data.playerWinrate.values, "Winrate %");
+
+  // 1b) Bubble: WR vs Games (dimensione = sample size) + LEGENDA per player
+  function colorForIndex(i) {
+    const colors = [
+      "#4e79a7", "#f28e2b", "#e15759", "#76b7b2",
+      "#59a14f", "#edc949", "#af7aa1", "#ff9da7",
+      "#9c755f", "#bab0ab"
+    ];
+    return colors[i % colors.length];
+  }
+
+  const bubbleDatasets = data.playerScatter.rows.map((r, i) => ({
+    label: r.player, // -> appare in legenda
+    data: [{
+      x: r.games,
+      y: r.winrate,
+      r: r.r,
+      _meta: r
+    }],
+    backgroundColor: colorForIndex(i),
+  }));
+
+  new Chart(document.getElementById("playerScatterChart"), {
+    type: 'bubble',
+    data: { datasets: bubbleDatasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const r = ctx.raw._meta;
+              return `${r.player}: ${r.winrate}% (${r.wins}/${r.games})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: "# Partite" }, beginAtZero: true },
+        y: { title: { display: true, text: "Winrate %" }, beginAtZero: true, max: 100 }
+      }
+    }
+  });
+
+  // 4) Commander winrate
+  bar("commanderWinrateChart", data.commanderWinrate.labels, data.commanderWinrate.values, "Winrate %");
+
+  // 3) Pod winrate (BAR con baseline)
+  new Chart(document.getElementById("podWinrateChart"), {
+    type: 'bar',
+    data: {
+      labels: data.podWinrate.labels,
+      datasets: [
+        { label: "WR%", data: data.podWinrate.values },
+        { label: "Baseline 1/N", data: data.podWinrate.baseline }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true, max: 100 } }
+    }
+  });
+
+  // 5) Trend (solo se player specifico)
+  if (data.trend.player !== "__all__") {
+    line("trendChart", data.trend.labels, data.trend.values, "Cumulative WR%");
+  }
+
+  // 2) Pairing winrate
+  bar("pairingWinrateChart", data.pairingWinrate.labels, data.pairingWinrate.values, "Winrate %");
+
+  // Pairing table
+  const tbody = document.getElementById("pairingWinrateTable");
+  tbody.innerHTML = "";
+  for (const r of data.pairingWinrate.rows) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${r.player}</b></td>
+      <td>${r.commander}</td>
+      <td>${r.games}</td>
+      <td>${r.wins}</td>
+      <td>${r.winrate}%</td>
+    `;
+    tbody.appendChild(tr);
+  }
+</script>
+{% endblock %}

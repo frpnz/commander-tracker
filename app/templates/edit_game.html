@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Modifica partita #{{ game.id }}</h1>
+
+<div class="muted">
+  Creata: {{ game.played_at }} UTC
+</div>
+
+{% if error %}
+  <div class="error"><b>Errore:</b> {{ error }}</div>
+{% endif %}
+
+<form method="post" action="/edit/{{ game.id }}">
+  <div class="row">
+    <div>
+      <label>Winner (opzionale, nome player):</label><br />
+      <input name="winner_player" value="{{ game.winner_player or '' }}" placeholder="es. Marco" />
+    </div>
+    <div>
+      <label>Note (opzionale):</label><br />
+      <input name="notes" value="{{ game.notes or '' }}" placeholder="es. 4 player, power level 7" style="width:100%;" />
+    </div>
+  </div>
+
+  <p><label>Entries (una riga per player):</label></p>
+  <textarea name="entries_text" rows="10">{{ entries_text }}</textarea>
+
+  <p>
+    <button type="submit">Salva modifiche</button>
+    <a href="/" style="margin-left:12px;">Annulla</a>
+  </p>
+</form>
+
+<p class="muted">
+Formato: <code>Nome Player - Nome Commander - Bracket</code> (una riga per giocatore). Bracket: <code>1-5</code> oppure <code>n/a</code>.
+(Compatibile anche il vecchio formato: <code>Nome Player - Nome Commander</code>).
+</p>
+{% endblock %}

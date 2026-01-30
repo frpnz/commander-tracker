@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="display:flex; align-items:center; justify-content:space-between;">
+  <h1>Dashboard Player</h1>
+
+  <div style="display:flex; align-items:center; gap:8px;">
+    <a href="/player_dashboard.pdf{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+       class="button">
+      Export PDF
+    </a>
+
+    <a href="/player_dashboard.html{{ '?' + request.query_string.decode() if request.query_string else '' }}"
+       class="button">
+      Export HTML
+    </a>
+  </div>
+</div>
+
+
+<form method="get" action="/player_dashboard" class="card" style="margin:12px 0 16px;">
+  <div class="row" style="gap:12px; align-items:end; flex-wrap:wrap;">
+    <div style="min-width:240px;">
+      <label>Player</label><br>
+      <select name="player">
+        {% for p in chart_data.players %}
+          <option value="{{ p }}" {% if chart_data.params.player == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="min-width:240px;">
+      <label>Confronta con (opzionale)</label><br>
+      <select name="player2">
+        <option value="">—</option>
+        {% for p in chart_data.players %}
+          <option value="{{ p }}" {% if chart_data.params.player2|default('') == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label>Min partite (pairing/commander)</label><br>
+      <input type="number" name="min_pair" value="{{ chart_data.params.min_pair }}" min="1" style="width:140px;">
+    </div>
+
+    <div>
+      <label>Top commanders</label><br>
+      <input type="number" name="top_cmd" value="{{ chart_data.params.top_cmd }}" min="1" max="50" style="width:120px;">
+    </div>
+
+    <div>
+      <label>Max bubble points</label><br>
+      <input type="number" name="top_pairs" value="{{ chart_data.params.top_pairs }}" min="1" max="200" style="width:120px;">
+    </div>
+
+    <div>
+      <button type="submit">Aggiorna</button>
+    </div>
+  </div>
+</form>
+
+{% set dashboards = chart_data.dashboards if chart_data.dashboards is defined else {'a': chart_data, 'b': none} %}
+
+<div class="row" style="gap:12px; flex-wrap:wrap;">
+  <div class="card" style="flex:1; min-width:360px;">
+    <h2 style="margin:0 0 6px;">{{ dashboards.a.params.player }}</h2>
+
+    <div class="row">
+      <div class="card" style="flex:1; min-width:300px;">
+        <h3>Trend winrate cumulativo</h3>
+        <canvas id="trendChart_a"></canvas>
+      </div>
+      <div class="card" style="flex:1; min-width:300px;">
+        <h3>Winrate per pod size</h3>
+        <canvas id="podChart_a"></canvas>
+        <p class="muted" style="margin-top:8px;">Baseline = 1/N (es. 4p = 25%). Denom = #partite del player in quel pod.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card" style="flex:1; min-width:300px;">
+        <h3>Top commander per winrate (min {{ chart_data.params.min_pair }} partite)</h3>
+        <canvas id="cmdChart_a"></canvas>
+        <table style="margin-top:12px;">
+          <thead>
+            <tr>
+              <th>Commander</th><th>#</th><th>W</th><th>WR%</th>
+            </tr>
+          </thead>
+          <tbody id="cmdTable_a"></tbody>
+        </table>
+      </div>
+
+      <div class="card" style="flex:1; min-width:300px;">
+        <h3>WR% vs #Partite — Commander</h3>
+        <canvas id="pairBubbleChart_a"></canvas>
+        <p class="muted" style="margin-top:8px;">Bubble più grande = più partite (dato più “solido”).</p>
+      </div>
+    </div>
+  </div>
+
+  {% if dashboards.b %}
+  <div class="card" style="flex:1; min-width:360px;">
+    <h2 style="margin:0 0 6px;">{{ dashboards.b.params.player }}</h2>
+
+    <div class="row">
+      <div class="card" style="flex:1; min-width:300px;">
+        <h3>Trend winrate cumulativo</h3>
+        <canvas id="trendChart_b"></canvas>
+      </div>
+      <div class="card" style="flex:1; min-width:300px;">
+        <h3>Winrate per pod size</h3>
+        <canvas id="podChart_b"></canvas>
+        <p class="muted" style="margin-top:8px;">Baseline = 1/N (es. 4p = 25%). Denom = #partite del player in quel pod.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card" style="flex:1; min-width:300px;">
+        <h3>Top commander per winrate (min {{ chart_data.params.min_pair }} partite)</h3>
+        <canvas id="cmdChart_b"></canvas>
+        <table style="margin-top:12px;">
+          <thead>
+            <tr>
+              <th>Commander</th><th>#</th><th>W</th><th>WR%</th>
+            </tr>
+          </thead>
+          <tbody id="cmdTable_b"></tbody>
+        </table>
+      </div>
+
+      <div class="card" style="flex:1; min-width:300px;">
+        <h3>WR% vs #Partite — Commander</h3>
+        <canvas id="pairBubbleChart_b"></canvas>
+        <p class="muted" style="margin-top:8px;">Bubble più grande = più partite (dato più “solido”).</p>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script id="chart-data" type="application/json">
+{{ chart_data | tojson }}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const root = JSON.parse(document.getElementById("chart-data").textContent);
+  const dashboards = root.dashboards ? root.dashboards : { a: root, b: null };
+
+  function bar(el, labels, values, labelText) {
+    return new Chart(document.getElementById(el), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: labelText || '', data: values }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: !!labelText } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
+
+  function line(el, labels, values, labelText) {
+    return new Chart(document.getElementById(el), {
+      type: 'line',
+      data: { labels, datasets: [{ label: labelText || '', data: values, tension: 0.2, fill: false }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: !!labelText } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+  }
+
+  function render(prefix, data) {
+    if (!data) return;
+
+    // 1) Trend cumulativo
+    line(`trendChart_${prefix}`, data.trend.labels, data.trend.values, "Cumulative WR%");
+
+    // 2) Pod winrate + baseline
+    new Chart(document.getElementById(`podChart_${prefix}`), {
+      type: 'bar',
+      data: {
+        labels: data.podWinrate.labels,
+        datasets: [
+          { label: "WR%", data: data.podWinrate.values },
+          { label: "Baseline 1/N", data: data.podWinrate.baseline }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, max: 100 } },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              afterLabel: function(ctx) {
+                const denom = data.podWinrate.denom?.[ctx.dataIndex] ?? 0;
+                return `# partite: ${denom}`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // 3) Top commander per WR
+    bar(`cmdChart_${prefix}`, data.topCommanders.labels, data.topCommanders.values, "WR%");
+
+    const cmdBody = document.getElementById(`cmdTable_${prefix}`);
+    if (cmdBody) {
+      cmdBody.innerHTML = "";
+      for (const r of (data.topCommanders.rows || [])) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.commander}</td>
+          <td>${r.games}</td>
+          <td>${r.wins}</td>
+          <td>${r.winrate}%</td>
+        `;
+        cmdBody.appendChild(tr);
+      }
+    }
+
+    // 4) Bubble player+commander
+    const bubbleDatasets = (data.pairingBubble.rows || []).map((r) => ({
+      label: r.commander,
+      data: [{ x: r.games, y: r.winrate, r: r.r, _meta: r }],
+    }));
+
+    const maxWR = Math.max(0, ...(data.pairingBubble.rows || []).map(r => r.winrate));
+
+    new Chart(document.getElementById(`pairBubbleChart_${prefix}`), {
+      type: 'bubble',
+      data: { datasets: bubbleDatasets },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'right' },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const r = ctx.raw._meta;
+                return `${r.player} + ${r.commander}: ${r.winrate}% (${r.wins}/${r.games})`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { title: { display: true, text: "# Partite" }, beginAtZero: true },
+          y: {
+            title: { display: true, text: "Winrate %" },
+            beginAtZero: true,
+            max: Math.min(110, Math.ceil(maxWR + 5))
+          }
+        }
+      }
+    });
+  }
+
+  render('a', dashboards.a);
+  render('b', dashboards.b);
+</script>
+
+{% endblock %}

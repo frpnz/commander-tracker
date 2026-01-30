@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-01-30T11:13:59+00:00",
+  "datasets": {
+    "dashboard": {
+      "schema": "dashboard.v1",
+      "path": "data/dashboard.v1.json"
+    },
+    "stats": {
+      "schema": "stats.v1",
+      "path": "data/stats.v1.json"
+    }
+  }
+}

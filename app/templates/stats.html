@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Statistiche</h1>
+
+<h2>Per Player</h2>
+{% if not player_rows or player_rows|length == 0 %}
+  <p>Nessun dato.</p>
+{% else %}
+<table>
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th># Partite</th>
+      <th>Vittorie</th>
+      <th>Winrate</th>
+      <th>Commander unici</th>
+      <th>Commander più giocato</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in player_rows %}
+      <tr>
+        <td><b>{{ r.player }}</b></td>
+        <td>{{ r.games }}</td>
+        <td>{{ r.wins }}</td>
+        <td>{{ "%.1f"|format(r.winrate) }}%</td>
+        <td>{{ r.unique_commanders }}</td>
+        <td>
+          {% if r.top_commander %}
+            {{ r.top_commander }} ({{ r.top_commander_games }})
+          {% else %}
+            —
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<h2 style="margin-top:24px;">Per Player + Commander</h2>
+{% if not pair_rows or pair_rows|length == 0 %}
+  <p>Nessun dato.</p>
+{% else %}
+<table>
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>Commander</th>
+      <th># Partite</th>
+      <th>Vittorie</th>
+      <th>Winrate</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in pair_rows %}
+      <tr>
+        <td><b>{{ r.player }}</b></td>
+        <td>{{ r.commander }}</td>
+        <td>{{ r.games }}</td>
+        <td>{{ r.wins }}</td>
+        <td>{{ "%.1f"|format(r.winrate) }}%</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<h2 style="margin-top:28px;">Bracket</h2>
+
+<div class="grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+  <div>
+    <h3 style="margin:0 0 8px 0;">Distribuzione bracket (entries)</h3>
+    <table>
+      <thead><tr><th>Bracket</th><th># Entries</th></tr></thead>
+      <tbody>
+        {% for k, v in bracket_entry_counts|dictsort %}
+          <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div>
+    <h3 style="margin:0 0 8px 0;">Distribuzione bracket (winner)</h3>
+    <table>
+      <thead><tr><th>Bracket</th><th># Win</th></tr></thead>
+      <tbody>
+        {% for k, v in bracket_winner_counts|dictsort %}
+          <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<h3 style="margin-top:18px;">Winrate per bracket</h3>
+{% if not bracket_rows or bracket_rows|length == 0 %}
+  <p>Nessun dato.</p>
+{% else %}
+<table>
+  <thead>
+    <tr>
+      <th>Bracket</th>
+      <th># Partite</th>
+      <th>Vittorie</th>
+      <th>Winrate</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in bracket_rows %}
+      <tr>
+        <td>{{ r.bracket }}</td>
+        <td>{{ r.games }}</td>
+        <td>{{ r.wins }}</td>
+        <td>{{ "%.1f"|format(r.winrate) }}%</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:22px;">
+  <h3 style="margin:0;">Triplette univoche Commander – Player – Bracket</h3>
+  <form method="get" action="/stats" style="display:flex; align-items:center; gap:8px; margin:0;">
+    <input type="hidden" name="top_triples" value="{{ top_triples }}" />
+    <label class="muted" for="max_unique" style="white-space:nowrap;">Max righe</label>
+    <select id="max_unique" name="max_unique" onchange="this.form.submit()">
+      {% for n in max_unique_options %}
+        <option value="{{ n }}" {% if n == max_unique %}selected{% endif %}>{{ n }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+{% if not unique_triples_rows or unique_triples_rows|length == 0 %}
+  <p>Nessun dato.</p>
+{% else %}
+<table>
+  <thead>
+    <tr>
+      <th>Commander</th>
+      <th>Player</th>
+      <th>Bracket</th>
+      <th># Entries</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in unique_triples_rows %}
+      <tr>
+        <td>{{ r.commander }}</td>
+        <td><b>{{ r.player }}</b></td>
+        <td>{{ r.bracket }}</td>
+        <td>{{ r.entries }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:18px;">
+  <h3 style="margin:0;">Triplette Player – Commander – Bracket</h3>
+  <form method="get" action="/stats" style="display:flex; align-items:center; gap:8px; margin:0;">
+    <input type="hidden" name="max_unique" value="{{ max_unique }}" />
+    <label class="muted" for="top_triples" style="white-space:nowrap;">Mostra top</label>
+    <select id="top_triples" name="top_triples" onchange="this.form.submit()">
+      {% for n in top_options %}
+        <option value="{{ n }}" {% if n == top_triples %}selected{% endif %}>{{ n }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+{% if not triple_rows or triple_rows|length == 0 %}
+  <p>Nessun dato.</p>
+{% else %}
+<table>
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>Commander</th>
+      <th>Bracket</th>
+      <th># Partite</th>
+      <th>Vittorie</th>
+      <th>WR</th>
+      <th>Weighted WR</th>
+      <th>BPI</th>
+      <th>Note</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in triple_rows %}
+      <tr>
+        <td><b>{{ r.player }}</b></td>
+        <td>{{ r.commander }}</td>
+        <td>{{ r.bracket }}</td>
+        <td>{{ r.games }}</td>
+        <td>{{ r.wins }}</td>
+        <td>{{ "%.1f"|format(r.winrate) }}%</td>
+        <td>{{ "%.1f"|format(r.weighted_wr) }}%</td>
+        <td>
+          {% if r.bpi is not none %}
+            {{ "%.2f"|format(r.bpi) }} ({{ r.bpi_label }})
+          {% else %}
+            n/a
+          {% endif %}
+        </td>
+        <td class="muted" style="max-width:360px;">
+          {% if r.delta_coverage is not none %}
+            Δ calcolabile su {{ "%.0f"|format(r.delta_coverage) }}% delle win
+          {% else %}
+            —
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<p class="muted" style="margin-top:10px; max-width: 1000px;">
+<b>Note sugli indici bracket</b>: per ogni partita con bracket compilati viene calcolato il <b>bracket medio del pod</b>
+(ignorando i valori <i>n/a</i>) e il <b>ΔB</b>:
+<code>ΔB = B<sub>w</sub> − B<sub>avg</sub></code>
+(bracket del mazzo vincente − bracket medio del tavolo).
+<br/>
+Il <b>Weighted Win Rate</b> applica un peso <code>w</code> alle sole <b>vittorie</b> (in questa pagina α è fissato a <b>0.5</b>; nelle dashboard <i>bracket-aware</i> è configurabile):
+<ul style="margin:6px 0 0 18px;">
+  <li>se <b>ΔB &gt; 0</b> (winner sopra il pod): <code>w = 1 / (1 + α · ΔB)</code> → <b>penalizza</b></li>
+  <li>se <b>ΔB = 0</b>: <code>w = 1</code> → neutro</li>
+  <li>se <b>ΔB &lt; 0</b> (winner sotto il pod): <code>w = 1 + α · (−ΔB)</code> → <b>premia</b></li>
+</ul>
+Per mantenere il winrate sempre in <b>[0, 100]</b>, il denominatore è <b>pesato sulle win</b>:
+una vittoria con peso <code>w</code> conta anche come <code>w</code> nel totale (non solo nel numeratore).
+</p>
+
+<p class="muted" style="margin-top:14px; max-width: 1000px;">
+Il <b>Bracket Pressure Index (BPI)</b> è la media di ΔB sulle vittorie e indica il rapporto
+tra la potenza del mazzo e il meta del tavolo:
+valori prossimi a <b>0</b> indicano allineamento,
+valori <b>&gt; 0</b> indicano tendenza a vincere sopra il tavolo,
+valori <b>&lt; 0</b> indicano vittorie contro avversari mediamente più forti.
+Il BPI viene mostrato solo se sono presenti almeno <b>2 vittorie con bracket valido</b>.
+</p>
+
+<p class="muted" style="margin-top:12px; max-width: 1000px;">
+Le vittorie vengono attribuite correttamente solo quando il campo <b>Winner</b>
+corrisponde esattamente al nome del <b>Player</b>.
+</p>
+
+{% endblock %}
