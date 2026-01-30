@@ -1,36 +1,20 @@
-# Commander Tracker
+# Stats-only static exporter (pulito)
 
-Small FastAPI + SQLModel (SQLite) web app to track Commander games (players, commanders, optional bracket).
+Questo pacchetto contiene **solo** i file necessari (DB escluso) per generare la pagina **Stats** su GitHub Pages usando JSON.
 
-## Requirements
-
-- **Python >= 3.10**
-- pip
-- Virtualenv strongly recommended
-
-## Run (dev)
+## Uso rapido
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
 pip install -r requirements.txt
-playwright install chromium
-uvicorn app:app --reload --host 0.0.0.0 --port 8000
+python export_stats_light.py --db /percorso/commander_tracker.sqlite
 ```
 
-Open: http://127.0.0.1:8000/
+Output:
+- `docs/data/stats.v1.json`
+- `docs/stats/index.html`
+- `docs/assets/stats.js`
 
-## Data storage
+## GitHub Pages
+Configura Pages per pubblicare la cartella `docs/`.
 
-SQLite file is created under `./data/commander_tracker.sqlite` (relative to `app.py`).
-
-## PDF export (Playwright)
-
-PDF endpoints render the corresponding HTML page via headless Chromium.
-
-By default, the server will use `request.base_url` to build the URL that Chromium opens.
-If your deployment requires a different internal URL (container, reverse proxy, etc.), set:
-
-```bash
-export RENDER_BASE_URL="http://127.0.0.1:8000"
-```
+Nota: lo script **non** include il DB. Devi passare il path con `--db`.
