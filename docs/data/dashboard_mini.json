@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-30T00:12:15.826213+00:00",
+  "generated_at": "2026-01-30T01:19:32.419624+00:00",
   "page": "dashboard_mini",
   "payloads": [
     {
@@ -43,6 +43,14 @@
             "commander": "Magda",
             "games": 4,
             "player": "Fra",
+            "r": 10,
+            "winrate": 50.0,
+            "wins": 2
+          },
+          {
+            "commander": "Vivi",
+            "games": 4,
+            "player": "Matti",
             "r": 10,
             "winrate": 50.0,
             "wins": 2
@@ -109,14 +117,6 @@
             "player": "Matti",
             "r": 9,
             "winrate": 33.3,
-            "wins": 1
-          },
-          {
-            "commander": "Vivi",
-            "games": 4,
-            "player": "Matti",
-            "r": 10,
-            "winrate": 25.0,
             "wins": 1
           },
           {
@@ -280,11 +280,11 @@
           "Fra — Sidisi",
           "Da — K'rrik",
           "Fra — Magda",
+          "Matti — Vivi",
           "Matti — Purphorose",
           "Teo — Arabella",
           "Matti — Sephiroth",
-          "Fra — Abigale",
-          "Fra — Piedemoccio"
+          "Fra — Abigale"
         ],
         "rows": [
           {
@@ -323,6 +323,13 @@
             "wins": 2
           },
           {
+            "commander": "Vivi",
+            "games": 4,
+            "player": "Matti",
+            "winrate": 50.0,
+            "wins": 2
+          },
+          {
             "commander": "Purphorose",
             "games": 2,
             "player": "Matti",
@@ -349,13 +356,6 @@
             "player": "Fra",
             "winrate": 37.5,
             "wins": 3
-          },
-          {
-            "commander": "Piedemoccio",
-            "games": 3,
-            "player": "Fra",
-            "winrate": 33.3,
-            "wins": 1
           }
         ],
         "values": [
@@ -366,9 +366,9 @@
           50.0,
           50.0,
           50.0,
+          50.0,
           41.7,
-          37.5,
-          33.3
+          37.5
         ]
       },
       "params": {
@@ -381,18 +381,18 @@
         "minGames": 3,
         "rows": [
           {
+            "games": 24,
+            "player": "Matti",
+            "r": 18,
+            "winrate": 37.5,
+            "wins": 9
+          },
+          {
             "games": 28,
             "player": "Da",
             "r": 18,
             "winrate": 35.7,
             "wins": 10
-          },
-          {
-            "games": 24,
-            "player": "Matti",
-            "r": 18,
-            "winrate": 33.3,
-            "wins": 8
           },
           {
             "games": 25,
@@ -426,8 +426,8 @@
       },
       "playerWinrate": {
         "labels": [
-          "Da",
           "Matti",
+          "Da",
           "Fra",
           "Giamma",
           "Teo",
@@ -435,16 +435,16 @@
         ],
         "rows": [
           {
+            "games": 24,
+            "player": "Matti",
+            "winrate": 37.5,
+            "wins": 9
+          },
+          {
             "games": 28,
             "player": "Da",
             "winrate": 35.7,
             "wins": 10
-          },
-          {
-            "games": 24,
-            "player": "Matti",
-            "winrate": 33.3,
-            "wins": 8
           },
           {
             "games": 25,
@@ -472,8 +472,8 @@
           }
         ],
         "values": [
+          37.5,
           35.7,
-          33.3,
           32.0,
           19.0,
           13.3,

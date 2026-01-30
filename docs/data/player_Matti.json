@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-30T00:12:15.898876+00:00",
+  "generated_at": "2026-01-30T01:19:32.492818+00:00",
   "page": "player_Matti",
   "payloads": [
     {
@@ -20,8 +20,8 @@
             "games": 4,
             "player": "Matti",
             "r": 10,
-            "winrate": 25.0,
-            "wins": 1
+            "winrate": 50.0,
+            "wins": 2
           },
           {
             "commander": "Ivy",
@@ -88,21 +88,27 @@
           "5p"
         ],
         "values": [
-          25.0,
+          50.0,
           30.0,
           40.0
         ]
       },
       "topCommanders": {
         "labels": [
+          "Vivi",
           "Purphorose",
           "Sephiroth",
           "Ivy",
-          "Vivi",
           "Flubs",
           "Tramutanti"
         ],
         "rows": [
+          {
+            "commander": "Vivi",
+            "games": 4,
+            "winrate": 50.0,
+            "wins": 2
+          },
           {
             "commander": "Purphorose",
             "games": 2,
@@ -122,12 +128,6 @@
             "wins": 1
           },
           {
-            "commander": "Vivi",
-            "games": 4,
-            "winrate": 25.0,
-            "wins": 1
-          },
-          {
             "commander": "Flubs",
             "games": 2,
             "winrate": 0.0,
@@ -142,9 +142,9 @@
         ],
         "values": [
           50.0,
+          50.0,
           41.7,
           33.3,
-          25.0,
           0.0,
           0.0
         ]
@@ -200,7 +200,7 @@
           38.1,
           36.4,
           34.8,
-          33.3
+          37.5
         ]
       }
     }

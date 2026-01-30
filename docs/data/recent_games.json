@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "generated_at": "2026-01-30T00:12:15.705666+00:00",
+  "generated_at": "2026-01-30T01:19:32.298409+00:00",
   "limit": 30,
   "games": [
     {
       "played_at_utc": "2026-01-30T00:10:52.322542",
-      "winner_player": "",
+      "winner_player": "Matti",
       "notes": "",
       "participants": 3,
       "lineup": [

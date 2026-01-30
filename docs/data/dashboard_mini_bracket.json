@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-30T00:12:15.840686+00:00",
+  "generated_at": "2026-01-30T01:19:32.434179+00:00",
   "page": "dashboard_mini_bracket",
   "payloads": [
     {
@@ -229,7 +229,7 @@
             "games": 4,
             "player": "Matti",
             "r": 10,
-            "weighted_winrate": 20.4
+            "weighted_winrate": 46.9
           },
           {
             "commander": "Tezzeret",
@@ -246,12 +246,12 @@
           "Fra — Edric",
           "Fra — Sidisi",
           "Teo — Arabella",
+          "Matti — Vivi",
           "Da — K'rrik",
           "Fra — Magda",
           "Matti — Purphorose",
           "Giamma — Galtha",
-          "Matti — Ivy",
-          "Fra — Abigale"
+          "Matti — Ivy"
         ],
         "rows": [
           {
@@ -277,6 +277,12 @@
             "games": 2,
             "player": "Teo",
             "weighted_winrate": 55.6
+          },
+          {
+            "commander": "Vivi",
+            "games": 4,
+            "player": "Matti",
+            "weighted_winrate": 46.9
           },
           {
             "commander": "K'rrik",
@@ -307,12 +313,6 @@
             "games": 3,
             "player": "Matti",
             "weighted_winrate": 36.8
-          },
-          {
-            "commander": "Abigale",
-            "games": 8,
-            "player": "Fra",
-            "weighted_winrate": 33.9
           }
         ],
         "values": [
@@ -320,12 +320,12 @@
           100.0,
           100.0,
           55.6,
+          46.9,
           45.7,
           44.8,
           44.4,
           42.9,
-          36.8,
-          33.9
+          36.8
         ]
       },
       "params": {
@@ -372,20 +372,26 @@
             "games": 24,
             "player": "Matti",
             "r": 18,
-            "weighted_winrate": 27.0
+            "weighted_winrate": 31.6
           }
         ]
       },
       "playerWinrate": {
         "labels": [
+          "Matti",
           "Da",
           "Fra",
-          "Matti",
           "Giamma",
           "Teo",
           "Stanca"
         ],
         "rows": [
+          {
+            "games": 24,
+            "meta_impact": 0.35,
+            "player": "Matti",
+            "weighted_winrate": 31.6
+          },
           {
             "games": 28,
             "meta_impact": 0.22,
@@ -397,12 +403,6 @@
             "meta_impact": 0.08,
             "player": "Fra",
             "weighted_winrate": 30.2
-          },
-          {
-            "games": 24,
-            "meta_impact": 0.35,
-            "player": "Matti",
-            "weighted_winrate": 27.0
           },
           {
             "games": 21,
@@ -424,9 +424,9 @@
           }
         ],
         "values": [
+          31.6,
           31.4,
           30.2,
-          27.0,
           21.8,
           14.8,
           7.1
