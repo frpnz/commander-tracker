@@ -1,24 +1,20 @@
-# Stats-only static export
+# Commander Tracker – Stats (GitHub Pages)
 
-Genera la pagina **Stats** per GitHub Pages:
-- `docs/data/stats.v1.json`
-- `docs/stats/index.html`
+Questo progetto genera una pagina `docs/stats/` con statistiche **win rate (vittorie / partite)** aggregabili e filtrabili per:
+- Player
+- Player + Commander
+- Bracket
 
-## Install
+## Requisiti
+- Python 3.10+ (nessuna dipendenza esterna)
 
+## Generazione sito
 ```bash
-pip install -r requirements.txt
-```
-
-## Export
-
-```bash
-python export_stats_light.py --db /path/to/commander_tracker.sqlite
-```
-
-## Preview locale
-
-```bash
+python export_stats.py --db data/commander_tracker.sqlite --docs docs
 python -m http.server -d docs 8000
+# poi apri http://localhost:8000/stats/
 ```
-Apri: http://localhost:8000/stats/
+
+## Output
+- `docs/data/stats.v1.json`
+- `docs/stats/index.html` + assets
