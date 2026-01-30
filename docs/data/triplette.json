@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T21:24:30.289123+00:00",
+  "generated_at": "2026-01-30T00:12:15.700077+00:00",
   "data": [
     {
       "player": "Da",
@@ -12,7 +12,7 @@
       "player": "Da",
       "commander": "K'rrik",
       "bracket": 5,
-      "games": 8
+      "games": 10
     },
     {
       "player": "Da",
@@ -30,13 +30,13 @@
       "player": "Da",
       "commander": "Sisay",
       "bracket": 4,
-      "games": 7
+      "games": 9
     },
     {
       "player": "Fra",
       "commander": "Abigale",
       "bracket": 5,
-      "games": 5
+      "games": 8
     },
     {
       "player": "Fra",
@@ -93,16 +93,28 @@
       "games": 1
     },
     {
+      "player": "Fra",
+      "commander": "Tezzeret",
+      "bracket": 5,
+      "games": 1
+    },
+    {
       "player": "Giamma",
       "commander": "Brion",
       "bracket": 2,
-      "games": 3
+      "games": 4
     },
     {
       "player": "Giamma",
       "commander": "Chandra",
       "bracket": 4,
       "games": 2
+    },
+    {
+      "player": "Giamma",
+      "commander": "Chandra",
+      "bracket": 5,
+      "games": 1
     },
     {
       "player": "Giamma",
@@ -114,7 +126,7 @@
       "player": "Giamma",
       "commander": "Halana",
       "bracket": 5,
-      "games": 4
+      "games": 6
     },
     {
       "player": "Giamma",
@@ -144,7 +156,7 @@
       "player": "Matti",
       "commander": "Sephiroth",
       "bracket": 5,
-      "games": 9
+      "games": 12
     },
     {
       "player": "Matti",
@@ -156,7 +168,7 @@
       "player": "Matti",
       "commander": "Vivi",
       "bracket": 5,
-      "games": 3
+      "games": 4
     },
     {
       "player": "Stanca",
@@ -174,13 +186,13 @@
       "player": "Stanca",
       "commander": "Kaalia",
       "bracket": 5,
-      "games": 6
+      "games": 9
     },
     {
       "player": "Stanca",
       "commander": "Volo",
       "bracket": 3,
-      "games": 2
+      "games": 3
     },
     {
       "player": "Teo",

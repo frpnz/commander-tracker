@@ -1,8 +1,148 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T21:24:30.294755+00:00",
+  "generated_at": "2026-01-30T00:12:15.705666+00:00",
   "limit": 30,
   "games": [
+    {
+      "played_at_utc": "2026-01-30T00:10:52.322542",
+      "winner_player": "",
+      "notes": "",
+      "participants": 3,
+      "lineup": [
+        {
+          "player": "Da",
+          "commander": "K'rrik",
+          "bracket": 5
+        },
+        {
+          "player": "Matti",
+          "commander": "Vivi",
+          "bracket": 5
+        },
+        {
+          "player": "Stanca",
+          "commander": "Kaalia",
+          "bracket": 5
+        }
+      ]
+    },
+    {
+      "played_at_utc": "2026-01-30T00:00:45.866398",
+      "winner_player": "Giamma",
+      "notes": "",
+      "participants": 2,
+      "lineup": [
+        {
+          "player": "Fra",
+          "commander": "Tezzeret",
+          "bracket": 5
+        },
+        {
+          "player": "Giamma",
+          "commander": "Chandra",
+          "bracket": 5
+        }
+      ]
+    },
+    {
+      "played_at_utc": "2026-01-29T23:59:58.855260",
+      "winner_player": "Giamma",
+      "notes": "",
+      "participants": 5,
+      "lineup": [
+        {
+          "player": "Da",
+          "commander": "Sisay",
+          "bracket": 4
+        },
+        {
+          "player": "Fra",
+          "commander": "Abigale",
+          "bracket": 5
+        },
+        {
+          "player": "Giamma",
+          "commander": "Halana",
+          "bracket": 5
+        },
+        {
+          "player": "Matti",
+          "commander": "Sephiroth",
+          "bracket": 5
+        },
+        {
+          "player": "Stanca",
+          "commander": "Kaalia",
+          "bracket": 5
+        }
+      ]
+    },
+    {
+      "played_at_utc": "2026-01-29T23:48:29.374162",
+      "winner_player": "Fra",
+      "notes": "",
+      "participants": 5,
+      "lineup": [
+        {
+          "player": "Da",
+          "commander": "Sisay",
+          "bracket": 4
+        },
+        {
+          "player": "Fra",
+          "commander": "Abigale",
+          "bracket": 5
+        },
+        {
+          "player": "Giamma",
+          "commander": "Halana",
+          "bracket": 5
+        },
+        {
+          "player": "Matti",
+          "commander": "Sephiroth",
+          "bracket": 5
+        },
+        {
+          "player": "Stanca",
+          "commander": "Kaalia",
+          "bracket": 5
+        }
+      ]
+    },
+    {
+      "played_at_utc": "2026-01-29T22:20:34.086318",
+      "winner_player": "Da",
+      "notes": "",
+      "participants": 5,
+      "lineup": [
+        {
+          "player": "Da",
+          "commander": "K'rrik",
+          "bracket": 5
+        },
+        {
+          "player": "Fra",
+          "commander": "Abigale",
+          "bracket": 5
+        },
+        {
+          "player": "Giamma",
+          "commander": "Brion",
+          "bracket": 2
+        },
+        {
+          "player": "Matti",
+          "commander": "Sephiroth",
+          "bracket": 5
+        },
+        {
+          "player": "Stanca",
+          "commander": "Volo",
+          "bracket": 3
+        }
+      ]
+    },
     {
       "played_at_utc": "2026-01-29T20:45:54.013593",
       "winner_player": "Da",
@@ -635,128 +775,6 @@
           "player": "Giamma",
           "commander": "Brion",
           "bracket": 2
-        },
-        {
-          "player": "Matti",
-          "commander": "Sephiroth",
-          "bracket": 5
-        },
-        {
-          "player": "Teo",
-          "commander": "Hylda",
-          "bracket": 3
-        }
-      ]
-    },
-    {
-      "played_at_utc": "2026-01-16T22:22:37.755855",
-      "winner_player": "Fra",
-      "notes": "",
-      "participants": 5,
-      "lineup": [
-        {
-          "player": "Da",
-          "commander": "Sisay",
-          "bracket": 4
-        },
-        {
-          "player": "Fra",
-          "commander": "Edric",
-          "bracket": 3
-        },
-        {
-          "player": "Giamma",
-          "commander": "Halana",
-          "bracket": 5
-        },
-        {
-          "player": "Matti",
-          "commander": "Flubs",
-          "bracket": 3
-        },
-        {
-          "player": "Teo",
-          "commander": "Hylda",
-          "bracket": 3
-        }
-      ]
-    },
-    {
-      "played_at_utc": "2026-01-16T14:52:58.013098",
-      "winner_player": "Matti",
-      "notes": "",
-      "participants": 5,
-      "lineup": [
-        {
-          "player": "Da",
-          "commander": "Sisay",
-          "bracket": 4
-        },
-        {
-          "player": "Fra",
-          "commander": "Liesa",
-          "bracket": 3
-        },
-        {
-          "player": "Giamma",
-          "commander": "Kruphix",
-          "bracket": 4
-        },
-        {
-          "player": "Matti",
-          "commander": "Sephiroth",
-          "bracket": 5
-        },
-        {
-          "player": "Teo",
-          "commander": "Hylda",
-          "bracket": 3
-        }
-      ]
-    },
-    {
-      "played_at_utc": "2026-01-16T14:49:56.567006",
-      "winner_player": "Matti",
-      "notes": "",
-      "participants": 4,
-      "lineup": [
-        {
-          "player": "Da",
-          "commander": "Hearthhull",
-          "bracket": 4
-        },
-        {
-          "player": "Fra",
-          "commander": "Jan Jansen",
-          "bracket": 2
-        },
-        {
-          "player": "Matti",
-          "commander": "Sephiroth",
-          "bracket": 5
-        },
-        {
-          "player": "Teo",
-          "commander": "Hylda",
-          "bracket": 3
-        }
-      ]
-    },
-    {
-      "played_at_utc": "2026-01-16T14:14:19.371139",
-      "winner_player": "Fra",
-      "notes": "",
-      "participants": 4,
-      "lineup": [
-        {
-          "player": "Da",
-          "commander": "Hearthhull",
-          "bracket": 4
-        },
-        {
-          "player": "Fra",
-          "commander": "Piedemoccio",
-          "bracket": 4
         },
         {
           "player": "Matti",

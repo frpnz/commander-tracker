@@ -28,3 +28,8 @@ game_id,played_at_utc,participants,winner_player,notes,lineup
 31,2026-01-29T20:24:46.282571,4,Fra,,Da=Hearthhull | Fra=Abigale | Giamma=Kruphix | Matti=Vivi
 32,2026-01-29T20:39:36.052589,2,Da,,Da=Karn | Giamma=Chandra
 33,2026-01-29T20:45:54.013593,4,Da,,Da=K'rrik | Fra=Abigale | Giamma=Kruphix | Matti=Sephiroth
+34,2026-01-29T22:20:34.086318,5,Da,,Da=K'rrik | Fra=Abigale | Giamma=Brion | Matti=Sephiroth | Stanca=Volo
+35,2026-01-29T23:48:29.374162,5,Fra,,Da=Sisay | Fra=Abigale | Giamma=Halana | Matti=Sephiroth | Stanca=Kaalia
+36,2026-01-29T23:59:58.855260,5,Giamma,,Da=Sisay | Fra=Abigale | Giamma=Halana | Matti=Sephiroth | Stanca=Kaalia
+37,2026-01-30T00:00:45.866398,2,Giamma,,Fra=Tezzeret | Giamma=Chandra
+38,2026-01-30T00:10:52.322542,3,,,Da=K'rrik | Matti=Vivi | Stanca=Kaalia

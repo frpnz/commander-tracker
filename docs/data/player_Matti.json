@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T21:24:30.488645+00:00",
+  "generated_at": "2026-01-30T00:12:15.898876+00:00",
   "page": "player_Matti",
   "payloads": [
     {
@@ -9,22 +9,22 @@
         "rows": [
           {
             "commander": "Sephiroth",
-            "games": 9,
+            "games": 12,
             "player": "Matti",
-            "r": 13,
-            "winrate": 55.6,
+            "r": 14,
+            "winrate": 41.7,
             "wins": 5
           },
           {
-            "commander": "Ivy",
-            "games": 3,
+            "commander": "Vivi",
+            "games": 4,
             "player": "Matti",
-            "r": 9,
-            "winrate": 33.3,
+            "r": 10,
+            "winrate": 25.0,
             "wins": 1
           },
           {
-            "commander": "Vivi",
+            "commander": "Ivy",
             "games": 3,
             "player": "Matti",
             "r": 9,
@@ -78,9 +78,9 @@
           20.0
         ],
         "denom": [
-          3,
+          4,
           10,
-          7
+          10
         ],
         "labels": [
           "3p",
@@ -88,15 +88,15 @@
           "5p"
         ],
         "values": [
-          33.3,
+          25.0,
           30.0,
-          57.1
+          40.0
         ]
       },
       "topCommanders": {
         "labels": [
-          "Sephiroth",
           "Purphorose",
+          "Sephiroth",
           "Ivy",
           "Vivi",
           "Flubs",
@@ -104,16 +104,16 @@
         ],
         "rows": [
           {
-            "commander": "Sephiroth",
-            "games": 9,
-            "winrate": 55.6,
-            "wins": 5
-          },
-          {
             "commander": "Purphorose",
             "games": 2,
             "winrate": 50.0,
             "wins": 1
+          },
+          {
+            "commander": "Sephiroth",
+            "games": 12,
+            "winrate": 41.7,
+            "wins": 5
           },
           {
             "commander": "Ivy",
@@ -123,8 +123,8 @@
           },
           {
             "commander": "Vivi",
-            "games": 3,
-            "winrate": 33.3,
+            "games": 4,
+            "winrate": 25.0,
             "wins": 1
           },
           {
@@ -141,10 +141,10 @@
           }
         ],
         "values": [
-          55.6,
           50.0,
+          41.7,
           33.3,
-          33.3,
+          25.0,
           0.0,
           0.0
         ]
@@ -170,7 +170,11 @@
           "2026-01-26",
           "2026-01-29",
           "2026-01-29",
-          "2026-01-29"
+          "2026-01-29",
+          "2026-01-29",
+          "2026-01-29",
+          "2026-01-29",
+          "2026-01-30"
         ],
         "values": [
           0.0,
@@ -192,7 +196,11 @@
           47.1,
           44.4,
           42.1,
-          40.0
+          40.0,
+          38.1,
+          36.4,
+          34.8,
+          33.3
         ]
       }
     }

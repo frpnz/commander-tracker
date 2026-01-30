@@ -1,12 +1,20 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T21:24:30.479499+00:00",
+  "generated_at": "2026-01-30T00:12:15.889969+00:00",
   "page": "player_Giamma",
   "payloads": [
     {
       "pairingBubble": {
         "minGames": 1,
         "rows": [
+          {
+            "commander": "Halana",
+            "games": 6,
+            "player": "Giamma",
+            "r": 11,
+            "winrate": 16.7,
+            "wins": 1
+          },
           {
             "commander": "Kruphix",
             "games": 5,
@@ -16,12 +24,20 @@
             "wins": 1
           },
           {
-            "commander": "Halana",
+            "commander": "Brion",
             "games": 4,
             "player": "Giamma",
             "r": 10,
             "winrate": 0.0,
             "wins": 0
+          },
+          {
+            "commander": "Chandra",
+            "games": 3,
+            "player": "Giamma",
+            "r": 9,
+            "winrate": 33.3,
+            "wins": 1
           },
           {
             "commander": "Galtha",
@@ -30,22 +46,6 @@
             "r": 9,
             "winrate": 33.3,
             "wins": 1
-          },
-          {
-            "commander": "Brion",
-            "games": 3,
-            "player": "Giamma",
-            "r": 9,
-            "winrate": 0.0,
-            "wins": 0
-          },
-          {
-            "commander": "Chandra",
-            "games": 2,
-            "player": "Giamma",
-            "r": 8,
-            "winrate": 0.0,
-            "wins": 0
           }
         ]
       },
@@ -71,10 +71,10 @@
           20.0
         ],
         "denom": [
-          2,
+          3,
           4,
           4,
-          7
+          10
         ],
         "labels": [
           "2p",
@@ -83,21 +83,27 @@
           "5p"
         ],
         "values": [
-          0.0,
+          33.3,
           25.0,
           0.0,
-          14.3
+          20.0
         ]
       },
       "topCommanders": {
         "labels": [
+          "Chandra",
           "Galtha",
           "Kruphix",
           "Halana",
-          "Brion",
-          "Chandra"
+          "Brion"
         ],
         "rows": [
+          {
+            "commander": "Chandra",
+            "games": 3,
+            "winrate": 33.3,
+            "wins": 1
+          },
           {
             "commander": "Galtha",
             "games": 3,
@@ -112,28 +118,22 @@
           },
           {
             "commander": "Halana",
-            "games": 4,
-            "winrate": 0.0,
-            "wins": 0
+            "games": 6,
+            "winrate": 16.7,
+            "wins": 1
           },
           {
             "commander": "Brion",
-            "games": 3,
-            "winrate": 0.0,
-            "wins": 0
-          },
-          {
-            "commander": "Chandra",
-            "games": 2,
+            "games": 4,
             "winrate": 0.0,
             "wins": 0
           }
         ],
         "values": [
           33.3,
+          33.3,
           20.0,
-          0.0,
-          0.0,
+          16.7,
           0.0
         ]
       },
@@ -155,7 +155,11 @@
           "2026-01-26",
           "2026-01-29",
           "2026-01-29",
-          "2026-01-29"
+          "2026-01-29",
+          "2026-01-29",
+          "2026-01-29",
+          "2026-01-29",
+          "2026-01-30"
         ],
         "values": [
           0.0,
@@ -174,7 +178,11 @@
           14.3,
           13.3,
           12.5,
-          11.8
+          11.8,
+          11.1,
+          10.5,
+          15.0,
+          19.0
         ]
       }
     }

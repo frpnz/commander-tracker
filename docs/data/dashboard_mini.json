@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-01-29T21:24:30.414972+00:00",
+  "generated_at": "2026-01-30T00:12:15.826213+00:00",
   "page": "dashboard_mini",
   "payloads": [
     {
@@ -32,20 +32,12 @@
             "wins": 1
           },
           {
-            "commander": "Sephiroth",
-            "games": 9,
-            "player": "Matti",
-            "r": 13,
-            "winrate": 55.6,
-            "wins": 5
-          },
-          {
             "commander": "K'rrik",
-            "games": 8,
+            "games": 10,
             "player": "Da",
-            "r": 12,
+            "r": 13,
             "winrate": 50.0,
-            "wins": 4
+            "wins": 5
           },
           {
             "commander": "Magda",
@@ -72,17 +64,33 @@
             "wins": 1
           },
           {
+            "commander": "Sephiroth",
+            "games": 12,
+            "player": "Matti",
+            "r": 14,
+            "winrate": 41.7,
+            "wins": 5
+          },
+          {
             "commander": "Abigale",
-            "games": 5,
+            "games": 8,
             "player": "Fra",
-            "r": 10,
-            "winrate": 40.0,
-            "wins": 2
+            "r": 12,
+            "winrate": 37.5,
+            "wins": 3
           },
           {
             "commander": "Piedemoccio",
             "games": 3,
             "player": "Fra",
+            "r": 9,
+            "winrate": 33.3,
+            "wins": 1
+          },
+          {
+            "commander": "Chandra",
+            "games": 3,
+            "player": "Giamma",
             "r": 9,
             "winrate": 33.3,
             "wins": 1
@@ -105,18 +113,18 @@
           },
           {
             "commander": "Vivi",
-            "games": 3,
+            "games": 4,
             "player": "Matti",
-            "r": 9,
-            "winrate": 33.3,
+            "r": 10,
+            "winrate": 25.0,
             "wins": 1
           },
           {
             "commander": "Sisay",
-            "games": 7,
+            "games": 9,
             "player": "Da",
-            "r": 11,
-            "winrate": 28.6,
+            "r": 13,
+            "winrate": 22.2,
             "wins": 2
           },
           {
@@ -136,11 +144,19 @@
             "wins": 1
           },
           {
-            "commander": "Kaalia",
-            "games": 7,
-            "player": "Stanca",
+            "commander": "Halana",
+            "games": 6,
+            "player": "Giamma",
             "r": 11,
-            "winrate": 14.3,
+            "winrate": 16.7,
+            "wins": 1
+          },
+          {
+            "commander": "Kaalia",
+            "games": 10,
+            "player": "Stanca",
+            "r": 13,
+            "winrate": 10.0,
             "wins": 1
           },
           {
@@ -152,7 +168,7 @@
             "wins": 1
           },
           {
-            "commander": "Halana",
+            "commander": "Brion",
             "games": 4,
             "player": "Giamma",
             "r": 10,
@@ -160,9 +176,9 @@
             "wins": 0
           },
           {
-            "commander": "Brion",
+            "commander": "Volo",
             "games": 3,
-            "player": "Giamma",
+            "player": "Stanca",
             "r": 9,
             "winrate": 0.0,
             "wins": 0
@@ -184,25 +200,9 @@
             "wins": 0
           },
           {
-            "commander": "Chandra",
-            "games": 2,
-            "player": "Giamma",
-            "r": 8,
-            "winrate": 0.0,
-            "wins": 0
-          },
-          {
             "commander": "Flubs",
             "games": 2,
             "player": "Matti",
-            "r": 8,
-            "winrate": 0.0,
-            "wins": 0
-          },
-          {
-            "commander": "Volo",
-            "games": 2,
-            "player": "Stanca",
             "r": 8,
             "winrate": 0.0,
             "wins": 0
@@ -240,6 +240,14 @@
             "wins": 0
           },
           {
+            "commander": "Tezzeret",
+            "games": 1,
+            "player": "Fra",
+            "r": 7,
+            "winrate": 0.0,
+            "wins": 0
+          },
+          {
             "commander": "Tramutanti",
             "games": 1,
             "player": "Matti",
@@ -270,11 +278,11 @@
           "Da — Karn",
           "Fra — Edric",
           "Fra — Sidisi",
-          "Matti — Sephiroth",
           "Da — K'rrik",
           "Fra — Magda",
           "Matti — Purphorose",
           "Teo — Arabella",
+          "Matti — Sephiroth",
           "Fra — Abigale",
           "Fra — Piedemoccio"
         ],
@@ -301,18 +309,11 @@
             "wins": 1
           },
           {
-            "commander": "Sephiroth",
-            "games": 9,
-            "player": "Matti",
-            "winrate": 55.6,
-            "wins": 5
-          },
-          {
             "commander": "K'rrik",
-            "games": 8,
+            "games": 10,
             "player": "Da",
             "winrate": 50.0,
-            "wins": 4
+            "wins": 5
           },
           {
             "commander": "Magda",
@@ -336,11 +337,18 @@
             "wins": 1
           },
           {
+            "commander": "Sephiroth",
+            "games": 12,
+            "player": "Matti",
+            "winrate": 41.7,
+            "wins": 5
+          },
+          {
             "commander": "Abigale",
-            "games": 5,
+            "games": 8,
             "player": "Fra",
-            "winrate": 40.0,
-            "wins": 2
+            "winrate": 37.5,
+            "wins": 3
           },
           {
             "commander": "Piedemoccio",
@@ -354,12 +362,12 @@
           100.0,
           100.0,
           100.0,
-          55.6,
           50.0,
           50.0,
           50.0,
           50.0,
-          40.0,
+          41.7,
+          37.5,
           33.3
         ]
       },
@@ -373,25 +381,32 @@
         "minGames": 3,
         "rows": [
           {
-            "games": 20,
-            "player": "Matti",
-            "r": 17,
-            "winrate": 40.0,
-            "wins": 8
+            "games": 28,
+            "player": "Da",
+            "r": 18,
+            "winrate": 35.7,
+            "wins": 10
           },
           {
             "games": 24,
-            "player": "Da",
+            "player": "Matti",
             "r": 18,
-            "winrate": 37.5,
-            "wins": 9
+            "winrate": 33.3,
+            "wins": 8
+          },
+          {
+            "games": 25,
+            "player": "Fra",
+            "r": 18,
+            "winrate": 32.0,
+            "wins": 8
           },
           {
             "games": 21,
-            "player": "Fra",
+            "player": "Giamma",
             "r": 17,
-            "winrate": 33.3,
-            "wins": 7
+            "winrate": 19.0,
+            "wins": 4
           },
           {
             "games": 15,
@@ -401,48 +416,47 @@
             "wins": 2
           },
           {
-            "games": 17,
-            "player": "Giamma",
-            "r": 16,
-            "winrate": 11.8,
-            "wins": 2
-          },
-          {
-            "games": 10,
+            "games": 14,
             "player": "Stanca",
-            "r": 13,
-            "winrate": 10.0,
+            "r": 15,
+            "winrate": 7.1,
             "wins": 1
           }
         ]
       },
       "playerWinrate": {
         "labels": [
-          "Matti",
           "Da",
+          "Matti",
           "Fra",
-          "Teo",
           "Giamma",
+          "Teo",
           "Stanca"
         ],
         "rows": [
           {
-            "games": 20,
-            "player": "Matti",
-            "winrate": 40.0,
-            "wins": 8
+            "games": 28,
+            "player": "Da",
+            "winrate": 35.7,
+            "wins": 10
           },
           {
             "games": 24,
-            "player": "Da",
-            "winrate": 37.5,
-            "wins": 9
+            "player": "Matti",
+            "winrate": 33.3,
+            "wins": 8
+          },
+          {
+            "games": 25,
+            "player": "Fra",
+            "winrate": 32.0,
+            "wins": 8
           },
           {
             "games": 21,
-            "player": "Fra",
-            "winrate": 33.3,
-            "wins": 7
+            "player": "Giamma",
+            "winrate": 19.0,
+            "wins": 4
           },
           {
             "games": 15,
@@ -451,25 +465,19 @@
             "wins": 2
           },
           {
-            "games": 17,
-            "player": "Giamma",
-            "winrate": 11.8,
-            "wins": 2
-          },
-          {
-            "games": 10,
+            "games": 14,
             "player": "Stanca",
-            "winrate": 10.0,
+            "winrate": 7.1,
             "wins": 1
           }
         ],
         "values": [
-          40.0,
-          37.5,
+          35.7,
           33.3,
+          32.0,
+          19.0,
           13.3,
-          11.8,
-          10.0
+          7.1
         ]
       }
     }
