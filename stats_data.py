@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Tuple
 
 from sqlmodel import Session, select
 
-from commander_tracker_light.db import (
+from core import (
     Game,
     GameEntry,
     bpi_label,

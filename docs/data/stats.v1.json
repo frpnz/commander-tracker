@@ -1591,6 +1591,5 @@
   "limits": {
     "top_triples": 50,
     "max_unique": 200
-  },
-  "generated_at": "2026-01-30T11:36:28.176449+00:00"
+  }
 }

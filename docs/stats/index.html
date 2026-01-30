@@ -1,1 +1,36 @@
-<!doctype html><meta charset="utf-8"><title>Stats</title><link rel="stylesheet" href="../assets/style.css"><h1>Stats</h1><div id="app"></div><script src="../assets/stats.js"></script>
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stats</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a href="../index.html">Home</a>
+    <span>›</span>
+    <strong>Stats</strong>
+  </header>
+
+  <main class="container">
+    <h1>Stats</h1>
+    <p class="muted">
+      Nota: se apri questo file con <code>file://</code> il browser può bloccare il <code>fetch()</code>.
+      Per vedere i dati, aprilo tramite un server (GitHub Pages o <code>python -m http.server</code>).
+    </p>
+
+    <div id="app" class="card">
+      <div class="row gap">
+        <input id="q" placeholder="Filtra (player/commander/bracket)..." />
+        <select id="size"></select>
+      </div>
+
+      <div id="status" class="muted" style="margin-top: 8px;"></div>
+      <div id="content" style="margin-top: 12px;"></div>
+    </div>
+  </main>
+
+  <script src="../assets/stats.js"></script>
+</body>
+</html>
