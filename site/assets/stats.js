@@ -228,7 +228,7 @@ async function main() {
   const games = data.counts?.games ?? 0;
   const entries = data.counts?.entries ?? 0;
   const gen = data.generated_utc ?? "";
-  $("#meta").textContent = `${games} game · ${entries} entries${gen ? " · gen " + gen : ""}`;
+  $("#meta").textContent = `${games} games · ${entries} appearances ${gen ? " · gen " + gen : ""}`;
 
   setOptions($("#fPlayer"), data.filters?.players || []);
 
