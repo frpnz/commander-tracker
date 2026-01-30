@@ -11,6 +11,7 @@
 *{box-sizing:border-box}
 html,body{height:100%}
 html{color-scheme: dark;}
+html{ -webkit-text-size-adjust: 100%; }
 
 body{
   margin:0;
@@ -21,6 +22,7 @@ body{
   position: relative;
   min-height: 100vh;
   color:var(--text);
+  overflow-x: hidden;
 }
 
 body::before{
@@ -126,6 +128,11 @@ select option{background: var(--bg); color: var(--text);}
   .btn{flex:1}
 }
 
+@media (max-width: 560px){
+  .filters-row{grid-template-columns: 1fr; }
+  .actions{flex-direction:column}
+}
+
 /* --- Tables (stats) --- */
 .grid{
   margin-top:14px;
@@ -197,3 +204,42 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
 
 .footnote{padding:8px 14px 14px; color:var(--muted); font-size:12px}
 .footer{margin:16px 0 30px; color:var(--muted); font-size:12px; text-align:center}
+
+/* --- Mobile: compact header + stacked filters + table rows as cards --- */
+@media (max-width: 720px){
+  .container,.wrap{margin:14px auto; padding:0 12px}
+  .topbar{padding:12px 12px; gap:12px}
+  .meta{display:none}
+  h1{font-size:18px}
+  h2{font-size:14px}
+
+  .filters-row{grid-template-columns: 1fr}
+  .actions{justify-content:stretch}
+
+  .table-wrap{overflow:visible; padding:0 10px 12px}
+  table{min-width:0; border-spacing:0 10px}
+  thead{display:none}
+
+  tbody tr{
+    display:block;
+    padding:10px 12px;
+    border-radius:16px;
+    background: rgba(11,16,32,.28);
+    border:1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(10px);
+  }
+  tbody td{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    padding:6px 0;
+    border:0;
+  }
+  tbody td::before{
+    content: attr(data-label);
+    color:var(--muted);
+    font-weight:650;
+  }
+  tbody tr:hover td{background: transparent}
+}

@@ -57,7 +57,11 @@ function qsSet(state) {
 }
 
 function commandersForPlayer(data, player) {
-  if (!player) return (data.filters?.commanders || []).slice();
+  if (!player) {
+    return (data.filters?.commanders || [])
+      .slice()
+      .sort((a, b) => String(a || "").localeCompare(String(b || "")));
+  }
   const set = new Set();
   for (const r of data.by_player_commander || []) {
     if (r.player === player) set.add(r.commander);
@@ -116,9 +120,10 @@ function sortRows(rows, mode, kind) {
   return arr;
 }
 
-function td(text, className) {
+function td(text, className, label) {
   const cell = document.createElement("td");
   if (className) cell.className = className;
+  if (label) cell.dataset.label = label;
   cell.textContent = text;
   return cell;
 }
@@ -129,11 +134,12 @@ function renderPlayer(rows) {
 
   for (const r of rows) {
     const tr = document.createElement("tr");
-    tr.appendChild(td(r.player ?? "", ""));
-    tr.appendChild(td(String(r.wins ?? 0), "num"));
-    tr.appendChild(td(String(r.games ?? 0), "num"));
+    tr.appendChild(td(r.player ?? "", "", "Player"));
+    tr.appendChild(td(String(r.wins ?? 0), "num", "Vittorie"));
+    tr.appendChild(td(String(r.games ?? 0), "num", "Partite"));
     const rateCell = document.createElement("td");
     rateCell.className = "num";
+    rateCell.dataset.label = "Win rate";
     rateCell.appendChild(makeRateFragment(Number(r.wins || 0), Number(r.games || 0)));
     tr.appendChild(rateCell);
     tb.appendChild(tr);
@@ -148,13 +154,14 @@ function renderPair(rows) {
 
   for (const r of rows.slice(0, cap)) {
     const tr = document.createElement("tr");
-    tr.appendChild(td(r.player ?? "", ""));
-    tr.appendChild(td(r.commander ?? "", ""));
-    tr.appendChild(td(r.bracket === null || r.bracket === undefined ? "n/a" : String(r.bracket), ""));
-    tr.appendChild(td(String(r.wins ?? 0), "num"));
-    tr.appendChild(td(String(r.games ?? 0), "num"));
+    tr.appendChild(td(r.player ?? "", "", "Player"));
+    tr.appendChild(td(r.commander ?? "", "", "Commander"));
+    tr.appendChild(td(r.bracket === null || r.bracket === undefined ? "n/a" : String(r.bracket), "", "Bracket"));
+    tr.appendChild(td(String(r.wins ?? 0), "num", "Vittorie"));
+    tr.appendChild(td(String(r.games ?? 0), "num", "Partite"));
     const rateCell = document.createElement("td");
     rateCell.className = "num";
+    rateCell.dataset.label = "Win rate";
     rateCell.appendChild(makeRateFragment(Number(r.wins || 0), Number(r.games || 0)));
     tr.appendChild(rateCell);
     tb.appendChild(tr);
@@ -168,11 +175,12 @@ function renderBracket(rows) {
   tb.innerHTML = "";
   for (const r of rows) {
     const tr = document.createElement("tr");
-    tr.appendChild(td(r.bracket ?? "n/a", ""));
-    tr.appendChild(td(String(r.wins ?? 0), "num"));
-    tr.appendChild(td(String(r.games ?? 0), "num"));
+    tr.appendChild(td(r.bracket ?? "n/a", "", "Bracket"));
+    tr.appendChild(td(String(r.wins ?? 0), "num", "Vittorie"));
+    tr.appendChild(td(String(r.games ?? 0), "num", "Partite"));
     const rateCell = document.createElement("td");
     rateCell.className = "num";
+    rateCell.dataset.label = "Win rate";
     rateCell.appendChild(makeRateFragment(Number(r.wins || 0), Number(r.games || 0)));
     tr.appendChild(rateCell);
     tb.appendChild(tr);
@@ -228,7 +236,7 @@ async function main() {
   const games = data.counts?.games ?? 0;
   const entries = data.counts?.entries ?? 0;
   const gen = data.generated_utc ?? "";
-  $("#meta").textContent = `${games} games · ${entries} appearances ${gen ? " · gen " + gen : ""}`;
+  $("#meta").textContent = `${games} game · ${entries} entries${gen ? " · gen " + gen : ""}`;
 
   setOptions($("#fPlayer"), data.filters?.players || []);
 
