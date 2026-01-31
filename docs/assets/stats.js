@@ -11,6 +11,46 @@ const $ = (sel) => document.querySelector(sel);
 let winrateBarChart = null;
 let winrateBubbleChart = null;
 
+
+function makeDarkScales({
+  xTitle,
+  yTitle = "Winrate (%)",
+  yMax = 100,
+  xBeginAtZero = true,
+  dash = [1, 6],              // dotted/dashed pattern
+} = {}) {
+  const xGrid = {
+    color: "rgba(255,255,255,0.30)",
+    lineWidth: 1,
+  };
+  const yGrid = {
+    color: "rgba(255,255,255,0.45)",
+    lineWidth: 1,
+  };
+
+  const xTicks = { color: "rgba(255,255,255,0.5)" };
+  const yTicks = { color: "rgba(255,255,255,0.5 )" };
+
+  return {
+    x: {
+      ...(xBeginAtZero ? { beginAtZero: true } : {}),
+      title: { display: true, text: xTitle || "" },
+      grid: xGrid,
+      ticks: xTicks,
+      border: { dash, dashOffset: 0, color: "rgba(255,255,255,0.40)" },
+    },
+    y: {
+      beginAtZero: true,
+      ...(typeof yMax === "number" ? { max: yMax } : {}),
+      title: { display: true, text: yTitle || "" },
+      grid: yGrid,
+      ticks: yTicks,
+      border: { dash, dashOffset: 0, color: "rgba(255,255,255,0.40)" },
+    },
+  };
+}
+
+
 function fmtPct(x) {
   const v = x * 100;
   if (!isFinite(v)) return "0.0%";
@@ -84,9 +124,14 @@ function renderCharts(rowsPlayer, allPlayers, state) {
   if (!barEl || !bubEl) return;
 
   const colorMap = buildPlayerColorMap(allPlayers || []);
-  const rows = (rowsPlayer || []).slice().sort((a, b) => (Number(b.games || 0) - Number(a.games || 0)) || String(a.player || "").localeCompare(String(b.player || "")));
-
-  const labels = rows.map((r) => r.player);
+  const rows = (rowsPlayer || []).slice().sort((a, b) => {
+    const ag = Number(a.games || 0), bg = Number(b.games || 0);
+    const aw = Number(a.wins || 0), bw = Number(b.wins || 0);
+    const ar = ag ? aw / ag : 0;
+    const br = bg ? bw / bg : 0;
+    return (ar - br) || (bg - ag) || String(a.player || "").localeCompare(String(b.player || ""));
+  });
+const labels = rows.map((r) => r.player);
   const winrates = rows.map((r) => {
     const g = Number(r.games || 0);
     const w = Number(r.wins || 0);
@@ -94,6 +139,8 @@ function renderCharts(rowsPlayer, allPlayers, state) {
     return Math.round(pct * 10) / 10;
   });
   const colors = labels.map((p) => colorMap.get(p) || "hsl(0, 0%, 60%)");
+  const maxWinrate = Math.max(...winrates, 0);
+  const yMax = Math.min(100, Math.ceil(maxWinrate * 1.2));
 
   // Destroy previous charts (rerender on filters/sorts)
   if (winrateBarChart) winrateBarChart.destroy();
@@ -106,8 +153,8 @@ function renderCharts(rowsPlayer, allPlayers, state) {
       datasets: [{
         label: "Winrate (%)",
         data: winrates,
-        backgroundColor: colors.map((c) => withAlpha(c, 0.75)),
-        borderColor: colors.map((c) => withAlpha(c, 1.0)),
+        backgroundColor: colors.map((c) => withAlpha(c, 0.45)),
+        borderColor: colors.map((c) => withAlpha(c, .8)),
         borderWidth: 1,
       }],
     },
@@ -115,7 +162,7 @@ function renderCharts(rowsPlayer, allPlayers, state) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { display: true },
+        legend: { display: false },
         tooltip: {
           callbacks: {
             afterLabel: (ctx) => {
@@ -125,10 +172,9 @@ function renderCharts(rowsPlayer, allPlayers, state) {
           },
         },
       },
-      scales: {
-        y: { beginAtZero: true, max: 100, title: { display: true, text: "Winrate (%)" } },
-        x: { title: { display: true, text: "Player" } },
-      },
+      scales: makeDarkScales({ xTitle: "Player", yTitle: "Winrate (%)", yMax: yMax, xBeginAtZero: false })
+
+,
     },
   });
 
@@ -151,14 +197,21 @@ function renderCharts(rowsPlayer, allPlayers, state) {
     };
   });
 
+  // Mediana partite (linea verticale)
+  const gameCounts = rows.map((r) => Number(r.games || 0)).sort((a, b) => a - b);
+  const medianGames = gameCounts.length
+    ? (gameCounts.length % 2
+        ? gameCounts[(gameCounts.length - 1) / 2]
+        : (gameCounts[gameCounts.length / 2 - 1] + gameCounts[gameCounts.length / 2]) / 2)
+    : null;
+
   winrateBubbleChart = new Chart(bubEl, {
     type: "bubble",
     data: { datasets: bubbleDatasets },
-    options: {
+        options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: { display: true, position: "right" },
+      plugins: {        legend: { display: true, position: "right" },
         tooltip: {
           callbacks: {
             label: (ctx) => {
@@ -172,10 +225,10 @@ function renderCharts(rowsPlayer, allPlayers, state) {
           },
         },
       },
-      scales: {
-        x: { beginAtZero: true, title: { display: true, text: "Numero di partite" } },
-        y: { beginAtZero: true, max: 100, title: { display: true, text: "Winrate (%)" } },
-      },
+      scales: makeDarkScales({ xTitle: "Numero di partite", yTitle: "Winrate (%)", yMax: yMax, xBeginAtZero: true })
+
+
+,
     },
   });
 }
