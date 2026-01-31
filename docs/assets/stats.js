@@ -70,7 +70,7 @@ function buildPlayerColorMap(players) {
   const n = Math.max(arr.length, 1);
   arr.forEach((p, i) => {
     const hue = Math.round((360 * i) / n);
-    map.set(p, `hsl(${hue}, 70%, 45%)`);
+    map.set(p, `hsl(${hue}, 70%, 58%)`);
   });
   return map;
 }
