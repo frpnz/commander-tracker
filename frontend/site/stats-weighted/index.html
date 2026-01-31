@@ -12,14 +12,14 @@
       <div class="logo">♟️</div>
       <div>
         <div class="title">Commander Stats</div>
-        <div class="subtitle" id="subtitle">Win rate aggregati e filtrabili</div>
+        <div class="subtitle" id="subtitle">Win rate pesati per bracket (Δ winner vs tavolo)</div>
       </div>
     </div>
     <div class="meta" id="meta"></div>
     <nav class="nav">
       <a class="navlink" href="../">Home</a>
-      <a class="navlink active" href="./">Stats</a>
-      <a class="navlink" href="../stats-weighted/">Stats (pesate)</a>
+      <a class="navlink" href="../stats/">Stats</a>
+      <a class="navlink active" href="./">Stats (pesate)</a>
     </nav>
   </header>
 
@@ -188,6 +188,10 @@
     </footer>
   </main>
 
+  <script>
+    // Enables weighted view in stats.js (uses *..._weighted arrays from stats.v1.json)
+    window.STATS_MODE = "weighted";
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="../assets/stats.js"></script>
 </body>

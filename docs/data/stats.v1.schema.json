@@ -125,6 +125,48 @@
         },
         "additionalProperties": false
       }
+    },
+    "by_player_weighted": {
+      "type": "array",
+      "description": "Like by_player, but games/wins are weighted (float).",
+      "items": {
+        "type": "object",
+        "required": ["player", "games", "wins"],
+        "properties": {
+          "player": { "type": "string" },
+          "games": { "type": "number", "minimum": 0 },
+          "wins": { "type": "number", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "by_player_commander_weighted": {
+      "type": "array",
+      "description": "Like by_player_commander, but games/wins are weighted (float).",
+      "items": {
+        "type": "object",
+        "required": ["player", "commander", "bracket", "games", "wins"],
+        "properties": {
+          "player": { "type": "string" },
+          "commander": { "type": "string" },
+          "bracket": { "type": ["string", "null"] },
+          "games": { "type": "number", "minimum": 0 },
+          "wins": { "type": "number", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "weighted": {
+      "type": "object",
+      "description": "Metadata about the weighting method used.",
+      "required": ["method", "k", "w_min", "w_max"],
+      "properties": {
+        "method": { "type": "string" },
+        "k": { "type": "number" },
+        "w_min": { "type": "number" },
+        "w_max": { "type": "number" }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

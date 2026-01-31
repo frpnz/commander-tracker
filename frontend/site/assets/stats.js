@@ -14,6 +14,23 @@ let winrateBubbleChart = null;
 // Default for Top N commander filter when a single player is selected
 const DEFAULT_TOP_N = 3;
 
+// Page mode (normal vs weighted). Weighted pages set window.STATS_MODE = "weighted".
+const STATS_MODE = (typeof window !== "undefined" && window.STATS_MODE) ? window.STATS_MODE : "normal";
+
+function isWeightedMode() {
+  return String(STATS_MODE || "").toLowerCase() === "weighted";
+}
+
+function viewData(raw) {
+  // Provide a uniform view for the rest of the UI.
+  if (!isWeightedMode()) return raw;
+  return {
+    ...raw,
+    by_player: raw.by_player_weighted || raw.by_player || [],
+    by_player_commander: raw.by_player_commander_weighted || raw.by_player_commander || [],
+  };
+}
+
 
 function makeDarkScales({
   xTitle,
@@ -60,6 +77,29 @@ function fmtPct(x) {
   return v.toFixed(1) + "%";
 }
 
+function fmtCount(x) {
+  const n = Number(x);
+  if (!isFinite(n)) return "0";
+  // Prefer integers when the value is very close to an int.
+  if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+  return n.toFixed(2);
+}
+
+// --- Weighted helpers ---
+// In weighted mode, rows contain both raw counts (wins/games as integers)
+// and weighted sums (wins_w/games_w as floats). We keep tables readable by
+// displaying raw counts, while computing winrate from weighted sums.
+function rowWinsRaw(r) { return Number((r && r.wins) ?? 0); }
+function rowGamesRaw(r) { return Number((r && r.games) ?? 0); }
+function rowWinsW(r) {
+  if (isWeightedMode() && r && r.wins_w !== undefined && r.wins_w !== null) return Number(r.wins_w);
+  return rowWinsRaw(r);
+}
+function rowGamesW(r) {
+  if (isWeightedMode() && r && r.games_w !== undefined && r.games_w !== null) return Number(r.games_w);
+  return rowGamesRaw(r);
+}
+
 function clampTopN(v) {
   const allowed = [3, 5, 10, 15, 20, 25, 30];
   const n = Number(v);
@@ -67,10 +107,13 @@ function clampTopN(v) {
   return DEFAULT_TOP_N;
 }
 
-function makeRateFragment(wins, games) {
+function makeRateFragment(winsRaw, gamesRaw, winsWeighted, gamesWeighted) {
   const span = document.createElement("span");
-  const rate = games ? wins / games : 0;
-  span.innerHTML = `${wins} / ${games} <span class="badge">${fmtPct(rate)}</span>`;
+  const gw = (gamesWeighted === undefined || gamesWeighted === null) ? gamesRaw : gamesWeighted;
+  const ww = (winsWeighted === undefined || winsWeighted === null) ? winsRaw : winsWeighted;
+  const rate = gw ? ww / gw : 0;
+  // Show raw integers (human-meaningful) and compute % from weighted if available.
+  span.innerHTML = `${fmtCount(winsRaw)} / ${fmtCount(gamesRaw)} <span class="badge">${fmtPct(rate)}</span>`;
   return span;
 }
 
@@ -145,8 +188,8 @@ function renderCharts(rowsPlayer, allPlayers, state) {
 
   const labels = rows.map((r) => r.player);
   const winrates = rows.map((r) => {
-    const g = Number(r.games || 0);
-    const w = Number(r.wins || 0);
+    const g = rowGamesW(r);
+    const w = rowWinsW(r);
     const pct = g ? (w / g) * 100 : 0;
     return Math.round(pct * 10) / 10;
   });
@@ -179,7 +222,7 @@ function renderCharts(rowsPlayer, allPlayers, state) {
           callbacks: {
             afterLabel: (ctx) => {
               const r = rows[ctx.dataIndex];
-              return `Partite: ${Number(r.games || 0)} · Vittorie: ${Number(r.wins || 0)}`;
+              return `Partite: ${fmtCount(rowGamesRaw(r))} · Vittorie: ${fmtCount(rowWinsRaw(r))}`;
             },
           },
         },
@@ -193,9 +236,10 @@ function renderCharts(rowsPlayer, allPlayers, state) {
   const bubbleDatasets = rows.map((r) => {
     const p = r.player;
     const c = colorMap.get(p) || "hsl(0, 0%, 60%)";
-    const games = Number(r.games || 0);
-    const wins = Number(r.wins || 0);
-    const wrPct = games ? (wins / games) * 100 : 0;
+    const games = rowGamesRaw(r);
+    const ww = rowWinsW(r);
+    const gw = rowGamesW(r);
+    const wrPct = gw ? (ww / gw) * 100 : 0;
     return {
       label: p,
       data: [{
@@ -232,7 +276,7 @@ function renderCharts(rowsPlayer, allPlayers, state) {
               const y = ctx.raw.y;
               const rr = byPlayer.get(p);
               const wins = rr ? Number(rr.wins || 0) : 0;
-              return `${p}: Partite ${x}, Winrate ${y}%, Vittorie ${wins}`;
+              return `${p}: Partite ${fmtCount(x)}, Winrate ${y}%, Vittorie ${fmtCount(wins)}`;
             },
           },
         },
@@ -289,9 +333,11 @@ function aggregateCommandersForPlayer(rowsPair, player) {
   for (const r of rowsPair || []) {
     if (player && r.player !== player) continue;
     const key = r.commander ?? "";
-    const cur = map.get(key) || { commander: key, wins: 0, games: 0 };
-    cur.wins += Number(r.wins || 0);
-    cur.games += Number(r.games || 0);
+    const cur = map.get(key) || { commander: key, wins: 0, games: 0, wins_w: 0.0, games_w: 0.0 };
+    cur.wins += rowWinsRaw(r);
+    cur.games += rowGamesRaw(r);
+    cur.wins_w += rowWinsW(r);
+    cur.games_w += rowGamesW(r);
     map.set(key, cur);
   }
   return Array.from(map.values());
@@ -304,14 +350,13 @@ function makeDarkScalesHorizontal({
 } = {}) {
   return {
     x: {
-  ticks: {
-    display: true        // ✅ numeri visibili
-  },
-  grid: {
-    display: true,       // ✅ griglia visibile
-    drawTicks: false     // 🔥 SOLO le tacche spariscono
-  }
-},
+      beginAtZero: true,
+      max: typeof xMax === "number" ? xMax : undefined,
+      title: { display: true, text: xTitle },
+      grid: { color: "rgba(255,255,255,0.45)", lineWidth: 1 },
+      ticks: { color: "rgba(255,255,255,0.5 )" },
+      border: { dash: [1, 6], dashOffset: 0, color: "rgba(255,255,255,0.40)" },
+    },
     y: {
       title: { display: true, text: yTitle },
       grid: { color: "rgba(255,255,255,0.30)", lineWidth: 1 },
@@ -359,8 +404,8 @@ function renderCommanderChart(data, state) {
 
   const rowsSorted = rows
     .map((r) => {
-      const g = Number(r.games || 0);
-      const w = Number(r.wins || 0);
+      const g = rowGamesW(r);
+      const w = rowWinsW(r);
       const wr = g ? w / g : 0;
       return { ...r, wr, wrPct: Math.round(wr * 1000) / 10 };
     })
@@ -394,7 +439,7 @@ function renderCommanderChart(data, state) {
           callbacks: {
             afterLabel: (ctx) => {
               const r = rowsSorted[ctx.dataIndex];
-              return `Partite: ${Number(r.games || 0)} · Vittorie: ${Number(r.wins || 0)}`;
+              return `Partite: ${fmtCount(rowGamesRaw(r))} · Vittorie: ${fmtCount(rowWinsRaw(r))}`;
             },
           },
         },
@@ -421,9 +466,11 @@ function aggregateBracketsFromPairs(rowsPair) {
   const map = new Map();
   for (const r of rowsPair || []) {
     const key = r.bracket === null || r.bracket === undefined || r.bracket === "" ? "n/a" : String(r.bracket);
-    const cur = map.get(key) || { bracket: key, wins: 0, games: 0 };
-    cur.wins += Number(r.wins || 0);
-    cur.games += Number(r.games || 0);
+    const cur = map.get(key) || { bracket: key, wins: 0, games: 0, wins_w: 0.0, games_w: 0.0 };
+    cur.wins += rowWinsRaw(r);
+    cur.games += rowGamesRaw(r);
+    cur.wins_w += rowWinsW(r);
+    cur.games_w += rowGamesW(r);
     map.set(key, cur);
   }
   return Array.from(map.values()).sort((a, b) => b.games - a.games || a.bracket.localeCompare(b.bracket));
@@ -433,8 +480,9 @@ function sortRows(rows, mode, kind) {
   const arr = (rows || []).slice();
   const safeNum = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
   const wr = (r) => {
-    const g = safeNum(r.games);
-    return g ? safeNum(r.wins) / g : 0;
+    const g = isWeightedMode() ? safeNum(r.games_w) : safeNum(r.games);
+    const w = isWeightedMode() ? safeNum(r.wins_w) : safeNum(r.wins);
+    return g ? w / g : 0;
   };
 
   const cmpStr = (a, b) => String(a || "").localeCompare(String(b || ""));
@@ -483,12 +531,12 @@ function renderPlayer(rows) {
   for (const r of rows) {
     const tr = document.createElement("tr");
     tr.appendChild(td(r.player ?? "", "", "Player"));
-    tr.appendChild(td(String(r.wins ?? 0), "num", "Vittorie"));
-    tr.appendChild(td(String(r.games ?? 0), "num", "Partite"));
+    tr.appendChild(td(fmtCount(r.wins ?? 0), "num", "Vittorie"));
+    tr.appendChild(td(fmtCount(r.games ?? 0), "num", "Partite"));
     const rateCell = document.createElement("td");
     rateCell.className = "num";
     rateCell.dataset.label = "Win rate";
-    rateCell.appendChild(makeRateFragment(Number(r.wins || 0), Number(r.games || 0)));
+    rateCell.appendChild(makeRateFragment(rowWinsRaw(r), rowGamesRaw(r), rowWinsW(r), rowGamesW(r)));
     tr.appendChild(rateCell);
     tb.appendChild(tr);
   }
@@ -505,12 +553,12 @@ function renderPair(rows) {
     tr.appendChild(td(r.player ?? "", "", "Player"));
     tr.appendChild(td(r.commander ?? "", "", "Commander"));
     tr.appendChild(td(r.bracket === null || r.bracket === undefined ? "n/a" : String(r.bracket), "", "Bracket"));
-    tr.appendChild(td(String(r.wins ?? 0), "num", "Vittorie"));
-    tr.appendChild(td(String(r.games ?? 0), "num", "Partite"));
+    tr.appendChild(td(fmtCount(r.wins ?? 0), "num", "Vittorie"));
+    tr.appendChild(td(fmtCount(r.games ?? 0), "num", "Partite"));
     const rateCell = document.createElement("td");
     rateCell.className = "num";
     rateCell.dataset.label = "Win rate";
-    rateCell.appendChild(makeRateFragment(Number(r.wins || 0), Number(r.games || 0)));
+    rateCell.appendChild(makeRateFragment(rowWinsRaw(r), rowGamesRaw(r), rowWinsW(r), rowGamesW(r)));
     tr.appendChild(rateCell);
     tb.appendChild(tr);
   }
@@ -524,12 +572,12 @@ function renderBracket(rows) {
   for (const r of rows) {
     const tr = document.createElement("tr");
     tr.appendChild(td(r.bracket ?? "n/a", "", "Bracket"));
-    tr.appendChild(td(String(r.wins ?? 0), "num", "Vittorie"));
-    tr.appendChild(td(String(r.games ?? 0), "num", "Partite"));
+    tr.appendChild(td(fmtCount(r.wins ?? 0), "num", "Vittorie"));
+    tr.appendChild(td(fmtCount(r.games ?? 0), "num", "Partite"));
     const rateCell = document.createElement("td");
     rateCell.className = "num";
     rateCell.dataset.label = "Win rate";
-    rateCell.appendChild(makeRateFragment(Number(r.wins || 0), Number(r.games || 0)));
+    rateCell.appendChild(makeRateFragment(rowWinsRaw(r), rowGamesRaw(r), rowWinsW(r), rowGamesW(r)));
     tr.appendChild(rateCell);
     tb.appendChild(tr);
   }
@@ -597,12 +645,16 @@ function buildTables(data) {
 async function main() {
   const res = await fetch("../data/stats.v1.json", { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
-  const data = await res.json();
+  const raw = await res.json();
+  const data = viewData(raw);
 
   const games = data.counts?.games ?? 0;
   const entries = data.counts?.entries ?? 0;
   const gen = data.generated_utc ?? "";
-  $("#meta").textContent = `${games} game · ${entries} entries${gen ? " · gen " + gen : ""}`;
+  const wMeta = isWeightedMode() && raw.weighted
+    ? ` · w: k=${raw.weighted.k}, min=${raw.weighted.w_min}, max=${raw.weighted.w_max}`
+    : "";
+  $("#meta").textContent = `${games} game · ${entries} entries${gen ? " · gen " + gen : ""}${wMeta}`;
 
   setOptions($("#fPlayer"), data.filters?.players || []);
 
