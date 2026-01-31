@@ -7,6 +7,10 @@
 
 const $ = (sel) => document.querySelector(sel);
 
+// Charts (Chart.js)
+let winrateBarChart = null;
+let winrateBubbleChart = null;
+
 function fmtPct(x) {
   const v = x * 100;
   if (!isFinite(v)) return "0.0%";
@@ -18,6 +22,162 @@ function makeRateFragment(wins, games) {
   const rate = games ? wins / games : 0;
   span.innerHTML = `${wins} / ${games} <span class="badge">${fmtPct(rate)}</span>`;
   return span;
+}
+
+function buildPlayerColorMap(players) {
+  const arr = (players || []).slice().sort((a, b) => String(a || "").localeCompare(String(b || "")));
+  const map = new Map();
+  const n = Math.max(arr.length, 1);
+  arr.forEach((p, i) => {
+    const hue = Math.round((360 * i) / n);
+    map.set(p, `hsl(${hue}, 70%, 45%)`);
+  });
+  return map;
+}
+
+function withAlpha(hslColor, alpha) {
+  return String(hslColor || "hsl(0, 0%, 60%)")
+    .replace(/^hsl\(/, "hsla(")
+    .replace(/\)$/, `, ${alpha})`);
+}
+
+function aggregatePlayersFromPairs(rowsPair) {
+  const map = new Map();
+  for (const r of rowsPair || []) {
+    const key = r.player ?? "";
+    const cur = map.get(key) || { player: key, wins: 0, games: 0 };
+    cur.wins += Number(r.wins || 0);
+    cur.games += Number(r.games || 0);
+    map.set(key, cur);
+  }
+  return Array.from(map.values());
+}
+
+function computePlayerRowsForCharts(data, state) {
+  // If commander is selected, base charts on (player,commander,bracket) rows filtered by commander.
+  // Otherwise, use pre-aggregated by_player.
+  if (state.commander) {
+    const rowsPairFiltered = (data.by_player_commander || [])
+      .filter((r) => !state.player || r.player === state.player)
+      .filter((r) => r.commander === state.commander);
+    return aggregatePlayersFromPairs(rowsPairFiltered);
+  }
+  return (data.by_player || []).filter((r) => !state.player || r.player === state.player);
+}
+
+function renderCharts(rowsPlayer, allPlayers, state) {
+  const info = $("#chartInfo");
+  if (info) {
+    const parts = [];
+    if (state.player) parts.push(state.player);
+    if (state.commander) parts.push(state.commander);
+    info.textContent = parts.length
+      ? parts.join(" · ")
+      : `${rowsPlayer.length} player`;
+  }
+
+  // If Chart.js isn't loaded, keep page functional (tables still work).
+  if (!window.Chart) return;
+
+  const barEl = document.getElementById("winrateBar");
+  const bubEl = document.getElementById("winrateBubble");
+  if (!barEl || !bubEl) return;
+
+  const colorMap = buildPlayerColorMap(allPlayers || []);
+  const rows = (rowsPlayer || []).slice().sort((a, b) => (Number(b.games || 0) - Number(a.games || 0)) || String(a.player || "").localeCompare(String(b.player || "")));
+
+  const labels = rows.map((r) => r.player);
+  const winrates = rows.map((r) => {
+    const g = Number(r.games || 0);
+    const w = Number(r.wins || 0);
+    const pct = g ? (w / g) * 100 : 0;
+    return Math.round(pct * 10) / 10;
+  });
+  const colors = labels.map((p) => colorMap.get(p) || "hsl(0, 0%, 60%)");
+
+  // Destroy previous charts (rerender on filters/sorts)
+  if (winrateBarChart) winrateBarChart.destroy();
+  if (winrateBubbleChart) winrateBubbleChart.destroy();
+
+  winrateBarChart = new Chart(barEl, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Winrate (%)",
+        data: winrates,
+        backgroundColor: colors.map((c) => withAlpha(c, 0.75)),
+        borderColor: colors.map((c) => withAlpha(c, 1.0)),
+        borderWidth: 1,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true },
+        tooltip: {
+          callbacks: {
+            afterLabel: (ctx) => {
+              const r = rows[ctx.dataIndex];
+              return `Partite: ${Number(r.games || 0)} · Vittorie: ${Number(r.wins || 0)}`;
+            },
+          },
+        },
+      },
+      scales: {
+        y: { beginAtZero: true, max: 100, title: { display: true, text: "Winrate (%)" } },
+        x: { title: { display: true, text: "Player" } },
+      },
+    },
+  });
+
+  const bubbleDatasets = rows.map((r) => {
+    const p = r.player;
+    const c = colorMap.get(p) || "hsl(0, 0%, 60%)";
+    const games = Number(r.games || 0);
+    const wins = Number(r.wins || 0);
+    const wrPct = games ? (wins / games) * 100 : 0;
+    return {
+      label: p,
+      data: [{
+        x: games,
+        y: Math.round(wrPct * 10) / 10,
+        r: Math.max(4, Math.sqrt(Math.max(games, 1)) * 2.2),
+      }],
+      backgroundColor: withAlpha(c, 0.30),
+      borderColor: withAlpha(c, 1.0),
+      borderWidth: 1,
+    };
+  });
+
+  winrateBubbleChart = new Chart(bubEl, {
+    type: "bubble",
+    data: { datasets: bubbleDatasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: "right" },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const p = ctx.dataset.label;
+              const x = ctx.raw.x;
+              const y = ctx.raw.y;
+              const rr = rows.find((z) => z.player === p);
+              const wins = rr ? Number(rr.wins || 0) : 0;
+              return `${p}: Partite ${x}, Winrate ${y}%, Vittorie ${wins}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: { beginAtZero: true, title: { display: true, text: "Numero di partite" } },
+        y: { beginAtZero: true, max: 100, title: { display: true, text: "Winrate (%)" } },
+      },
+    },
+  });
 }
 
 function setOptions(selectEl, values, keepValue = "") {
@@ -203,6 +363,13 @@ function buildTables(data) {
   if (state.player) parts.push(`player: ${state.player}`);
   if (state.commander) parts.push(`commander: ${state.commander}`);
   $("#hint").textContent = parts.length ? `Filtri attivi → ${parts.join(" · ")}` : "Nessun filtro attivo.";
+
+  // Charts (winrate per player + bubble x=partite)
+  renderCharts(
+    computePlayerRowsForCharts(data, state),
+    data.filters?.players || [],
+    state
+  );
 
   const rowsP = sortRows(
     (data.by_player || []).filter((r) => !state.player || r.player === state.player),

@@ -47,6 +47,29 @@
       <div class="hint" id="hint"></div>
     </section>
 
+    <section class="charts">
+      <section class="card">
+        <div class="card-head">
+          <h2>Winrate per player</h2>
+          <div class="head-tools">
+            <div class="pill" id="chartInfo"></div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="winrateBar" aria-label="Istogramma winrate per player" role="img"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Winrate vs Partite</h2>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="winrateBubble" aria-label="Bubble plot winrate vs partite" role="img"></canvas>
+        </div>
+      </section>
+    </section>
+
     <section class="grid">
       <section class="card">
         <div class="card-head">
@@ -151,6 +174,8 @@
     </footer>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="../assets/stats.js"></script>
 </body>
 </html>
