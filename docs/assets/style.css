@@ -9,7 +9,7 @@
 }
 
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%; overflow-x:hidden}
 html{color-scheme: dark;}
 html{ -webkit-text-size-adjust: 100%; }
 
@@ -218,13 +218,24 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
 }
 
 .footnote{padding:8px 14px 14px; color:var(--muted); font-size:12px}
+
+/* --- Chart HTML legend (2-row compact) --- */
+.html-legend{margin-top:10px; display:grid; grid-auto-flow:column; grid-template-rows:repeat(2, auto); gap:6px 14px; justify-content:center; align-items:center; color:var(--muted); font-size:12px}
+.html-legend .item{display:inline-flex; align-items:center; gap:8px; white-space:nowrap; cursor:pointer; user-select:none}
+.html-legend .swatch{width:10px; height:10px; border-radius:999px; border:1px solid rgba(255,255,255,.25)}
+.html-legend .item.off{opacity:.45}
+
 .footer{margin:16px 0 30px; color:var(--muted); font-size:12px; text-align:center}
 
 /* --- Mobile: compact header + stacked filters + table rows as cards --- */
 @media (max-width: 720px){
   .container,.wrap{margin:14px auto; padding:0 12px}
-  .topbar{padding:12px 12px; gap:12px}
+  .topbar{padding:12px 12px; gap:12px; flex-wrap:wrap; justify-content:flex-start}
   .meta{display:none}
+  .brand{flex:1 1 100%}
+  .nav{flex:1 1 100%; flex-wrap:wrap; justify-content:flex-start; gap:8px}
+  .navlink{padding:8px 10px}
+
   h1{font-size:18px}
   h2{font-size:14px}
 

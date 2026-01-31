@@ -134,6 +134,55 @@ function withAlpha(hslColor, alpha) {
     .replace(/\)$/, `, ${alpha})`);
 }
 
+// --- HTML Legend plugin (2-row compact legend under chart) ---
+const htmlLegendPlugin = {
+  id: "htmlLegend",
+  afterUpdate(chart, _args, options) {
+    const containerID = options && options.containerID;
+    if (!containerID) return;
+
+    let container = document.getElementById(containerID);
+    if (!container) {
+      container = document.createElement("div");
+      container.id = containerID;
+      container.className = "html-legend";
+      const parent = chart.canvas && chart.canvas.parentNode;
+      if (parent) parent.appendChild(container);
+    } else {
+      container.className = "html-legend";
+    }
+
+    while (container.firstChild) container.firstChild.remove();
+
+    const items = chart.options.plugins.legend.labels.generateLabels(chart);
+    items.forEach((item) => {
+      const el = document.createElement("div");
+      el.className = "item" + (item.hidden ? " off" : "");
+      el.onclick = () => {
+        chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
+        chart.update();
+      };
+
+      const sw = document.createElement("span");
+      sw.className = "swatch";
+      sw.style.background = item.fillStyle;
+      sw.style.borderColor = item.strokeStyle;
+
+      const label = document.createElement("span");
+      label.textContent = item.text;
+
+      el.appendChild(sw);
+      el.appendChild(label);
+      container.appendChild(el);
+    });
+  },
+};
+
+if (window.Chart && Chart.register) {
+  Chart.register(htmlLegendPlugin);
+}
+
+
 function aggregatePlayersFromPairs(rowsPair) {
   const map = new Map();
   for (const r of rowsPair || []) {
@@ -228,8 +277,6 @@ function renderCharts(rowsPlayer, allPlayers, state) {
         },
       },
       scales: makeDarkScales({ xTitle: "Player", yTitle: "Winrate (%)", yMax: yMax, xBeginAtZero: false })
-
-,
     },
   });
 
@@ -267,7 +314,9 @@ function renderCharts(rowsPlayer, allPlayers, state) {
         options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {        legend: { display: true, position: "bottom", labels: { boxWidth: 12 } },
+      plugins: {
+        htmlLegend: { containerID: "legend-bubble-1" },
+        legend: { display: false },
         tooltip: {
           callbacks: {
             label: (ctx) => {
@@ -282,9 +331,6 @@ function renderCharts(rowsPlayer, allPlayers, state) {
         },
       },
       scales: makeDarkScales({ xTitle: "Numero di partite", yTitle: "Winrate (%)", yMax: yMax, xBeginAtZero: true })
-
-
-,
     },
   });
 }
