@@ -11,6 +11,9 @@ const $ = (sel) => document.querySelector(sel);
 let winrateBarChart = null;
 let winrateBubbleChart = null;
 
+// Default for Top N commander filter when a single player is selected
+const DEFAULT_TOP_N = 3;
+
 
 function makeDarkScales({
   xTitle,
@@ -55,6 +58,13 @@ function fmtPct(x) {
   const v = x * 100;
   if (!isFinite(v)) return "0.0%";
   return v.toFixed(1) + "%";
+}
+
+function clampTopN(v) {
+  const allowed = [3, 5, 10, 15, 20, 25, 30];
+  const n = Number(v);
+  if (allowed.includes(n)) return n;
+  return DEFAULT_TOP_N;
 }
 
 function makeRateFragment(wins, games) {
@@ -259,6 +269,7 @@ function qsGet() {
   return {
     player: p.get("player") || "",
     commander: p.get("commander") || "",
+    topn: clampTopN(p.get("topn") || DEFAULT_TOP_N),
   };
 }
 
@@ -266,9 +277,131 @@ function qsSet(state) {
   const p = new URLSearchParams();
   if (state.player) p.set("player", state.player);
   if (state.commander) p.set("commander", state.commander);
+  if (state.topn && Number(state.topn) !== DEFAULT_TOP_N) p.set("topn", String(state.topn));
   const url = `${location.pathname}${p.toString() ? "?" + p.toString() : ""}`;
   history.replaceState(null, "", url);
   return url;
+}
+
+function aggregateCommandersForPlayer(rowsPair, player) {
+  // Aggregate (player, commander, bracket) rows -> (commander) totals for a single player
+  const map = new Map();
+  for (const r of rowsPair || []) {
+    if (player && r.player !== player) continue;
+    const key = r.commander ?? "";
+    const cur = map.get(key) || { commander: key, wins: 0, games: 0 };
+    cur.wins += Number(r.wins || 0);
+    cur.games += Number(r.games || 0);
+    map.set(key, cur);
+  }
+  return Array.from(map.values());
+}
+
+function makeDarkScalesHorizontal({
+  xTitle = "Winrate (%)",
+  yTitle = "Commander",
+  xMax = 100,
+} = {}) {
+  return {
+    x: {
+  ticks: {
+    display: true        // ✅ numeri visibili
+  },
+  grid: {
+    display: true,       // ✅ griglia visibile
+    drawTicks: false     // 🔥 SOLO le tacche spariscono
+  }
+},
+    y: {
+      title: { display: true, text: yTitle },
+      grid: { color: "rgba(255,255,255,0.30)", lineWidth: 1 },
+      ticks: { color: "rgba(255,255,255,0.5)" },
+      border: { dash: [1, 6], dashOffset: 0, color: "rgba(255,255,255,0.40)" },
+    },
+  };
+}
+
+function renderCommanderChart(data, state) {
+  const info = $("#chartInfo");
+  const title = $("#chartTitle");
+  const bubbleCard = $("#bubbleCard");
+  const topWrap = $("#topNWrap");
+  const topSel = $("#fTopN");
+
+  // Toggle UI bits
+  if (bubbleCard) bubbleCard.classList.add("is-hidden");
+  if (topWrap) topWrap.classList.remove("is-hidden");
+
+  const player = state.player;
+  const topN = clampTopN(state.topn);
+  if (topSel) topSel.value = String(topN);
+
+  if (title) title.textContent = `Top commander · ${player}`;
+  if (info) {
+    const extra = state.commander ? ` · filtro: ${state.commander}` : "";
+    info.textContent = `Top ${topN}${extra}`;
+  }
+
+  if (!window.Chart) return;
+  const barEl = document.getElementById("winrateBar");
+  if (!barEl) return;
+
+  // Destroy previous charts
+  if (winrateBarChart) winrateBarChart.destroy();
+  if (winrateBubbleChart) {
+    winrateBubbleChart.destroy();
+    winrateBubbleChart = null;
+  }
+
+  // Build commander rows
+  let rows = aggregateCommandersForPlayer(data.by_player_commander || [], player);
+  if (state.commander) rows = rows.filter((r) => r.commander === state.commander);
+
+  const rowsSorted = rows
+    .map((r) => {
+      const g = Number(r.games || 0);
+      const w = Number(r.wins || 0);
+      const wr = g ? w / g : 0;
+      return { ...r, wr, wrPct: Math.round(wr * 1000) / 10 };
+    })
+    .sort((a, b) => (b.wr - a.wr) || (Number(b.games || 0) - Number(a.games || 0)) || String(a.commander || "").localeCompare(String(b.commander || "")))
+    .slice(0, Math.max(1, topN));
+
+  const labels = rowsSorted.map((r) => r.commander || "(n/a)");
+  const winrates = rowsSorted.map((r) => r.wrPct);
+  const maxWr = Math.max(...winrates, 0);
+  const xMax = Math.min(100, Math.ceil(maxWr * 1.2));
+
+  winrateBarChart = new Chart(barEl, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Winrate (%)",
+        data: winrates,
+        backgroundColor: withAlpha("hsl(190, 80%, 60%)", 0.30),
+        borderColor: withAlpha("hsl(190, 80%, 60%)", 0.85),
+        borderWidth: 1,
+      }],
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel: (ctx) => {
+              const r = rowsSorted[ctx.dataIndex];
+              return `Partite: ${Number(r.games || 0)} · Vittorie: ${Number(r.wins || 0)}`;
+            },
+          },
+        },
+      },
+      scales: makeDarkScalesHorizontal({ xTitle: "Winrate (%)", yTitle: "Commander", xMax }),
+    },
+  });
 }
 
 function commandersForPlayer(data, player) {
@@ -411,6 +544,7 @@ function buildTables(data) {
   const state = {
     player: $("#fPlayer").value,
     commander: $("#fCommander").value,
+    topn: clampTopN($("#fTopN")?.value || DEFAULT_TOP_N),
   };
   qsSet(state);
 
@@ -419,12 +553,22 @@ function buildTables(data) {
   if (state.commander) parts.push(`commander: ${state.commander}`);
   $("#hint").textContent = parts.length ? `Filtri attivi → ${parts.join(" · ")}` : "Nessun filtro attivo.";
 
-  // Charts (winrate per player + bubble x=partite)
-  renderCharts(
-    computePlayerRowsForCharts(data, state),
-    data.filters?.players || [],
-    state
-  );
+  // Charts
+  const bubbleCard = $("#bubbleCard");
+  const topWrap = $("#topNWrap");
+  const title = $("#chartTitle");
+  if (state.player) {
+    renderCommanderChart(data, state);
+  } else {
+    if (bubbleCard) bubbleCard.classList.remove("is-hidden");
+    if (topWrap) topWrap.classList.add("is-hidden");
+    if (title) title.textContent = "Winrate per player";
+    renderCharts(
+      computePlayerRowsForCharts(data, state),
+      data.filters?.players || [],
+      state
+    );
+  }
 
   const rowsP = sortRows(
     (data.by_player || []).filter((r) => !state.player || r.player === state.player),
@@ -466,6 +610,8 @@ async function main() {
   const qs = qsGet();
   $("#fPlayer").value = qs.player;
   updateCommanderOptions(data, qs.player, qs.commander);
+  const topSel = $("#fTopN");
+  if (topSel) topSel.value = String(qs.topn || DEFAULT_TOP_N);
 
   const rerender = () => buildTables(data);
 
@@ -475,6 +621,7 @@ async function main() {
     rerender();
   });
   $("#fCommander").addEventListener("change", rerender);
+  $("#fTopN")?.addEventListener("change", rerender);
 
   // Sorting dropdowns
   $("#sPlayer")?.addEventListener("change", rerender);
@@ -484,6 +631,7 @@ async function main() {
   $("#btnReset").addEventListener("click", () => {
     $("#fPlayer").value = "";
     updateCommanderOptions(data, "", "");
+    if ($("#fTopN")) $("#fTopN").value = String(DEFAULT_TOP_N);
     rerender();
   });
 
@@ -491,6 +639,7 @@ async function main() {
     const url = qsSet({
       player: $("#fPlayer").value,
       commander: $("#fCommander").value,
+      topn: clampTopN($("#fTopN")?.value || DEFAULT_TOP_N),
     });
     try {
       const full = location.origin ? location.origin + url : url;

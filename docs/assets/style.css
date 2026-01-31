@@ -185,6 +185,8 @@ h2{margin:0; font-size:15px; letter-spacing:.2px}
   border-radius:999px;
 }
 
+.is-hidden{display:none !important;}
+
 .table-wrap{overflow:auto; padding:0 6px 10px}
 table{width:100%; border-collapse:separate; border-spacing:0; min-width:560px}
 thead th{

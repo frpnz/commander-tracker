@@ -39,6 +39,19 @@
           </select>
         </label>
 
+        <label id="topNWrap" class="is-hidden">
+          Top N commander
+          <select id="fTopN">
+            <option value="3" selected>3</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="25">25</option>
+            <option value="30">30</option>
+          </select>
+        </label>
+
         <div class="actions">
           <button id="btnReset" class="btn">Reset</button>
           <button id="btnLink" class="btn btn-primary">Copia link filtri</button>
@@ -50,7 +63,7 @@
     <section class="charts">
       <section class="card">
         <div class="card-head">
-          <h2>Winrate per player</h2>
+          <h2 id="chartTitle">Winrate per player</h2>
           <div class="head-tools">
             <div class="pill" id="chartInfo"></div>
           </div>
@@ -60,7 +73,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card" id="bubbleCard">
         <div class="card-head">
           <h2>Winrate vs Partite</h2>
         </div>
