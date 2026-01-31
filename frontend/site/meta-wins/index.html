@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Meta Wins</title>
+  <link rel="stylesheet" href="../assets/style.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">♟️</div>
+      <div>
+        <div class="title">Commander Stats</div>
+        <div class="subtitle" id="subtitle">Meta Wins · WBD (Δ winner vs media tavolo, winner escluso)</div>
+      </div>
+    </div>
+    <div class="meta" id="meta"></div>
+    <nav class="nav">
+      <a class="navlink" href="../">Home</a>
+      <a class="navlink" href="../stats/">Stats</a>
+      <a class="navlink" href="../stats-weighted/">Stats (pesate)</a>
+      <a class="navlink active" href="./">Meta Wins</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="charts onecol">
+      <!-- Riquadro 1 -->
+      <section class="card">
+        <div class="card-head">
+          <h2>WBD per player (solo vittorie)</h2>
+          <div class="head-tools">
+            <div class="pill" id="p1info"></div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="wbdPlayers" aria-label="WBD per player" role="img"></canvas>
+        </div>
+      </section>
+
+      <!-- Riquadro 2 -->
+      <section class="card">
+        <div class="card-head">
+          <h2>WBD per commander (player selezionato)</h2>
+          <div class="head-tools">
+            <label class="sortlabel">
+              <span>Player</span>
+              <select id="fPlayer"></select>
+            </label>
+            <label class="sortlabel">
+              <span>Min wins</span>
+              <select id="fMinWins">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+              </select>
+            </label>
+            <div class="pill" id="p2info"></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="tCmd">
+            <thead>
+              <tr>
+                <th>Commander</th>
+                <th class="num">Wins (usate)</th>
+                <th class="num">WBD</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="footnote">WBD = media di (bracket winner − media bracket altri al tavolo) sulle sole vittorie con bracket disponibili. Colori saturati su ±1.0.</div>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <span>Static site per GitHub Pages · dati da SQLite</span>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="../assets/meta-wins.js"></script>
+</body>
+</html>

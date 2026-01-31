@@ -129,6 +129,7 @@ select option{background: var(--bg); color: var(--text);}
   grid-template-columns: 1fr;
   gap:14px;
 }
+.charts.onecol{grid-template-columns: 1fr !important}
 @media (min-width: 980px){
   .charts{grid-template-columns: 1fr 1fr}
 }
@@ -188,6 +189,9 @@ h2{margin:0; font-size:15px; letter-spacing:.2px}
 .is-hidden{display:none !important;}
 
 .table-wrap{overflow:auto; padding:0 6px 10px}
+
+/* Meta Wins */
+.heatcell{border-radius:10px; padding:6px 10px; text-align:right; font-variant-numeric: tabular-nums;}
 table{width:100%; border-collapse:separate; border-spacing:0; min-width:560px}
 thead th{
   position:sticky; top:0;

@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-01-31T21:34:48Z",
+  "generated_utc": "2026-01-31T23:43:43Z",
   "counts": {
     "games": 34,
     "entries": 127
@@ -701,5 +701,193 @@
     "k": 0.3,
     "w_min": 0.7,
     "w_max": 1.4
-  }
+  },
+  "meta_wins": {
+    "method": "wbd_delta_winner_minus_avg_table_excl_winner",
+    "saturation": {
+      "min": -1.0,
+      "max": 1.0
+    },
+    "min_wins_default": 3
+  },
+  "meta_wins_by_player": [
+    {
+      "player": "Matti",
+      "wins_total": 9,
+      "wins_used": 9,
+      "wbd": 0.9444444444444444
+    },
+    {
+      "player": "Da",
+      "wins_total": 10,
+      "wins_used": 10,
+      "wbd": 0.7083333333333333
+    },
+    {
+      "player": "Giamma",
+      "wins_total": 4,
+      "wins_used": 4,
+      "wbd": -0.5
+    },
+    {
+      "player": "Fra",
+      "wins_total": 8,
+      "wins_used": 8,
+      "wbd": 0.33333333333333337
+    },
+    {
+      "player": "Teo",
+      "wins_total": 2,
+      "wins_used": 2,
+      "wbd": -0.33333333333333326
+    },
+    {
+      "player": "Stanca",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": 0.0
+    }
+  ],
+  "meta_wins_by_player_commander": [
+    {
+      "player": "Da",
+      "commander": "K'rrik",
+      "wins_total": 5,
+      "wins_used": 5,
+      "wbd": 0.55
+    },
+    {
+      "player": "Da",
+      "commander": "Karn",
+      "wins_total": 2,
+      "wins_used": 2,
+      "wbd": 1.0
+    },
+    {
+      "player": "Da",
+      "commander": "Sisay",
+      "wins_total": 2,
+      "wins_used": 2,
+      "wbd": 1.0
+    },
+    {
+      "player": "Da",
+      "commander": "Hearthhull",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": 0.3333333333333335
+    },
+    {
+      "player": "Fra",
+      "commander": "Abigale",
+      "wins_total": 3,
+      "wins_used": 3,
+      "wbd": 0.4722222222222223
+    },
+    {
+      "player": "Fra",
+      "commander": "Magda",
+      "wins_total": 2,
+      "wins_used": 2,
+      "wbd": 0.75
+    },
+    {
+      "player": "Fra",
+      "commander": "Edric",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": -0.75
+    },
+    {
+      "player": "Fra",
+      "commander": "Sidisi",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": 0.5
+    },
+    {
+      "player": "Fra",
+      "commander": "Piedemoccio",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": 0.0
+    },
+    {
+      "player": "Giamma",
+      "commander": "Galtha",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": -1.25
+    },
+    {
+      "player": "Giamma",
+      "commander": "Kruphix",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": -1.0
+    },
+    {
+      "player": "Giamma",
+      "commander": "Halana",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": 0.25
+    },
+    {
+      "player": "Giamma",
+      "commander": "Chandra",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": 0.0
+    },
+    {
+      "player": "Matti",
+      "commander": "Sephiroth",
+      "wins_total": 5,
+      "wins_used": 5,
+      "wbd": 1.5166666666666668
+    },
+    {
+      "player": "Matti",
+      "commander": "Vivi",
+      "wins_total": 2,
+      "wins_used": 2,
+      "wbd": 0.375
+    },
+    {
+      "player": "Matti",
+      "commander": "Purphorose",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": 0.6666666666666665
+    },
+    {
+      "player": "Matti",
+      "commander": "Ivy",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": -0.5
+    },
+    {
+      "player": "Stanca",
+      "commander": "Kaalia",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": 0.0
+    },
+    {
+      "player": "Teo",
+      "commander": "Arabella",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": -0.6666666666666665
+    },
+    {
+      "player": "Teo",
+      "commander": "Hylda",
+      "wins_total": 1,
+      "wins_used": 1,
+      "wbd": 0.0
+    }
+  ]
 }
