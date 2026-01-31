@@ -267,7 +267,7 @@ function renderCharts(rowsPlayer, allPlayers, state) {
         options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {        legend: { display: true, position: "right" },
+      plugins: {        legend: { display: true, position: "bottom", labels: { boxWidth: 12 } },
         tooltip: {
           callbacks: {
             label: (ctx) => {
