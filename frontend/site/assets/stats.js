@@ -113,7 +113,7 @@ function renderCharts(rowsPlayer, allPlayers, state) {
     if (state.commander) parts.push(state.commander);
     info.textContent = parts.length
       ? parts.join(" · ")
-      : `${rowsPlayer.length} player`;
+      : `${rowsPlayer.length} players`;
   }
 
   // If Chart.js isn't loaded, keep page functional (tables still work).
@@ -131,7 +131,9 @@ function renderCharts(rowsPlayer, allPlayers, state) {
     const br = bg ? bw / bg : 0;
     return (ar - br) || (bg - ag) || String(a.player || "").localeCompare(String(b.player || ""));
   });
-const labels = rows.map((r) => r.player);
+  const byPlayer = new Map(rows.map((r) => [r.player, r]));
+
+  const labels = rows.map((r) => r.player);
   const winrates = rows.map((r) => {
     const g = Number(r.games || 0);
     const w = Number(r.wins || 0);
@@ -218,7 +220,7 @@ const labels = rows.map((r) => r.player);
               const p = ctx.dataset.label;
               const x = ctx.raw.x;
               const y = ctx.raw.y;
-              const rr = rows.find((z) => z.player === p);
+              const rr = byPlayer.get(p);
               const wins = rr ? Number(rr.wins || 0) : 0;
               return `${p}: Partite ${x}, Winrate ${y}%, Vittorie ${wins}`;
             },

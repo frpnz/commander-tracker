@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Commander Tracker Stats v1",
+  "type": "object",
+  "required": [
+    "version",
+    "generated_utc",
+    "counts",
+    "filters",
+    "by_player",
+    "by_player_commander"
+  ],
+  "properties": {
+    "version": {
+      "const": "v1"
+    },
+    "generated_utc": {
+      "type": "string",
+      "description": "UTC timestamp in ISO-8601, ends with Z"
+    },
+    "counts": {
+      "type": "object",
+      "required": [
+        "games",
+        "entries"
+      ],
+      "properties": {
+        "games": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entries": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "filters": {
+      "type": "object",
+      "required": [
+        "players",
+        "commanders",
+        "brackets"
+      ],
+      "properties": {
+        "players": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "commanders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "brackets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "by_player": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "player",
+          "games",
+          "wins"
+        ],
+        "properties": {
+          "player": {
+            "type": "string"
+          },
+          "games": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "wins": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "by_player_commander": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "player",
+          "commander",
+          "bracket",
+          "games",
+          "wins"
+        ],
+        "properties": {
+          "player": {
+            "type": "string"
+          },
+          "commander": {
+            "type": "string"
+          },
+          "bracket": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "games": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "wins": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
