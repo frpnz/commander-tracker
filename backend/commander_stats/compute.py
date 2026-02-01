@@ -94,6 +94,16 @@ def compute_stats(conn: sqlite3.Connection) -> Dict[str, Any]:
     wbd_by_player: Dict[str, Dict[str, Any]] = {}
     wbd_by_player_commander: Dict[Tuple[str, str], Dict[str, Any]] = {}
 
+    # --- Meta Profile: Meta Deviation Index (MDI) + Meta Pressure Index (MPI) ---
+    # Independent of outcome, for each player and game:
+    #   d = b_player - avg(brackets_other_players)  (excluding the player)
+    #   MDI = mean(d)
+    #   MPI = mean(|d|)
+    # We only include a game in MDI/MPI if we can compute both b_player and
+    # the average of other players' brackets (numeric, excluding player).
+    meta_by_player: Dict[str, Dict[str, Any]] = {}
+    meta_by_player_commander: Dict[Tuple[str, str], Dict[str, Any]] = {}
+
     for g in games.values():
         winner = g.get("winner")
         entries = g.get("entries") or []
@@ -152,6 +162,59 @@ def compute_stats(conn: sqlite3.Connection) -> Dict[str, Any]:
             if delta_val is not None:
                 curc["wins_used"] += 1
                 curc["wbd_sum"] += float(delta_val)
+
+        # --- Meta Profile (MDI/MPI) aggregation ---
+        # Every player contributes (independent of outcome). We compute deltas
+        # using numeric brackets only and excluding the player from the table
+        # average.
+        sum_all = 0.0
+        count_all = 0
+        br_by_player: Dict[str, float] = {}
+        for e in entries:
+            p = e.get("player") or ""
+            bb = _to_float_bracket(e.get("bracket"))
+            if bb is None:
+                continue
+            br_by_player[p] = float(bb)
+            sum_all += float(bb)
+            count_all += 1
+
+        for e in entries:
+            p = e.get("player") or ""
+            c = e.get("commander") or ""
+
+            # Track total games even when bracket is missing/unusable.
+            curm = meta_by_player.get(p)
+            if curm is None:
+                curm = {"player": p, "games_total": 0, "games_used": 0, "mdi_sum": 0.0, "mpi_sum": 0.0}
+                meta_by_player[p] = curm
+            curm["games_total"] += 1
+
+            curmc = meta_by_player_commander.get((p, c))
+            if curmc is None:
+                curmc = {"player": p, "commander": c, "games_total": 0, "games_used": 0, "mdi_sum": 0.0, "mpi_sum": 0.0}
+                meta_by_player_commander[(p, c)] = curmc
+            curmc["games_total"] += 1
+
+            bp = br_by_player.get(p)
+            if bp is None:
+                continue
+            if count_all <= 1:
+                continue
+            sum_others = sum_all - float(bp)
+            count_others = count_all - 1
+            if count_others <= 0:
+                continue
+            avg_others = sum_others / float(count_others)
+            d = float(bp) - float(avg_others)
+
+            curm["games_used"] += 1
+            curm["mdi_sum"] += d
+            curm["mpi_sum"] += abs(d)
+
+            curmc["games_used"] += 1
+            curmc["mdi_sum"] += d
+            curmc["mpi_sum"] += abs(d)
 
         for e in entries:
             p = e.get("player") or ""
@@ -295,6 +358,55 @@ def compute_stats(conn: sqlite3.Connection) -> Dict[str, Any]:
         )
     )
 
+    # Finalize meta profile outputs (MDI/MPI)
+    meta_profile_by_player = []
+    for r in meta_by_player.values():
+        used = int(r.get("games_used") or 0)
+        mdi = (float(r.get("mdi_sum") or 0.0) / used) if used > 0 else None
+        mpi = (float(r.get("mpi_sum") or 0.0) / used) if used > 0 else None
+        meta_profile_by_player.append(
+            {
+                "player": r.get("player") or "",
+                "games_total": int(r.get("games_total") or 0),
+                "games_used": used,
+                "mdi": mdi,
+                "mpi": mpi,
+            }
+        )
+    meta_profile_by_player.sort(
+        key=lambda r: (
+            1 if r.get("mdi") is None else 0,
+            -int(r.get("games_used") or 0),
+            -float(r.get("mpi") or 0.0),
+            str(r.get("player") or ""),
+        )
+    )
+
+    meta_profile_by_player_commander = []
+    for r in meta_by_player_commander.values():
+        used = int(r.get("games_used") or 0)
+        mdi = (float(r.get("mdi_sum") or 0.0) / used) if used > 0 else None
+        mpi = (float(r.get("mpi_sum") or 0.0) / used) if used > 0 else None
+        meta_profile_by_player_commander.append(
+            {
+                "player": r.get("player") or "",
+                "commander": r.get("commander") or "",
+                "games_total": int(r.get("games_total") or 0),
+                "games_used": used,
+                "mdi": mdi,
+                "mpi": mpi,
+            }
+        )
+    meta_profile_by_player_commander.sort(
+        key=lambda r: (
+            str(r.get("player") or ""),
+            1 if r.get("mdi") is None else 0,
+            -int(r.get("games_used") or 0),
+            -float(r.get("mpi") or 0.0),
+            str(r.get("commander") or ""),
+        )
+    )
+
     return {
         "version": "v1",
         "generated_utc": generated_utc,
@@ -317,4 +429,11 @@ def compute_stats(conn: sqlite3.Connection) -> Dict[str, Any]:
         },
         "meta_wins_by_player": meta_wins_by_player,
         "meta_wins_by_player_commander": meta_wins_by_player_commander,
+        "meta_profile": {
+            "method": "delta_player_minus_avg_table_excl_player",
+            "saturation_mdi": {"min": -1.0, "max": 1.0},
+            "min_games_default": 3,
+        },
+        "meta_profile_by_player": meta_profile_by_player,
+        "meta_profile_by_player_commander": meta_profile_by_player_commander,
     }

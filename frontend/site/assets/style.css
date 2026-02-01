@@ -192,6 +192,12 @@ h2{margin:0; font-size:15px; letter-spacing:.2px}
 
 /* Meta Wins */
 .heatcell{border-radius:10px; padding:6px 10px; text-align:right; font-variant-numeric: tabular-nums;}
+
+/* Meta Profile */
+.mpicell{display:flex; align-items:center; justify-content:flex-end; gap:10px}
+.mpibar{width:90px; max-width:120px; height:8px; border-radius:999px; background: rgba(255,255,255,.10); overflow:hidden; border:1px solid rgba(255,255,255,.14)}
+.mpibar > span{display:block; height:100%; width:0%; background: rgba(110,231,255,.55)}
+.mpilabel{min-width:52px; text-align:right; font-variant-numeric: tabular-nums; color: var(--text)}
 table{width:100%; border-collapse:separate; border-spacing:0; min-width:560px}
 thead th{
   position:sticky; top:0;

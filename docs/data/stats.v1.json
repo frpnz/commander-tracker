@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-01-31T23:43:43Z",
+  "generated_utc": "2026-02-01T00:15:53Z",
   "counts": {
     "games": 34,
     "entries": 127
@@ -888,6 +888,324 @@
       "wins_total": 1,
       "wins_used": 1,
       "wbd": 0.0
+    }
+  ],
+  "meta_profile": {
+    "method": "delta_player_minus_avg_table_excl_player",
+    "saturation_mdi": {
+      "min": -1.0,
+      "max": 1.0
+    },
+    "min_games_default": 3
+  },
+  "meta_profile_by_player": [
+    {
+      "player": "Da",
+      "games_total": 28,
+      "games_used": 28,
+      "mdi": 0.33035714285714285,
+      "mpi": 0.6636904761904763
+    },
+    {
+      "player": "Fra",
+      "games_total": 25,
+      "games_used": 25,
+      "mdi": 0.11666666666666668,
+      "mpi": 0.7033333333333333
+    },
+    {
+      "player": "Matti",
+      "games_total": 24,
+      "games_used": 24,
+      "mdi": 0.44444444444444436,
+      "mpi": 0.9027777777777778
+    },
+    {
+      "player": "Giamma",
+      "games_total": 21,
+      "games_used": 21,
+      "mdi": -0.4523809523809524,
+      "mpi": 0.9761904761904762
+    },
+    {
+      "player": "Teo",
+      "games_total": 15,
+      "games_used": 15,
+      "mdi": -0.661111111111111,
+      "mpi": 0.8611111111111109
+    },
+    {
+      "player": "Stanca",
+      "games_total": 14,
+      "games_used": 14,
+      "mdi": -0.24404761904761907,
+      "mpi": 0.6964285714285714
+    }
+  ],
+  "meta_profile_by_player_commander": [
+    {
+      "player": "Da",
+      "commander": "K'rrik",
+      "games_total": 10,
+      "games_used": 10,
+      "mdi": 0.6583333333333333,
+      "mpi": 0.6583333333333333
+    },
+    {
+      "player": "Da",
+      "commander": "Sisay",
+      "games_total": 9,
+      "games_used": 9,
+      "mdi": -0.027777777777777776,
+      "mpi": 0.6388888888888888
+    },
+    {
+      "player": "Da",
+      "commander": "Hearthhull",
+      "games_total": 6,
+      "games_used": 6,
+      "mdi": -0.06944444444444449,
+      "mpi": 0.48611111111111116
+    },
+    {
+      "player": "Da",
+      "commander": "Karn",
+      "games_total": 2,
+      "games_used": 2,
+      "mdi": 1.0,
+      "mpi": 1.0
+    },
+    {
+      "player": "Da",
+      "commander": "Lotho",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": 1.3333333333333335,
+      "mpi": 1.3333333333333335
+    },
+    {
+      "player": "Fra",
+      "commander": "Abigale",
+      "games_total": 8,
+      "games_used": 8,
+      "mdi": 0.65625,
+      "mpi": 0.65625
+    },
+    {
+      "player": "Fra",
+      "commander": "Magda",
+      "games_total": 4,
+      "games_used": 4,
+      "mdi": 0.375,
+      "mpi": 0.375
+    },
+    {
+      "player": "Fra",
+      "commander": "Piedemoccio",
+      "games_total": 3,
+      "games_used": 3,
+      "mdi": 0.16666666666666666,
+      "mpi": 0.5
+    },
+    {
+      "player": "Fra",
+      "commander": "Liesa",
+      "games_total": 2,
+      "games_used": 2,
+      "mdi": -1.1666666666666665,
+      "mpi": 1.1666666666666665
+    },
+    {
+      "player": "Fra",
+      "commander": "Raffine",
+      "games_total": 2,
+      "games_used": 2,
+      "mdi": 0.6666666666666665,
+      "mpi": 0.6666666666666665
+    },
+    {
+      "player": "Fra",
+      "commander": "Jan Jansen",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": -2.0,
+      "mpi": 2.0
+    },
+    {
+      "player": "Fra",
+      "commander": "Baba",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": -1.75,
+      "mpi": 1.75
+    },
+    {
+      "player": "Fra",
+      "commander": "Edric",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": -0.75,
+      "mpi": 0.75
+    },
+    {
+      "player": "Fra",
+      "commander": "Braids",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": 0.666666666666667,
+      "mpi": 0.666666666666667
+    },
+    {
+      "player": "Fra",
+      "commander": "Sidisi",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": 0.5,
+      "mpi": 0.5
+    },
+    {
+      "player": "Fra",
+      "commander": "Tezzeret",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": 0.0,
+      "mpi": 0.0
+    },
+    {
+      "player": "Giamma",
+      "commander": "Halana",
+      "games_total": 6,
+      "games_used": 6,
+      "mdi": 0.875,
+      "mpi": 0.875
+    },
+    {
+      "player": "Giamma",
+      "commander": "Kruphix",
+      "games_total": 5,
+      "games_used": 5,
+      "mdi": -0.6833333333333333,
+      "mpi": 0.7833333333333334
+    },
+    {
+      "player": "Giamma",
+      "commander": "Brion",
+      "games_total": 4,
+      "games_used": 4,
+      "mdi": -1.6875,
+      "mpi": 1.6875
+    },
+    {
+      "player": "Giamma",
+      "commander": "Galtha",
+      "games_total": 3,
+      "games_used": 3,
+      "mdi": -0.861111111111111,
+      "mpi": 0.861111111111111
+    },
+    {
+      "player": "Giamma",
+      "commander": "Chandra",
+      "games_total": 3,
+      "games_used": 3,
+      "mdi": -0.6666666666666666,
+      "mpi": 0.6666666666666666
+    },
+    {
+      "player": "Matti",
+      "commander": "Sephiroth",
+      "games_total": 12,
+      "games_used": 12,
+      "mdi": 1.013888888888889,
+      "mpi": 1.013888888888889
+    },
+    {
+      "player": "Matti",
+      "commander": "Vivi",
+      "games_total": 4,
+      "games_used": 4,
+      "mdi": 0.6666666666666667,
+      "mpi": 0.6666666666666667
+    },
+    {
+      "player": "Matti",
+      "commander": "Ivy",
+      "games_total": 3,
+      "games_used": 3,
+      "mdi": -1.25,
+      "mpi": 1.25
+    },
+    {
+      "player": "Matti",
+      "commander": "Flubs",
+      "games_total": 2,
+      "games_used": 2,
+      "mdi": -0.875,
+      "mpi": 0.875
+    },
+    {
+      "player": "Matti",
+      "commander": "Purphorose",
+      "games_total": 2,
+      "games_used": 2,
+      "mdi": 0.6666666666666665,
+      "mpi": 0.6666666666666665
+    },
+    {
+      "player": "Matti",
+      "commander": "Tramutanti",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": 0.0,
+      "mpi": 0.0
+    },
+    {
+      "player": "Stanca",
+      "commander": "Kaalia",
+      "games_total": 10,
+      "games_used": 10,
+      "mdi": 0.14166666666666666,
+      "mpi": 0.4916666666666666
+    },
+    {
+      "player": "Stanca",
+      "commander": "Volo",
+      "games_total": 3,
+      "games_used": 3,
+      "mdi": -1.1666666666666667,
+      "mpi": 1.1666666666666667
+    },
+    {
+      "player": "Stanca",
+      "commander": "Finn",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": -1.3333333333333335,
+      "mpi": 1.3333333333333335
+    },
+    {
+      "player": "Teo",
+      "commander": "Hylda",
+      "games_total": 12,
+      "games_used": 12,
+      "mdi": -0.673611111111111,
+      "mpi": 0.923611111111111
+    },
+    {
+      "player": "Teo",
+      "commander": "Arabella",
+      "games_total": 2,
+      "games_used": 2,
+      "mdi": -0.6666666666666665,
+      "mpi": 0.6666666666666665
+    },
+    {
+      "player": "Teo",
+      "commander": "Scrab",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": -0.5,
+      "mpi": 0.5
     }
   ]
 }
