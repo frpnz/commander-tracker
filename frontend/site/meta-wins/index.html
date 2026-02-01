@@ -28,6 +28,34 @@
 
   <main class="container">
     <section class="charts onecol">
+      <!-- Riquadro 0 -->
+      <section class="card">
+        <div class="card-head">
+          <h2>Correlazione bracket → win rate (globale)</h2>
+          <div class="head-tools">
+            <div class="pill" id="p0info"></div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="bracketScatter" aria-label="Correlazione bracket e win rate" role="img"></canvas>
+        </div>
+        <div class="footnote">Punti aggregati per bracket (1–5). La dimensione del punto è proporzionale al numero di partite nel bracket.</div>
+      </section>
+
+      <!-- Riquadro 0b -->
+      <section class="card">
+        <div class="card-head">
+          <h2>Correlazione bracket → win rate (per commander)</h2>
+          <div class="head-tools">
+            <div class="pill" id="p0binfo"></div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="commanderScatter" aria-label="Correlazione bracket e win rate per commander" role="img"></canvas>
+        </div>
+        <div class="footnote">Ogni punto è un commander (min 3 partite). La dimensione del punto è proporzionale al numero di partite del commander. La regressione usa il bracket “vero” (1–5).</div>
+      </section>
+
       <!-- Riquadro 1 -->
       <section class="card">
         <div class="card-head">

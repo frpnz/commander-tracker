@@ -103,7 +103,7 @@
       <header class="card">
         <h1>Guida alle metriche</h1>
         <div class="muted">
-          Qui trovi cosa misura ogni scheda e come leggere grafici e colori. Niente tecnicismi: solo quello che serve per interpretare i dati.
+          Qui trovi cosa misura ogni scheda e come leggere grafici e colori.
         </div>
 
         <div style="margin-top:10px;">
@@ -113,13 +113,13 @@
         </div>
 
         <div class="callout">
-          <b>Regola semplice:</b> le dashboard rispondono a domande diverse. Prima scegli la domanda giusta, poi guarda i numeri.
+          <b>Razionale:</b> le schede provano a rispondere a domande diverse.
         </div>
       </header>
 
       <!-- FILONI -->
       <section class="card">
-        <h2>Le 4 schede, in due parole</h2>
+        <h2>Le 4 schede</h2>
         <div class="grid2">
           <div class="card" style="margin:0;">
             <h3>Stats</h3>
@@ -152,8 +152,7 @@
             <h3>Meta Profile</h3>
             <div class="muted">Come i player si posizionano nel meta, indipendentemente dal vincere.</div>
             <div class="kpi">
-              <div><b>Domanda:</b> “Tendo a forzare il tavolo o mi adatto?”</div>
-              <div><b>Nota:</b> descrive stile e contesto, non “bravura”.</div>
+              <div><b>Domanda:</b> “Sbilancio il tavolo?”</div>
             </div>
           </div>
         </div>
@@ -242,7 +241,86 @@
       <section class="card">
         <h2>Come leggere i grafici</h2>
 
-        <details open>
+        <!-- regressione per bracket (aggregata) -->
+        <details>
+          <summary>
+            Correlazione Bracket → Win Rate (Meta Wins)
+            <span class="summary-right">effetto del livello</span>
+          </summary>
+
+          <div class="muted">
+            Questo grafico mostra come varia il <b>win rate medio</b> al crescere del bracket (1–5),
+            considerando il meta nel suo insieme, non i singoli player.
+          </div>
+
+          <ul class="bullets">
+            <li><b>Asse X</b> → bracket (livello del tavolo).</li>
+            <li><b>Asse Y</b> → win rate medio in quel bracket.</li>
+            <li><b>Ogni punto</b> rappresenta un bracket aggregato.</li>
+            <li><b>Dimensione del punto</b> → numero di partite giocate in quel bracket.</li>
+          </ul>
+
+          <div class="callout">
+            <b>Linea di regressione:</b> indica il trend generale.
+            <ul class="bullets">
+              <li><b>Pendenza positiva</b> → salendo di bracket, il win rate tende ad aumentare.</li>
+              <li><b>Pendenza negativa</b> → salendo di bracket, il win rate tende a diminuire.</li>
+              <li><b>Pendenza ~ 0</b> → il bracket incide poco sul win rate medio.</li>
+            </ul>
+          </div>
+
+          <div class="callout">
+            <b>Nota di lettura:</b> la correlazione è <b>indicativa</b> (pochi punti, uno per bracket).
+            Usa questo grafico per capire il <b>trend del meta</b>, non per valutare singoli player.
+          </div>
+        </details>
+
+        <!-- regressione per commander -->
+        <details>
+          <summary>
+            Correlazione Bracket → Win Rate (per Commander)
+            <span class="summary-right">robustezza statistica</span>
+          </summary>
+
+          <div class="muted">
+            Questo grafico mostra la relazione tra <b>bracket del commander</b> e <b>win rate</b>,
+            considerando ogni commander come un punto indipendente (con almeno 3 partite giocate).
+          </div>
+
+          <ul class="bullets">
+            <li><b>Asse X</b> → bracket del commander (1–5, fisso).</li>
+            <li><b>Asse Y</b> → win rate del commander.</li>
+            <li><b>Ogni punto</b> rappresenta un commander.</li>
+            <li><b>Dimensione del punto</b> → numero di partite giocate con quel commander.</li>
+          </ul>
+
+          <div class="callout">
+            <b>Linea di regressione:</b> indica il trend medio sul meta dei commander.
+            <ul class="bullets">
+              <li><b>Pendenza positiva</b> → i commander di bracket più alto tendono ad avere win rate più alto.</li>
+              <li><b>Pendenza negativa</b> → i commander di bracket più alto tendono ad avere win rate più basso.</li>
+              <li><b>Pendenza ~ 0</b> → il bracket incide poco sul win rate dei commander.</li>
+            </ul>
+          </div>
+
+          <div class="callout">
+            <b>Perché è più robusto:</b>
+            <ul class="bullets">
+              <li>molti più punti rispetto al grafico aggregato per bracket;</li>
+              <li>ogni punto è supportato da più partite (≥ 3);</li>
+              <li>riduce l’effetto di outlier occasionali.</li>
+            </ul>
+          </div>
+
+          <div class="callout">
+            <b>Nota di lettura:</b> questo grafico descrive una <b>tendenza del meta</b>,
+            non la forza del singolo commander. I punti su bracket uguali possono sovrapporsi:
+            la dispersione verticale è il segnale più importante.
+          </div>
+        </details>
+
+        <!-- (già presente) -->
+        <details>
           <summary>
             Scatter MDI vs MPI (Meta Profile)
             <span class="summary-right">stile del player</span>

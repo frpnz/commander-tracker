@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-02-01T01:00:44Z",
+  "generated_utc": "2026-02-01T01:53:26Z",
   "counts": {
     "games": 34,
     "entries": 127
@@ -746,6 +746,146 @@
       "wins_total": 1,
       "wins_used": 1,
       "wbd": 0.0
+    }
+  ],
+  "meta_wins_by_bracket": [
+    {
+      "bracket": 2,
+      "games": 10,
+      "wins": 1,
+      "win_rate": 0.1
+    },
+    {
+      "bracket": 3,
+      "games": 28,
+      "wins": 5,
+      "win_rate": 0.17857142857142858
+    },
+    {
+      "bracket": 4,
+      "games": 31,
+      "wins": 6,
+      "win_rate": 0.1935483870967742
+    },
+    {
+      "bracket": 5,
+      "games": 58,
+      "wins": 22,
+      "win_rate": 0.3793103448275862
+    }
+  ],
+  "meta_wins_commander_winrate": [
+    {
+      "commander": "Brion",
+      "bracket": 2,
+      "games": 4,
+      "wins": 0,
+      "win_rate": 0.0
+    },
+    {
+      "commander": "Ivy",
+      "bracket": 2,
+      "games": 3,
+      "wins": 1,
+      "win_rate": 0.3333333333333333
+    },
+    {
+      "commander": "Galtha",
+      "bracket": 3,
+      "games": 3,
+      "wins": 1,
+      "win_rate": 0.3333333333333333
+    },
+    {
+      "commander": "Hylda",
+      "bracket": 3,
+      "games": 12,
+      "wins": 1,
+      "win_rate": 0.08333333333333333
+    },
+    {
+      "commander": "Volo",
+      "bracket": 3,
+      "games": 3,
+      "wins": 0,
+      "win_rate": 0.0
+    },
+    {
+      "commander": "Hearthhull",
+      "bracket": 4,
+      "games": 6,
+      "wins": 1,
+      "win_rate": 0.16666666666666666
+    },
+    {
+      "commander": "Kruphix",
+      "bracket": 4,
+      "games": 5,
+      "wins": 1,
+      "win_rate": 0.2
+    },
+    {
+      "commander": "Piedemoccio",
+      "bracket": 4,
+      "games": 3,
+      "wins": 1,
+      "win_rate": 0.3333333333333333
+    },
+    {
+      "commander": "Sisay",
+      "bracket": 4,
+      "games": 9,
+      "wins": 2,
+      "win_rate": 0.2222222222222222
+    },
+    {
+      "commander": "Abigale",
+      "bracket": 5,
+      "games": 8,
+      "wins": 3,
+      "win_rate": 0.375
+    },
+    {
+      "commander": "Halana",
+      "bracket": 5,
+      "games": 6,
+      "wins": 1,
+      "win_rate": 0.16666666666666666
+    },
+    {
+      "commander": "K'rrik",
+      "bracket": 5,
+      "games": 10,
+      "wins": 5,
+      "win_rate": 0.5
+    },
+    {
+      "commander": "Kaalia",
+      "bracket": 5,
+      "games": 9,
+      "wins": 1,
+      "win_rate": 0.1111111111111111
+    },
+    {
+      "commander": "Magda",
+      "bracket": 5,
+      "games": 4,
+      "wins": 2,
+      "win_rate": 0.5
+    },
+    {
+      "commander": "Sephiroth",
+      "bracket": 5,
+      "games": 12,
+      "wins": 5,
+      "win_rate": 0.4166666666666667
+    },
+    {
+      "commander": "Vivi",
+      "bracket": 5,
+      "games": 4,
+      "wins": 2,
+      "win_rate": 0.5
     }
   ],
   "meta_wins_by_player_commander": [

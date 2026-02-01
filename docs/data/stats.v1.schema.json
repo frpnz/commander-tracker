@@ -1,99 +1,57 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Commander Tracker Stats v1",
-  "type": "object",
-  "required": [
-    "version",
-    "generated_utc",
-    "counts",
-    "filters",
-    "by_player",
-    "by_player_commander"
-  ],
+  "additionalProperties": false,
   "properties": {
-    "version": {
-      "const": "v1"
-    },
-    "generated_utc": {
-      "type": "string",
-      "description": "UTC timestamp in ISO-8601, ends with Z"
-    },
-    "counts": {
-      "type": "object",
-      "required": [
-        "games",
-        "entries"
-      ],
-      "properties": {
-        "games": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "entries": {
-          "type": "integer",
-          "minimum": 0
-        }
-      },
-      "additionalProperties": false
-    },
-    "filters": {
-      "type": "object",
-      "required": [
-        "players",
-        "commanders",
-        "brackets"
-      ],
-      "properties": {
-        "players": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "commanders": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "brackets": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "additionalProperties": false
-    },
     "by_player": {
-      "type": "array",
       "items": {
-        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "games": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "player": {
+            "type": "string"
+          },
+          "wins": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
         "required": [
           "player",
           "games",
           "wins"
         ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "by_player_commander": {
+      "items": {
+        "additionalProperties": false,
         "properties": {
-          "player": {
+          "bracket": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "commander": {
             "type": "string"
           },
           "games": {
-            "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "type": "integer"
+          },
+          "player": {
+            "type": "string"
           },
           "wins": {
-            "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "type": "integer"
           }
         },
-        "additionalProperties": false
-      }
-    },
-    "by_player_commander": {
-      "type": "array",
-      "items": {
-        "type": "object",
         "required": [
           "player",
           "commander",
@@ -101,178 +59,352 @@
           "games",
           "wins"
         ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "by_player_commander_weighted": {
+      "description": "By player+commander with both raw integer counts and weighted float accumulators.",
+      "items": {
+        "additionalProperties": false,
         "properties": {
-          "player": {
-            "type": "string"
-          },
-          "commander": {
-            "type": "string"
-          },
           "bracket": {
             "type": [
               "string",
               "null"
             ]
           },
+          "commander": {
+            "type": "string"
+          },
           "games": {
-            "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "type": "integer"
+          },
+          "games_w": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "player": {
+            "type": "string"
           },
           "wins": {
-            "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "type": "integer"
+          },
+          "wins_w": {
+            "minimum": 0,
+            "type": "number"
           }
         },
-        "additionalProperties": false
-      }
+        "required": [
+          "player",
+          "commander",
+          "bracket",
+          "games",
+          "wins",
+          "games_w",
+          "wins_w"
+        ],
+        "type": "object"
+      },
+      "type": "array"
     },
     "by_player_weighted": {
-      "type": "array",
       "description": "By player with both raw integer counts and weighted float accumulators.",
       "items": {
-        "type": "object",
-        "required": ["player", "games", "wins", "games_w", "wins_w"],
+        "additionalProperties": false,
         "properties": {
-          "player": { "type": "string" },
-          "games": { "type": "integer", "minimum": 0 },
-          "wins": { "type": "integer", "minimum": 0 },
-          "games_w": { "type": "number", "minimum": 0 },
-          "wins_w": { "type": "number", "minimum": 0 }
-        },
-        "additionalProperties": false
-      }
-    },
-    "by_player_commander_weighted": {
-      "type": "array",
-      "description": "By player+commander with both raw integer counts and weighted float accumulators.",
-      "items": {
-        "type": "object",
-        "required": ["player", "commander", "bracket", "games", "wins", "games_w", "wins_w"],
-        "properties": {
-          "player": { "type": "string" },
-          "commander": { "type": "string" },
-          "bracket": { "type": ["string", "null"] },
-          "games": { "type": "integer", "minimum": 0 },
-          "wins": { "type": "integer", "minimum": 0 },
-          "games_w": { "type": "number", "minimum": 0 },
-          "wins_w": { "type": "number", "minimum": 0 }
-        },
-        "additionalProperties": false
-      }
-    },
-    "meta_wins": {
-      "type": "object",
-      "description": "Metadata about Meta Wins (WBD) computation and display defaults.",
-      "required": ["method", "saturation", "min_wins_default"],
-      "properties": {
-        "method": { "type": "string" },
-        "saturation": {
-          "type": "object",
-          "required": ["min", "max"],
-          "properties": {
-            "min": { "type": "number" },
-            "max": { "type": "number" }
+          "games": {
+            "minimum": 0,
+            "type": "integer"
           },
-          "additionalProperties": false
+          "games_w": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "player": {
+            "type": "string"
+          },
+          "wins": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "wins_w": {
+            "minimum": 0,
+            "type": "number"
+          }
         },
-        "min_wins_default": { "type": "integer", "minimum": 1 }
+        "required": [
+          "player",
+          "games",
+          "wins",
+          "games_w",
+          "wins_w"
+        ],
+        "type": "object"
       },
-      "additionalProperties": false
+      "type": "array"
     },
-    "meta_wins_by_player": {
-      "type": "array",
-      "description": "Winning Bracket Delta (WBD) by player.",
-      "items": {
-        "type": "object",
-        "required": ["player", "wins_total", "wins_used", "wbd"],
-        "properties": {
-          "player": { "type": "string" },
-          "wins_total": { "type": "integer", "minimum": 0 },
-          "wins_used": { "type": "integer", "minimum": 0 },
-          "wbd": { "type": ["number", "null"] }
-        },
-        "additionalProperties": false
-      }
-    },
-    "meta_wins_by_player_commander": {
-      "type": "array",
-      "description": "Winning Bracket Delta (WBD) by player+commander.",
-      "items": {
-        "type": "object",
-        "required": ["player", "commander", "wins_total", "wins_used", "wbd"],
-        "properties": {
-          "player": { "type": "string" },
-          "commander": { "type": "string" },
-          "wins_total": { "type": "integer", "minimum": 0 },
-          "wins_used": { "type": "integer", "minimum": 0 },
-          "wbd": { "type": ["number", "null"] }
-        },
-        "additionalProperties": false
-      }
-    },
-    "weighted": {
-      "type": "object",
-      "description": "Metadata about the weighting method used.",
-      "required": ["method", "k", "w_min", "w_max"],
+    "counts": {
+      "additionalProperties": false,
       "properties": {
-        "method": { "type": "string" },
-        "k": { "type": "number" },
-        "w_min": { "type": "number" },
-        "w_max": { "type": "number" }
+        "entries": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "games": {
+          "minimum": 0,
+          "type": "integer"
+        }
       },
-      "additionalProperties": false
-    }
-    ,
+      "required": [
+        "games",
+        "entries"
+      ],
+      "type": "object"
+    },
+    "filters": {
+      "additionalProperties": false,
+      "properties": {
+        "brackets": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "commanders": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "players": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "players",
+        "commanders",
+        "brackets"
+      ],
+      "type": "object"
+    },
+    "generated_utc": {
+      "description": "UTC timestamp in ISO-8601, ends with Z",
+      "type": "string"
+    },
     "meta_wins": {
-      "type": "object",
+      "additionalProperties": false,
       "description": "Metadata for Meta Wins (WBD) computations and visualization defaults.",
-      "required": ["method", "saturation", "min_wins_default"],
       "properties": {
-        "method": { "type": "string" },
-        "saturation": {
-          "type": "object",
-          "required": ["min", "max"],
-          "properties": {
-            "min": { "type": "number" },
-            "max": { "type": "number" }
-          },
-          "additionalProperties": false
+        "method": {
+          "type": "string"
         },
-        "min_wins_default": { "type": "integer", "minimum": 0 }
+        "min_wins_default": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "saturation": {
+          "additionalProperties": false,
+          "properties": {
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ],
+          "type": "object"
+        }
       },
-      "additionalProperties": false
+      "required": [
+        "method",
+        "saturation",
+        "min_wins_default"
+      ],
+      "type": "object"
+    },
+    "meta_wins_by_bracket": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "bracket": {
+            "type": "integer"
+          },
+          "games": {
+            "type": "integer"
+          },
+          "win_rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "wins": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "bracket",
+          "games",
+          "wins",
+          "win_rate"
+        ],
+        "type": "object"
+      },
+      "type": "array"
     },
     "meta_wins_by_player": {
-      "type": "array",
       "description": "Winning Bracket Delta (WBD) per player, computed over that player's wins.",
       "items": {
-        "type": "object",
-        "required": ["player", "wins_total", "wins_used", "wbd"],
+        "additionalProperties": false,
         "properties": {
-          "player": { "type": "string" },
-          "wins_total": { "type": "integer", "minimum": 0 },
-          "wins_used": { "type": "integer", "minimum": 0 },
-          "wbd": { "type": ["number", "null"] }
+          "player": {
+            "type": "string"
+          },
+          "wbd": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "wins_total": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "wins_used": {
+            "minimum": 0,
+            "type": "integer"
+          }
         },
-        "additionalProperties": false
-      }
+        "required": [
+          "player",
+          "wins_total",
+          "wins_used",
+          "wbd"
+        ],
+        "type": "object"
+      },
+      "type": "array"
     },
     "meta_wins_by_player_commander": {
-      "type": "array",
       "description": "Winning Bracket Delta (WBD) per commander for each player, computed over wins with that commander.",
       "items": {
-        "type": "object",
-        "required": ["player", "commander", "wins_total", "wins_used", "wbd"],
+        "additionalProperties": false,
         "properties": {
-          "player": { "type": "string" },
-          "commander": { "type": "string" },
-          "wins_total": { "type": "integer", "minimum": 0 },
-          "wins_used": { "type": "integer", "minimum": 0 },
-          "wbd": { "type": ["number", "null"] }
+          "commander": {
+            "type": "string"
+          },
+          "player": {
+            "type": "string"
+          },
+          "wbd": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "wins_total": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "wins_used": {
+            "minimum": 0,
+            "type": "integer"
+          }
         },
-        "additionalProperties": false
+        "required": [
+          "player",
+          "commander",
+          "wins_total",
+          "wins_used",
+          "wbd"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "version": {
+      "const": "v1"
+    },
+    "weighted": {
+      "additionalProperties": false,
+      "description": "Metadata about the weighting method used.",
+      "properties": {
+        "k": {
+          "type": "number"
+        },
+        "method": {
+          "type": "string"
+        },
+        "w_max": {
+          "type": "number"
+        },
+        "w_min": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "method",
+        "k",
+        "w_min",
+        "w_max"
+      ],
+      "type": "object"
+    },
+    "meta_wins_commander_winrate": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "commander": {
+            "type": "string"
+          },
+          "bracket": {
+            "type": "integer"
+          },
+          "games": {
+            "type": "integer"
+          },
+          "wins": {
+            "type": "integer"
+          },
+          "win_rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "commander",
+          "bracket",
+          "games",
+          "wins",
+          "win_rate"
+        ]
       }
     }
   },
-  "additionalProperties": false
+  "required": [
+    "version",
+    "generated_utc",
+    "counts",
+    "filters",
+    "by_player",
+    "by_player_commander",
+    "meta_wins_by_bracket",
+    "meta_wins_commander_winrate"
+  ],
+  "title": "Commander Tracker Stats v1",
+  "type": "object"
 }

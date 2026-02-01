@@ -292,7 +292,86 @@ def compute_stats(conn: sqlite3.Connection) -> Dict[str, Any]:
     """)
     by_player_commander = _rows_to_dicts(cur.fetchall())
 
-    # Distinct filter values
+    # --- Meta Wins (global): bracket -> wins / win_rate ---
+    # We aggregate by bracket (not per-player) to keep it "meta".
+    # This is useful to visualize correlation/trend between bracket (1-5)
+    # and win rate.
+    cur.execute(
+        """
+        SELECT
+            ge.bracket AS bracket,
+            COUNT(*) AS games,
+            SUM(CASE WHEN g.winner_player = ge.player THEN 1 ELSE 0 END) AS wins
+        FROM gameentry ge
+        JOIN game g ON g.id = ge.game_id
+        WHERE ge.bracket IS NOT NULL AND ge.bracket != ''
+        GROUP BY ge.bracket
+        ORDER BY CAST(ge.bracket AS INTEGER) ASC
+        """
+    )
+    _bb = _rows_to_dicts(cur.fetchall())
+    meta_wins_by_bracket = []
+    for r in _bb:
+        try:
+            b = int(r.get("bracket"))
+        except Exception:
+            # Skip non-numeric brackets
+            continue
+        games_n = int(r.get("games") or 0)
+        wins_n = int(r.get("wins") or 0)
+        win_rate = (wins_n / games_n) if games_n > 0 else None
+        meta_wins_by_bracket.append(
+            {
+                "bracket": b,
+                "games": games_n,
+                "wins": wins_n,
+                "win_rate": win_rate,
+            }
+        )
+
+    
+    # Commander win rate by (fixed) bracket (global, not by player)
+    # Each point represents a commander; bracket is expected to be numeric (1..5).
+    cur.execute(
+        """
+        SELECT
+            ge.commander AS commander,
+            ge.bracket   AS bracket,
+            COUNT(*)     AS games,
+            SUM(CASE WHEN g.winner_player = ge.player THEN 1 ELSE 0 END) AS wins
+        FROM gameentry ge
+        JOIN game g ON g.id = ge.game_id
+        WHERE ge.commander IS NOT NULL AND ge.commander != ''
+          AND ge.bracket IS NOT NULL AND ge.bracket != ''
+        GROUP BY ge.commander, ge.bracket
+        HAVING COUNT(*) >= 3
+        ORDER BY CAST(ge.bracket AS INTEGER) ASC, ge.commander ASC
+        """
+    )
+    _cb = _rows_to_dicts(cur.fetchall())
+    meta_wins_commander_winrate = []
+    for r in _cb:
+        commander = (r.get("commander") or "").strip()
+        try:
+            b = int(r.get("bracket"))
+        except Exception:
+            continue
+        games_n = int(r.get("games") or 0)
+        wins_n = int(r.get("wins") or 0)
+        if not commander or games_n <= 0:
+            continue
+        win_rate = wins_n / games_n
+        meta_wins_commander_winrate.append(
+            {
+                "commander": commander,
+                "bracket": b,
+                "games": games_n,
+                "wins": wins_n,
+                "win_rate": win_rate,
+            }
+        )
+
+# Distinct filter values
     cur.execute("SELECT DISTINCT player FROM gameentry ORDER BY player ASC;")
     players = [r["player"] for r in cur.fetchall()]
 
@@ -428,6 +507,8 @@ def compute_stats(conn: sqlite3.Connection) -> Dict[str, Any]:
             "min_wins_default": 3,
         },
         "meta_wins_by_player": meta_wins_by_player,
+        "meta_wins_by_bracket": meta_wins_by_bracket,
+        "meta_wins_commander_winrate": meta_wins_commander_winrate,
         "meta_wins_by_player_commander": meta_wins_by_player_commander,
         "meta_profile": {
             "method": "delta_player_minus_avg_table_excl_player",
