@@ -122,8 +122,12 @@ def page(title: str, body: str) -> str:
     .muted {{ color:#666; font-size: 0.9rem; }}
     input, select, textarea {{ padding:10px; border-radius:10px; border:1px solid #ccc; width: 100%; box-sizing: border-box; }}
     label {{ display:block; font-size: 0.9rem; margin: 10px 0 6px; color:#333; }}
-    button {{ padding:10px 14px; border-radius:10px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer; }}
+    button {{ padding:10px 14px; border-radius:10px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer; width:auto; }}
     button.primary {{ background:#111; color:#fff; border-color:#111; }}
+    .btn-row {{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }}
+    .btn-row .spacer {{ flex: 1 1 auto; }}
+    .btn-row button {{ flex: 0 0 auto; }}
+    .btn-row.compact button {{ padding: 8px 12px; border-radius: 10px; }}
     .table-wrap {{ width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }}
     table {{ border-collapse: collapse; width: 100%; min-width: 560px; }}
     th, td {{ border-bottom: 1px solid #eee; padding: 10px; text-align:left; vertical-align: top; }}
@@ -135,7 +139,10 @@ def page(title: str, body: str) -> str:
       body {{ margin: 12px; }}
       .row {{ flex-direction: column; gap: 12px; }}
       .card {{ padding: 12px; }}
-      button {{ width: 100%; }}
+      /* Buttons: avoid giant full-width buttons on mobile */
+      button {{ width: auto; }}
+      .btn-row {{ gap: 8px; }}
+      .btn-row button {{ flex: 1 1 140px; }}
       table {{ min-width: 520px; }}
       th, td {{ padding: 8px; }}
     }}
@@ -200,6 +207,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/admin/games/create":
             return self._post_game_create(form)
 
+        if path == "/admin/games/import":
+            return self._post_game_import(form)
+
         if path.startswith("/admin/games/") and path.endswith("/update"):
             parts = path.strip("/").split("/")
             if len(parts) == 4:
@@ -246,6 +256,17 @@ class Handler(BaseHTTPRequestHandler):
             )
             games = cur.fetchall()
 
+            # For import/duplication UI: show a reasonable set (latest 200)
+            cur.execute(
+                """
+                SELECT id, played_at, winner_player
+                FROM game
+                ORDER BY datetime(played_at) DESC, id DESC
+                LIMIT 200
+                """
+            )
+            games_for_import = cur.fetchall()
+
             cur.execute(
                 """
                 SELECT player, COUNT(*) AS n
@@ -260,6 +281,12 @@ class Handler(BaseHTTPRequestHandler):
         # Valori esistenti dal DB per i menu (mobile-friendly)
         players_list = "\n".join(f'<option value="{esc(p)}"></option>' for p in players)
         players_select = select_options(players)
+
+        import_opts = []
+        for g in games_for_import:
+            label = f"#{g['id']} — {str(g['played_at'] or '')} — {str(g['winner_player'] or '—')}"
+            import_opts.append(f'<option value="{g["id"]}">{esc(label)}</option>')
+        import_options = "\n".join(import_opts)
 
         rows = []
         for g in games:
@@ -295,8 +322,33 @@ class Handler(BaseHTTPRequestHandler):
               <label>Note</label>
               <textarea name="notes" rows="3" placeholder="opzionale"></textarea>
 
-              <div style="margin-top:12px;">
+              <div class="btn-row" style="margin-top:12px;">
                 <button class="primary" type="submit">Crea</button>
+              </div>
+            </form>
+
+            <hr style="border:0; border-top:1px solid #eee; margin:16px 0;">
+
+            <h3>Importa da partita storica</h3>
+            <p class="muted">Duplica winner, note ed entries di una partita esistente in una nuova partita (con data/ora attuale), poi ti porta alla schermata di modifica.</p>
+            <form method="post" action="/admin/games/import">
+              <label>Scegli partita</label>
+              <select name="source_game_id" required>
+                <option value="" disabled selected>Seleziona…</option>
+                {import_options}
+              </select>
+              <label>Override (opzionale)</label>
+              <div class="muted" style="margin-top:4px;">Se vuoi, puoi cambiare subito il winner della nuova partita qui (altrimenti copia quello originale).</div>
+              <select name="winner_sel">
+                <option value="" selected>— lascia invariato —</option>
+                {players_select}
+                <option value="__NEW__">+ Nuovo…</option>
+              </select>
+              <label class="muted">Se “Nuovo…”, scrivi qui:</label>
+              <input name="winner_new" placeholder="Winner nuovo (opzionale)">
+
+              <div class="btn-row" style="margin-top:12px;">
+                <button class="primary" type="submit">Importa e modifica</button>
               </div>
             </form>
           </div>
@@ -406,7 +458,7 @@ class Handler(BaseHTTPRequestHandler):
                         <label class="muted">Se “Nuovo…”, scrivi qui:</label>
                         <input name="bracket_new" value="{esc(bracket_val)}" inputmode="numeric" placeholder="Bracket (int)">
 
-                        <div style="margin-top:10px; display:flex; gap:10px;">
+                        <div class="btn-row" style="margin-top:10px;">
                           <button class="primary" type="submit">Salva</button>
                         </div>
                       </form>
@@ -442,7 +494,7 @@ class Handler(BaseHTTPRequestHandler):
               <label>Note</label>
               <textarea name="notes" rows="3">{esc(game['notes'] or '')}</textarea>
 
-              <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+              <div class="btn-row" style="margin-top:12px;">
                 <button class="primary" type="submit">Salva</button>
                 <button type="submit" name="set_now" value="1">Imposta a ora</button>
               </div>
@@ -610,6 +662,58 @@ class Handler(BaseHTTPRequestHandler):
             conn.commit()
 
         return self._redirect(f"/admin/games/{game_id}")
+
+    def _post_game_import(self, form: dict[str, str]):
+        """Duplicate an existing game (winner/notes/entries) into a new one.
+
+        The new game gets `played_at = now()`. After creation, redirect to its detail page
+        so the user can quickly edit.
+        """
+        src_s = (form.get("source_game_id", "") or "").strip()
+        try:
+            source_game_id = int(src_s)
+        except ValueError:
+            return self._send_html(page("Errore", "<h1>Partita sorgente non valida</h1>"), 400)
+
+        # Optional override for winner
+        winner_override = pick_select_or_new(form, "winner_sel", "winner_new")
+        winner_override = winner_override.strip() if winner_override else ""
+
+        with db() as conn:
+            cur = conn.cursor()
+
+            cur.execute("SELECT * FROM game WHERE id=?", (source_game_id,))
+            src_game = cur.fetchone()
+            if not src_game:
+                return self._send_html(page("404", "<h1>Partita sorgente non trovata</h1>"), 404)
+
+            cur.execute("SELECT player, commander, bracket FROM gameentry WHERE game_id=? ORDER BY id ASC", (source_game_id,))
+            src_entries = cur.fetchall()
+            if not src_entries:
+                # Allow importing an empty game, but warn.
+                pass
+
+            played_iso = now_iso()
+            notes = (src_game["notes"] or None)
+            winner = (src_game["winner_player"] or None)
+            if winner_override:
+                winner = winner_override or None
+
+            cur.execute(
+                "INSERT INTO game (played_at, notes, winner_player) VALUES (?, ?, ?)",
+                (played_iso, notes, winner),
+            )
+            new_game_id = cur.lastrowid
+
+            for e in src_entries:
+                cur.execute(
+                    "INSERT INTO gameentry (game_id, player, commander, bracket) VALUES (?, ?, ?, ?)",
+                    (new_game_id, e["player"], e["commander"], e["bracket"]),
+                )
+
+            conn.commit()
+
+        return self._redirect(f"/admin/games/{new_game_id}")
 
     def _post_game_update(self, game_id: int, form: dict[str, str]):
         notes = form.get("notes", "").strip() or None
