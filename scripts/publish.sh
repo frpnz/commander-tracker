@@ -17,16 +17,39 @@ if [[ ! -x "$PY" ]]; then
   exit 1
 fi
 
+if [[ ! -f "$DB_PATH" ]]; then
+  echo "ERRORE: DB non trovato in $DB_PATH"
+  exit 1
+fi
+
+# (consigliato) evita diff inutili da WAL/SHM e rende il db consistente
+# non fallire se sqlite3 non esiste (es. macchina senza cli)
+if command -v sqlite3 >/dev/null 2>&1; then
+  sqlite3 "$DB_PATH" "PRAGMA wal_checkpoint(FULL);"
+fi
+
 # esporta stats
 "$PY" backend/export_stats.py --db "$DB_PATH" --docs "$DOCS_DIR"
 
-# considera solo la cartella dati del sito
+# Stage selettivo: docs/data + db
+# (docs/data triggera Pages; il DB no, grazie al paths: docs/** nel workflow)
+NEED_COMMIT=0
+
 if ! git diff --quiet -- docs/data; then
   git add -A docs/data
+  NEED_COMMIT=1
+fi
+
+if ! git diff --quiet -- "$DB_PATH"; then
+  git add "$DB_PATH"
+  NEED_COMMIT=1
+fi
+
+if [[ "$NEED_COMMIT" -eq 1 ]]; then
   git commit -m "$MSG"
   git push
-  echo "✅ Pubblicato: $MSG"
+  echo "✅ Pubblicato/Salvato: $MSG"
 else
-  echo "ℹ️ Nessuna modifica in docs/data"
+  echo "ℹ️ Nessuna modifica in docs/data o nel DB"
 fi
 

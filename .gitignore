@@ -18,6 +18,9 @@ params/
 __pycache__/
 #!.idea/runConfigurations/*.xml
 
+*.sqlite-wal
+*.sqlite-shm
+
 # Vim
 *.swp
 
