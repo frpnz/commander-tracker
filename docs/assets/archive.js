@@ -180,10 +180,13 @@ function renderRecentGames(data, state) {
       const tr = document.createElement("tr");
       const tdP = document.createElement("td");
       tdP.textContent = e.player || "";
+      tdP.setAttribute("data-label", "Player");
       const tdC = document.createElement("td");
       tdC.textContent = e.commander || "";
+      tdC.setAttribute("data-label", "Commander");
       const tdB = document.createElement("td");
       tdB.textContent = (e.bracket === null || e.bracket === undefined) ? "" : String(e.bracket);
+      tdB.setAttribute("data-label", "Bracket");
       tr.appendChild(tdP);
       tr.appendChild(tdC);
       tr.appendChild(tdB);

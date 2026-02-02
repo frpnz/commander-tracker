@@ -194,12 +194,12 @@ h2{margin:0; font-size:15px; letter-spacing:.2px}
 .recent-wrap{display:flex; flex-direction:column; gap:12px; padding:6px 6px 12px}
 .recent-game{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px; background: rgba(11,16,32,.18)}
 .recent-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap}
-.recent-title{font-weight:750}
+.recent-title{font-weight:750; overflow-wrap:anywhere}
 .recent-winner{color:var(--text)}
 .recent-notes{margin-top:8px; color:var(--muted); font-size:12px}
 .recent-table-wrap{margin-top:10px; overflow:auto}
 .recent-table{width:100%; border-collapse:collapse; min-width:420px}
-.recent-table th,.recent-table td{border-bottom:1px solid rgba(255,255,255,.08); padding:8px 10px; text-align:left}
+.recent-table th,.recent-table td{border-bottom:1px solid rgba(255,255,255,.08); padding:8px 10px; text-align:left; overflow-wrap:anywhere}
 .recent-table th{color:var(--muted); font-size:12px; font-weight:750}
 
 /* Meta Wins */
@@ -290,6 +290,32 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
     font-weight:650;
   }
   tbody tr:hover td{background: transparent}
+
+  /* Archivio: recent games table -> stacked rows (no horizontal scroll) */
+  .recent-table-wrap{overflow:visible}
+  .recent-table{min-width:0; border-collapse:separate; border-spacing:0 10px}
+  .recent-table thead{display:none}
+  .recent-table tbody tr{
+    display:block;
+    padding:10px 12px;
+    border-radius:16px;
+    background: rgba(11,16,32,.28);
+    border:1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(10px);
+  }
+  .recent-table tbody td{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    padding:6px 0;
+    border:0;
+  }
+  .recent-table tbody td::before{
+    content: attr(data-label);
+    color:var(--muted);
+    font-weight:650;
+  }
 }
 
 
