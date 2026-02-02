@@ -73,6 +73,11 @@ def dtlocal_to_iso(dtlocal: str) -> str:
     return dt.isoformat(sep=" ")
 
 
+def now_iso() -> str:
+    """Return a system timestamp string compatible with existing DB values."""
+    return datetime.now().replace(microsecond=0).isoformat(sep=" ")
+
+
 def page(title: str, body: str) -> str:
     return f"""<!doctype html>
 <html lang="it">
@@ -81,7 +86,7 @@ def page(title: str, body: str) -> str:
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{esc(title)}</title>
   <style>
-    body {{ font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 20px; }}
+    body {{ font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }}
     .nav {{ display:flex; gap:12px; align-items:center; margin-bottom: 14px; flex-wrap:wrap; }}
     .nav a {{ text-decoration:none; padding: 8px 10px; border-radius: 10px; border:1px solid #ddd; color:#111; }}
     .row {{ display:flex; gap:16px; flex-wrap:wrap; }}
@@ -91,10 +96,21 @@ def page(title: str, body: str) -> str:
     label {{ display:block; font-size: 0.9rem; margin: 10px 0 6px; color:#333; }}
     button {{ padding:10px 14px; border-radius:10px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer; }}
     button.primary {{ background:#111; color:#fff; border-color:#111; }}
-    table {{ border-collapse: collapse; width: 100%; }}
+    .table-wrap {{ width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }}
+    table {{ border-collapse: collapse; width: 100%; min-width: 560px; }}
     th, td {{ border-bottom: 1px solid #eee; padding: 10px; text-align:left; vertical-align: top; }}
     details summary {{ cursor:pointer; }}
     code {{ background:#f2f2f2; padding:2px 6px; border-radius:6px; }}
+
+    /* Mobile */
+    @media (max-width: 640px) {{
+      body {{ margin: 12px; }}
+      .row {{ flex-direction: column; gap: 12px; }}
+      .card {{ padding: 12px; }}
+      button {{ width: 100%; }}
+      table {{ min-width: 520px; }}
+      th, td {{ padding: 8px; }}
+    }}
   </style>
 </head>
 <body>
@@ -232,13 +248,11 @@ class Handler(BaseHTTPRequestHandler):
 
         body = f"""
         <h1>Partite</h1>
+        <p class="muted">La data/ora della nuova partita viene presa automaticamente dall'orologio di sistema.</p>
         <div class="row">
           <div class="card" style="flex:1; min-width: 320px;">
             <h3>Nuova partita</h3>
             <form method="post" action="/admin/games/create">
-              <label>Data/Ora (locale)</label>
-              <input type="datetime-local" name="played_at" required>
-
               <label>Winner (player)</label>
               <input list="players" name="winner_player" placeholder="seleziona o scrivi...">
               <datalist id="players">{players_list}</datalist>
@@ -254,10 +268,12 @@ class Handler(BaseHTTPRequestHandler):
 
           <div class="card" style="flex:2; min-width: 420px;">
             <h3>Elenco</h3>
-            <table>
-              <thead><tr><th>ID</th><th>Quando</th><th>Winner</th><th>Entries</th><th></th></tr></thead>
-              <tbody>{table}</tbody>
-            </table>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ID</th><th>Quando</th><th>Winner</th><th>Entries</th><th></th></tr></thead>
+                <tbody>{table}</tbody>
+              </table>
+            </div>
           </div>
         </div>
         """
@@ -284,8 +300,14 @@ class Handler(BaseHTTPRequestHandler):
             )
             commanders = [r["commander"] for r in cur.fetchall()]
 
+            cur.execute(
+                "SELECT DISTINCT bracket FROM gameentry WHERE bracket IS NOT NULL ORDER BY bracket ASC LIMIT 200"
+            )
+            brackets = [str(r["bracket"]) for r in cur.fetchall()]
+
         players_list = "\n".join(f'<option value="{esc(p)}"></option>' for p in players)
         commanders_list = "\n".join(f'<option value="{esc(c)}"></option>' for c in commanders)
+        brackets_list = "\n".join(f'<option value="{esc(b)}"></option>' for b in brackets)
 
         entry_rows = []
         for e in entries:
@@ -309,7 +331,7 @@ class Handler(BaseHTTPRequestHandler):
                         <input list="commanders" name="commander" value="{esc(e['commander'])}" required>
 
                         <label>Bracket</label>
-                        <input name="bracket" value="{esc(bracket_val)}" inputmode="numeric">
+                        <input list="brackets" name="bracket" value="{esc(bracket_val)}" inputmode="numeric" placeholder="seleziona o scrivi...">
 
                         <div style="margin-top:10px; display:flex; gap:10px;">
                           <button class="primary" type="submit">Salva</button>
@@ -333,7 +355,7 @@ class Handler(BaseHTTPRequestHandler):
             <h3>Modifica partita</h3>
             <form method="post" action="/admin/games/{game_id}/update">
               <label>Data/Ora</label>
-              <input type="datetime-local" name="played_at" required value="{esc(iso_to_dtlocal(game['played_at']))}">
+              <div class="muted" style="margin-top:4px;">{esc(str(game['played_at'] or ''))}</div>
 
               <label>Winner (player)</label>
               <input list="players" name="winner_player" value="{esc(game['winner_player'] or '')}" placeholder="seleziona o scrivi...">
@@ -342,8 +364,9 @@ class Handler(BaseHTTPRequestHandler):
               <label>Note</label>
               <textarea name="notes" rows="3">{esc(game['notes'] or '')}</textarea>
 
-              <div style="margin-top:12px;">
+              <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
                 <button class="primary" type="submit">Salva</button>
+                <button type="submit" name="set_now" value="1">Imposta a ora</button>
               </div>
             </form>
 
@@ -358,6 +381,8 @@ class Handler(BaseHTTPRequestHandler):
             <h3>Entries</h3>
 
             <datalist id="commanders">{commanders_list}</datalist>
+            <datalist id="brackets">{brackets_list}</datalist>
+            <datalist id="brackets">{brackets_list}</datalist>
 
             <div class="card" style="margin-bottom:14px;">
               <h4>Aggiungi entry</h4>
@@ -373,9 +398,9 @@ class Handler(BaseHTTPRequestHandler):
                     <input list="commanders" name="commander" required placeholder="seleziona o scrivi...">
                   </div>
 
-                  <div style="width:140px;">
+                  <div style="width:160px;">
                     <label>Bracket</label>
-                    <input name="bracket" inputmode="numeric" placeholder="int">
+                    <input list="brackets" name="bracket" inputmode="numeric" placeholder="seleziona o scrivi...">
                   </div>
                 </div>
 
@@ -385,10 +410,12 @@ class Handler(BaseHTTPRequestHandler):
               </form>
             </div>
 
+            <div class="table-wrap">
             <table>
               <thead><tr><th>ID</th><th>Player</th><th>Commander</th><th>Bracket</th><th>Azioni</th></tr></thead>
               <tbody>{entries_table}</tbody>
             </table>
+            </div>
           </div>
         </div>
         """
@@ -403,6 +430,8 @@ class Handler(BaseHTTPRequestHandler):
             commanders = cur.fetchall()
             cur.execute("SELECT player, COUNT(*) AS n FROM gameentry GROUP BY player ORDER BY n DESC, player ASC")
             players = cur.fetchall()
+            cur.execute("SELECT DISTINCT bracket FROM gameentry WHERE bracket IS NOT NULL ORDER BY bracket ASC LIMIT 200")
+            brackets = [str(r["bracket"]) for r in cur.fetchall()]
 
         cmd_opts = "\n".join(
             f'<option value="{esc(r["commander"])}">{esc(r["commander"])} ({r["n"]})</option>'
@@ -412,6 +441,8 @@ class Handler(BaseHTTPRequestHandler):
         player_opts = "\n".join(
             f'<option value="{esc(r["player"])}">{esc(r["player"])} ({r["n"]})</option>' for r in players
         )
+
+        brackets_list = "\n".join(f'<option value="{esc(b)}"></option>' for b in brackets)
 
         info = f"<p class='muted'>Aggiornate {esc(updated)} righe.</p>" if updated else ""
 
@@ -428,12 +459,13 @@ class Handler(BaseHTTPRequestHandler):
         <div class="row">
           <div class="card" style="flex:1; min-width: 360px;">
             <h3>Bulk update</h3>
+            <datalist id="brackets">{brackets_list}</datalist>
             <form method="post" action="/admin/brackets/apply" onsubmit="return confirm('Confermi update massivo?')">
               <label>Commander</label>
               <select name="commander" required>{cmd_opts}</select>
 
               <label>Nuovo bracket (int)</label>
-              <input name="new_bracket" required inputmode="numeric" placeholder="es. 3">
+              <input list="brackets" name="new_bracket" required inputmode="numeric" placeholder="seleziona o scrivi...">
 
               <label>Player (opzionale)</label>
               <select name="player">
@@ -447,12 +479,16 @@ class Handler(BaseHTTPRequestHandler):
             </form>
           </div>
 
+          <datalist id="brackets">{brackets_list}</datalist>
+
           <div class="card" style="flex:2; min-width: 420px;">
             <h3>Commander presenti</h3>
+            <div class="table-wrap">
             <table>
               <thead><tr><th>Commander</th><th># entries</th></tr></thead>
               <tbody>{table_rows}</tbody>
             </table>
+            </div>
           </div>
         </div>
         """
@@ -462,14 +498,10 @@ class Handler(BaseHTTPRequestHandler):
     # POST handlers
     # ---------------------------
     def _post_game_create(self, form: dict[str, str]):
-        played_at = form.get("played_at", "").strip()
         notes = form.get("notes", "").strip() or None
         winner = form.get("winner_player", "").strip() or None
 
-        try:
-            played_iso = dtlocal_to_iso(played_at)
-        except Exception:
-            return self._send_html(page("Errore", "<h1>played_at non valido</h1>"), 400)
+        played_iso = now_iso()
 
         with db() as conn:
             cur = conn.cursor()
@@ -483,23 +515,23 @@ class Handler(BaseHTTPRequestHandler):
         return self._redirect(f"/admin/games/{game_id}")
 
     def _post_game_update(self, game_id: int, form: dict[str, str]):
-        played_at = form.get("played_at", "").strip()
         notes = form.get("notes", "").strip() or None
         winner = form.get("winner_player", "").strip() or None
 
-        try:
-            played_iso = dtlocal_to_iso(played_at)
-        except Exception:
-            return self._send_html(page("Errore", "<h1>played_at non valido</h1>"), 400)
+        set_now = form.get("set_now", "").strip() == "1"
 
         with db() as conn:
             cur = conn.cursor()
+            cur.execute("SELECT played_at FROM game WHERE id=?", (game_id,))
+            row = cur.fetchone()
+            if not row:
+                return self._send_html(page("404", "<h1>Partita non trovata</h1>"), 404)
+
+            played_iso = now_iso() if set_now else str(row["played_at"])
             cur.execute(
                 "UPDATE game SET played_at=?, notes=?, winner_player=? WHERE id=?",
                 (played_iso, notes, winner, game_id),
             )
-            if cur.rowcount == 0:
-                return self._send_html(page("404", "<h1>Partita non trovata</h1>"), 404)
             conn.commit()
 
         return self._redirect(f"/admin/games/{game_id}")
