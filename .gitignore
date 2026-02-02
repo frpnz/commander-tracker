@@ -3,7 +3,7 @@
 
 ### Specific folders ###
 .venv
-data/
+data/commander_tracker.sqlite
 results_*
 results/
 cifar100_tuning/

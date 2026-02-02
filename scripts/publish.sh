@@ -20,13 +20,13 @@ fi
 # esporta stats
 "$PY" backend/export_stats.py --db "$DB_PATH" --docs "$DOCS_DIR"
 
-# commit/push solo se ci sono modifiche
-if [[ -n "$(git status --porcelain)" ]]; then
-  git add -A
+# considera solo la cartella dati del sito
+if ! git diff --quiet -- docs/data; then
+  git add -A docs/data
   git commit -m "$MSG"
   git push
   echo "✅ Pubblicato: $MSG"
 else
-  echo "ℹ️ Nessuna modifica da pushare"
+  echo "ℹ️ Nessuna modifica in docs/data"
 fi
 
