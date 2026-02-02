@@ -1,9 +1,9 @@
 {
   "version": "v1",
-  "generated_utc": "2026-02-02T15:48:45Z",
+  "generated_utc": "2026-02-02T16:05:19Z",
   "counts": {
-    "games": 39,
-    "entries": 140
+    "games": 40,
+    "entries": 142
   },
   "filters": {
     "players": [
@@ -58,6 +58,24 @@
     ]
   },
   "games": [
+    {
+      "id": 44,
+      "played_at": "2026-02-02 17:04:50",
+      "notes": null,
+      "winner_player": "Stanca",
+      "entries": [
+        {
+          "player": "Fra",
+          "commander": "Marwyn",
+          "bracket": 5
+        },
+        {
+          "player": "Stanca",
+          "commander": "Kaalia",
+          "bracket": 5
+        }
+      ]
+    },
     {
       "id": 43,
       "played_at": "2026-02-02 16:47:24",
@@ -1079,7 +1097,7 @@
     },
     {
       "player": "Fra",
-      "games": 28,
+      "games": 29,
       "wins": 10
     },
     {
@@ -1094,8 +1112,8 @@
     },
     {
       "player": "Stanca",
-      "games": 19,
-      "wins": 2
+      "games": 20,
+      "wins": 3
     },
     {
       "player": "Teo",
@@ -1108,8 +1126,8 @@
       "player": "Stanca",
       "commander": "Kaalia",
       "bracket": 5,
-      "games": 13,
-      "wins": 2
+      "games": 14,
+      "wins": 3
     },
     {
       "player": "Matti",
@@ -1197,6 +1215,13 @@
     },
     {
       "player": "Fra",
+      "commander": "Marwyn",
+      "bracket": 5,
+      "games": 3,
+      "wins": 1
+    },
+    {
+      "player": "Fra",
       "commander": "Piedemoccio",
       "bracket": 4,
       "games": 3,
@@ -1229,13 +1254,6 @@
       "bracket": 5,
       "games": 2,
       "wins": 2
-    },
-    {
-      "player": "Fra",
-      "commander": "Marwyn",
-      "bracket": 5,
-      "games": 2,
-      "wins": 1
     },
     {
       "player": "Matti",
@@ -1368,9 +1386,9 @@
     {
       "player": "Fra",
       "wins": 10,
-      "games": 28,
+      "games": 29,
       "wins_w": 9.123396901506496,
-      "games_w": 25.86187963300771
+      "games_w": 26.86187963300771
     },
     {
       "player": "Matti",
@@ -1388,10 +1406,10 @@
     },
     {
       "player": "Stanca",
-      "wins": 2,
-      "games": 19,
-      "wins_w": 2.0,
-      "games_w": 18.3078876585115
+      "wins": 3,
+      "games": 20,
+      "wins_w": 3.0,
+      "games_w": 19.3078876585115
     },
     {
       "player": "Teo",
@@ -1406,10 +1424,10 @@
       "player": "Stanca",
       "commander": "Kaalia",
       "bracket": 5,
-      "wins": 2,
-      "games": 13,
-      "wins_w": 2.0,
-      "games_w": 13.089142871079
+      "wins": 3,
+      "games": 14,
+      "wins_w": 3.0,
+      "games_w": 14.089142871079
     },
     {
       "player": "Teo",
@@ -1529,6 +1547,15 @@
       "games_w": 3.3325803764965944
     },
     {
+      "player": "Fra",
+      "commander": "Marwyn",
+      "bracket": 5,
+      "wins": 1,
+      "games": 3,
+      "wins_w": 1.0,
+      "games_w": 3.0
+    },
+    {
       "player": "Matti",
       "commander": "Ivy",
       "bracket": 2,
@@ -1590,15 +1617,6 @@
       "games": 2,
       "wins_w": 0.0,
       "games_w": 2.066671660764243
-    },
-    {
-      "player": "Fra",
-      "commander": "Marwyn",
-      "bracket": 5,
-      "wins": 1,
-      "games": 2,
-      "wins_w": 1.0,
-      "games_w": 2.0
     },
     {
       "player": "Da",
@@ -1774,8 +1792,8 @@
     },
     {
       "player": "Stanca",
-      "wins_total": 2,
-      "wins_used": 2,
+      "wins_total": 3,
+      "wins_used": 3,
       "wbd": 0.0
     }
   ],
@@ -1800,9 +1818,9 @@
     },
     {
       "bracket": 5,
-      "games": 60,
-      "wins": 24,
-      "win_rate": 0.4
+      "games": 62,
+      "wins": 25,
+      "win_rate": 0.4032258064516129
     }
   ],
   "meta_wins_commander_winrate": [
@@ -1900,9 +1918,9 @@
     {
       "commander": "Kaalia",
       "bracket": 5,
-      "games": 13,
-      "wins": 2,
-      "win_rate": 0.15384615384615385
+      "games": 14,
+      "wins": 3,
+      "win_rate": 0.21428571428571427
     },
     {
       "commander": "Magda",
@@ -1910,6 +1928,13 @@
       "games": 4,
       "wins": 2,
       "win_rate": 0.5
+    },
+    {
+      "commander": "Marwyn",
+      "bracket": 5,
+      "games": 3,
+      "wins": 1,
+      "win_rate": 0.3333333333333333
     },
     {
       "commander": "Sephiroth",
@@ -2056,8 +2081,8 @@
     {
       "player": "Stanca",
       "commander": "Kaalia",
-      "wins_total": 2,
-      "wins_used": 2,
+      "wins_total": 3,
+      "wins_used": 3,
       "wbd": 0.0
     },
     {
@@ -2093,10 +2118,10 @@
     },
     {
       "player": "Fra",
-      "games_total": 28,
-      "games_used": 28,
-      "mdi": 0.10714285714285719,
-      "mpi": 0.630952380952381
+      "games_total": 29,
+      "games_used": 29,
+      "mdi": 0.103448275862069,
+      "mpi": 0.6091954022988506
     },
     {
       "player": "Matti",
@@ -2114,10 +2139,10 @@
     },
     {
       "player": "Stanca",
-      "games_total": 19,
-      "games_used": 19,
-      "mdi": -0.20614035087719298,
-      "mpi": 0.6447368421052632
+      "games_total": 20,
+      "games_used": 20,
+      "mdi": -0.19583333333333336,
+      "mpi": 0.6125
     },
     {
       "player": "Teo",
@@ -2194,6 +2219,14 @@
     },
     {
       "player": "Fra",
+      "commander": "Marwyn",
+      "games_total": 3,
+      "games_used": 3,
+      "mdi": 0.0,
+      "mpi": 0.0
+    },
+    {
+      "player": "Fra",
       "commander": "Liesa",
       "games_total": 2,
       "games_used": 2,
@@ -2207,14 +2240,6 @@
       "games_used": 2,
       "mdi": 0.3333333333333335,
       "mpi": 0.3333333333333335
-    },
-    {
-      "player": "Fra",
-      "commander": "Marwyn",
-      "games_total": 2,
-      "games_used": 2,
-      "mdi": 0.0,
-      "mpi": 0.0
     },
     {
       "player": "Fra",
@@ -2355,10 +2380,10 @@
     {
       "player": "Stanca",
       "commander": "Kaalia",
-      "games_total": 14,
-      "games_used": 14,
-      "mdi": 0.19047619047619047,
-      "mpi": 0.4047619047619047
+      "games_total": 15,
+      "games_used": 15,
+      "mdi": 0.17777777777777776,
+      "mpi": 0.3777777777777777
     },
     {
       "player": "Stanca",
