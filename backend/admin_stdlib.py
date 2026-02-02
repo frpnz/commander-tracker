@@ -114,37 +114,39 @@ def page(title: str, body: str) -> str:
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{esc(title)}</title>
   <style>
-    body {{ font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }}
+    body {{ font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; line-height: 1.35; }}
     .nav {{ display:flex; gap:12px; align-items:center; margin-bottom: 14px; flex-wrap:wrap; }}
     .nav a {{ text-decoration:none; padding: 8px 10px; border-radius: 10px; border:1px solid #ddd; color:#111; }}
     .row {{ display:flex; gap:16px; flex-wrap:wrap; }}
     .card {{ border:1px solid #ddd; border-radius:12px; padding:14px; background:#fff; }}
     .muted {{ color:#666; font-size: 0.9rem; }}
-    input, select, textarea {{ padding:10px; border-radius:10px; border:1px solid #ccc; width: 100%; box-sizing: border-box; }}
+    input, select, textarea {{ padding:10px; border-radius:10px; border:1px solid #ccc; width: 100%; box-sizing: border-box; font-size: 1rem; }}
     label {{ display:block; font-size: 0.9rem; margin: 10px 0 6px; color:#333; }}
-    button {{ padding:10px 14px; border-radius:10px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer; width:auto; }}
+    button {{ padding:10px 14px; border-radius:10px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer; width:auto; font-size: 1rem; }}
     button.primary {{ background:#111; color:#fff; border-color:#111; }}
     .btn-row {{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }}
     .btn-row .spacer {{ flex: 1 1 auto; }}
     .btn-row button {{ flex: 0 0 auto; }}
     .btn-row.compact button {{ padding: 8px 12px; border-radius: 10px; }}
     .table-wrap {{ width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }}
-    table {{ border-collapse: collapse; width: 100%; min-width: 560px; }}
-    th, td {{ border-bottom: 1px solid #eee; padding: 10px; text-align:left; vertical-align: top; }}
+    table {{ border-collapse: collapse; width: 100%; min-width: 0; table-layout: fixed; }}
+    th, td {{ border-bottom: 1px solid #eee; padding: 10px; text-align:left; vertical-align: top; white-space: normal; overflow-wrap: anywhere; }}
     details summary {{ cursor:pointer; }}
     code {{ background:#f2f2f2; padding:2px 6px; border-radius:6px; }}
 
     /* Mobile */
     @media (max-width: 640px) {{
-      body {{ margin: 12px; }}
+      body {{ margin: 12px; font-size: 16px; }}
       .row {{ flex-direction: column; gap: 12px; }}
       .card {{ padding: 12px; }}
-      /* Buttons: avoid giant full-width buttons on mobile */
-      button {{ width: auto; }}
+      /* Buttons: readable, compact, no forced full-width */
+      button {{ width: auto; padding: 10px 12px; font-size: 16px; }}
       .btn-row {{ gap: 8px; }}
-      .btn-row button {{ flex: 1 1 140px; }}
-      table {{ min-width: 520px; }}
-      th, td {{ padding: 8px; }}
+      .btn-row button {{ flex: 0 1 auto; }}
+      /* Tables should not force horizontal scrolling on mobile */
+      .table-wrap {{ overflow-x: visible; }}
+      table {{ min-width: 0; }}
+      th, td {{ padding: 8px; font-size: 15px; }}
     }}
   </style>
 </head>
