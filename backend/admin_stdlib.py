@@ -72,46 +72,6 @@ def parse_form(body: bytes) -> dict[str, str]:
 
 
 
-
-def bracket_mismatch_warning(conn: sqlite3.Connection, player: str, commander: str, new_bracket: int | None, exclude_entry_id: int | None = None) -> str:
-    """Return a soft warning message if existing DB bracket(s) for (player, commander) differ from `new_bracket`.
-
-    It does NOT block the write. It only inspects existing rows.
-    """
-    if not player or not commander:
-        return ""
-    # If new_bracket is None, we still warn only if DB has a non-null bracket (so you're clearing it).
-    cur = conn.cursor()
-    params = [player, commander]
-    sql = "SELECT DISTINCT bracket FROM gameentry WHERE player=? AND commander=?"
-    if exclude_entry_id is not None:
-        sql += " AND id<>?"
-        params.append(exclude_entry_id)
-    sql += " AND bracket IS NOT NULL ORDER BY bracket ASC"
-    cur.execute(sql, tuple(params))
-    existing = [r[0] for r in cur.fetchall()]
-    if not existing:
-        return ""
-    # Normalize comparison
-    if new_bracket is None:
-        existing_s = ", ".join(str(b) for b in existing)
-        return (
-            f"⚠️ Attenzione: per player '{player}' con commander '{commander}' il DB contiene già bracket {existing_s}. "
-            f"Stai inserendo/bruciando a — nessuno —."
-        )
-    try:
-        nb = int(new_bracket)
-    except Exception:
-        return ""
-    if len(existing) == 1 and int(existing[0]) == nb:
-        return ""
-    existing_s = ", ".join(str(b) for b in existing)
-    return (
-        f"⚠️ Attenzione: per player '{player}' con commander '{commander}' il DB contiene già bracket {existing_s}. "
-        f"Stai inserendo {nb}."
-    )
-
-
 def pick_select_or_new(form: dict[str, str], sel_key: str, new_key: str) -> str:
     sel = (form.get(sel_key, "") or "").strip()
     new = (form.get(new_key, "") or "").strip()
@@ -159,8 +119,7 @@ def page(title: str, body: str) -> str:
     .nav a {{ text-decoration:none; padding: 8px 10px; border-radius: 10px; border:1px solid #ddd; color:#111; }}
     .row {{ display:flex; gap:16px; flex-wrap:wrap; }}
     .card {{ border:1px solid #ddd; border-radius:12px; padding:14px; background:#fff; }}
-    .muted {{ color:#666; font-size: 0.9rem; }}nt-size: 0.9rem; }}
-    .warn {{ color:#b45309; font-weight:600; }}
+    .muted {{ color:#666; font-size: 0.9rem; }}
     input, select, textarea {{ padding:10px; border-radius:10px; border:1px solid #ccc; width: 100%; box-sizing: border-box; }}
     label {{ display:block; font-size: 0.9rem; margin: 10px 0 6px; color:#333; }}
     button {{ padding:10px 14px; border-radius:10px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer; }}
@@ -224,14 +183,12 @@ class Handler(BaseHTTPRequestHandler):
                     game_id = int(parts[2])
                 except ValueError:
                     return self._send_html(page("Errore", "<h1>ID non valido</h1>"), 400)
-                warn = query.get("warn", [""])[0]
-                return self._get_game_detail(game_id, warn)
+                return self._get_game_detail(game_id)
 
         if path == "/admin/brackets":
             updated = query.get("updated", [""])[0]
             msg = query.get("msg", [""])[0]
-            warn = query.get("warn", [""])[0]
-            return self._get_brackets(updated, msg, warn)
+            return self._get_brackets(updated, msg)
 
         return self._send_html(page("404", "<h1>Not found</h1>"), 404)
 
@@ -357,7 +314,7 @@ class Handler(BaseHTTPRequestHandler):
         """
         return self._send_html(page("Partite", body))
 
-    def _get_game_detail(self, game_id: int, warn: str = ""):
+    def _get_game_detail(self, game_id: int):
         with db() as conn:
             cur = conn.cursor()
             cur.execute("SELECT * FROM game WHERE id=?", (game_id,))
@@ -464,16 +421,8 @@ class Handler(BaseHTTPRequestHandler):
             )
         entries_table = "\n".join(entry_rows) if entry_rows else "<tr><td colspan=5 class='muted'>Nessuna entry</td></tr>"
 
-        warn_html = ""
-        if (warn or "").strip():
-            warn_html = (
-                '<div class="card" style="border-color:#f59e0b; background:#fffbeb; margin-bottom:14px;">'
-                f'<div class="warn">{esc(warn)}</div></div>'
-            )
-
         body = f"""
         <h1>Partita #{game['id']}</h1>
-        {warn_html}
         <div class="row">
           <div class="card" style="flex:1; min-width: 320px;">
             <h3>Modifica partita</h3>
@@ -565,7 +514,7 @@ class Handler(BaseHTTPRequestHandler):
         """
         return self._send_html(page(f"Partita {game_id}", body))
 
-    def _get_brackets(self, updated: str, msg: str = "", warn: str = ""):
+    def _get_brackets(self, updated: str, msg: str = ""):
         with db() as conn:
             cur = conn.cursor()
             cur.execute(
@@ -591,8 +540,6 @@ class Handler(BaseHTTPRequestHandler):
         info_bits: list[str] = []
         if updated != "":
             info_bits.append(f"<p class='muted'>Aggiornate {esc(updated)} righe.</p>")
-        if warn:
-            info_bits.append(f"<p class='warn'>⚠️ {esc(warn)}</p>")
         if msg:
             info_bits.append(f"<p class='muted'>{esc(msg)}</p>")
         info = "\n".join(info_bits)
@@ -647,100 +594,6 @@ class Handler(BaseHTTPRequestHandler):
     # ---------------------------
     # POST handlers
     # ---------------------------
-    def _post_brackets_apply(self, form: dict[str, str]):
-        commander = form.get("commander", "").strip()
-        player = form.get("player", "").strip()
-        new_bracket_s = form.get("new_bracket", "").strip()
-
-        if not commander:
-            return self._send_html(page("Errore", "<h1>Commander obbligatorio</h1>"), 400)
-
-        try:
-            new_bracket = int(new_bracket_s)
-        except ValueError:
-            return self._send_html(page("Errore", "<h1>new_bracket deve essere un intero</h1>"), 400)
-
-        msg = ""
-        warn = ""
-
-        with db() as conn:
-            cur = conn.cursor()
-
-            # Commander e player sono legati 1:1 (assunzione del progetto).
-            # Per correggere anche varianti/typo del nome commander nel DB,
-            # facciamo l'update per PLAYER (non per commander) dopo averlo risolto.
-            resolved_player = player
-
-            if not resolved_player:
-                cur.execute(
-                    "SELECT DISTINCT player FROM gameentry WHERE commander=?",
-                    (commander,),
-                )
-                players = [str(r["player"]) for r in cur.fetchall() if (r["player"] or "").strip()]
-                if not players:
-                    changed = 0
-                    msg = f"Nessuna entry trovata per commander: {commander}"
-                    conn.commit()
-                    return self._redirect(
-                        f"/admin/brackets?updated={changed}&warn={urllib.parse.quote(warn)}&msg={urllib.parse.quote(msg)}"
-                    )
-                if len(players) > 1:
-                    changed = 0
-                    msg = (
-                        f"Ambiguo: il commander '{commander}' risulta associato a più player ({', '.join(players)}). "
-                        "Seleziona il player esplicitamente e riprova."
-                    )
-                    conn.commit()
-                    return self._redirect(
-                        f"/admin/brackets?updated={changed}&warn={urllib.parse.quote(warn)}&msg={urllib.parse.quote(msg)}"
-                    )
-                resolved_player = players[0]
-                msg = f"Autodetect: '{commander}' → player '{resolved_player}'."
-            else:
-                # Check di coerenza: la coppia (commander, player) deve esistere almeno una volta.
-                cur.execute(
-                    "SELECT 1 FROM gameentry WHERE commander=? AND player=? LIMIT 1",
-                    (commander, resolved_player),
-                )
-                if not cur.fetchone():
-                    changed = 0
-                    msg = (
-                        f"Check fallito: nessuna entry trovata con commander '{commander}' e player '{resolved_player}'. "
-                        "Nessuna modifica applicata."
-                    )
-                    conn.commit()
-                    return self._redirect(
-                        f"/admin/brackets?updated={changed}&warn={urllib.parse.quote(warn)}&msg={urllib.parse.quote(msg)}"
-                    )
-
-            # Soft warning: se nel DB esiste già un bracket diverso per questo player (e quindi per il commander 1:1),
-            # avvisa ma applica comunque l'update.
-            cur.execute(
-                "SELECT DISTINCT bracket FROM gameentry WHERE player=? AND bracket IS NOT NULL ORDER BY bracket ASC",
-                (resolved_player,),
-            )
-            existing = [r["bracket"] for r in cur.fetchall()]
-            if existing:
-                if not (len(existing) == 1 and int(existing[0]) == int(new_bracket)):
-                    existing_s = ", ".join(str(b) for b in existing)
-                    warn = (
-                        f"Bracket attuale nel DB per player '{resolved_player}' (commander '{commander}'): {existing_s}. "
-                        f"Stai per impostarlo a {new_bracket}."
-                    )
-
-            cur.execute(
-                "UPDATE gameentry SET bracket=? WHERE player=?",
-                (new_bracket, resolved_player),
-            )
-            changed = cur.rowcount
-            conn.commit()
-
-        return self._redirect(
-            f"/admin/brackets?updated={changed}&warn={urllib.parse.quote(warn)}&msg={urllib.parse.quote(msg)}"
-        )
-
-
-
     def _post_game_create(self, form: dict[str, str]):
         notes = form.get("notes", "").strip() or None
         winner = pick_select_or_new(form, "winner_sel", "winner_new") or None
@@ -756,10 +609,6 @@ class Handler(BaseHTTPRequestHandler):
             game_id = cur.lastrowid
             conn.commit()
 
-        if warn:
-            return self._redirect(f"/admin/games/{game_id}?warn={urllib.parse.quote(warn)}")
-        if warn:
-            return self._redirect(f"/admin/games/{game_id}?warn={urllib.parse.quote(warn)}")
         return self._redirect(f"/admin/games/{game_id}")
 
     def _post_game_update(self, game_id: int, form: dict[str, str]):
@@ -812,7 +661,6 @@ class Handler(BaseHTTPRequestHandler):
             cur.execute("SELECT id FROM game WHERE id=?", (game_id,))
             if not cur.fetchone():
                 return self._send_html(page("404", "<h1>Partita non trovata</h1>"), 404)
-            warn = bracket_mismatch_warning(conn, player, commander, bracket)
             cur.execute(
                 "INSERT INTO gameentry (game_id, player, commander, bracket) VALUES (?, ?, ?, ?)",
                 (game_id, player, commander, bracket),
@@ -843,7 +691,6 @@ class Handler(BaseHTTPRequestHandler):
             if not row:
                 return self._send_html(page("404", "<h1>Entry non trovata</h1>"), 404)
             game_id = int(row["game_id"])
-            warn = bracket_mismatch_warning(conn, player, commander, bracket, exclude_entry_id=entry_id)
             cur.execute(
                 "UPDATE gameentry SET player=?, commander=?, bracket=? WHERE id=?",
                 (player, commander, bracket, entry_id),
@@ -864,6 +711,83 @@ class Handler(BaseHTTPRequestHandler):
             conn.commit()
 
         return self._redirect(f"/admin/games/{game_id}")
+
+    def _post_brackets_apply(self, form: dict[str, str]):
+        commander = form.get("commander", "").strip()
+        player = form.get("player", "").strip()
+        new_bracket_s = form.get("new_bracket", "").strip()
+
+        if not commander:
+            return self._send_html(page("Errore", "<h1>Commander obbligatorio</h1>"), 400)
+
+        try:
+            new_bracket = int(new_bracket_s)
+        except ValueError:
+            return self._send_html(page("Errore", "<h1>new_bracket deve essere un intero</h1>"), 400)
+
+        with db() as conn:
+            cur = conn.cursor()
+
+            # Commander e player sono legati 1:1 (assunzione del progetto).
+            # Per correggere anche varianti/typo del nome commander nel DB,
+            # facciamo l'update per PLAYER (non per commander) dopo averlo risolto.
+
+            resolved_player = player
+            msg = ""
+
+            if not resolved_player:
+                cur.execute(
+                    "SELECT DISTINCT player FROM gameentry WHERE commander=?",
+                    (commander,),
+                )
+                players = [str(r["player"]) for r in cur.fetchall() if (r["player"] or "").strip()]
+                if not players:
+                    changed = 0
+                    msg = f"Nessuna entry trovata per commander: {commander}"  # safe: escaped on render
+                    conn.commit()
+                    return self._redirect(
+                        f"/admin/brackets?updated={changed}&msg={urllib.parse.quote(msg)}"
+                    )
+                if len(players) > 1:
+                    changed = 0
+                    msg = (
+                        f"Ambiguo: il commander '{commander}' risulta associato a più player ({', '.join(players)}). "
+                        "Seleziona il player esplicitamente e riprova."
+                    )
+                    conn.commit()
+                    return self._redirect(
+                        f"/admin/brackets?updated={changed}&msg={urllib.parse.quote(msg)}"
+                    )
+                resolved_player = players[0]
+                msg = f"Autodetect: '{commander}' → player '{resolved_player}'."
+
+            else:
+                # Check di coerenza: la coppia (commander, player) deve esistere almeno una volta.
+                cur.execute(
+                    "SELECT 1 FROM gameentry WHERE commander=? AND player=? LIMIT 1",
+                    (commander, resolved_player),
+                )
+                if not cur.fetchone():
+                    changed = 0
+                    msg = (
+                        f"Check fallito: nessuna entry trovata con commander '{commander}' e player '{resolved_player}'. "
+                        "Nessuna modifica applicata."
+                    )
+                    conn.commit()
+                    return self._redirect(
+                        f"/admin/brackets?updated={changed}&msg={urllib.parse.quote(msg)}"
+                    )
+
+            cur.execute(
+                "UPDATE gameentry SET bracket=? WHERE player=?",
+                (new_bracket, resolved_player),
+            )
+            changed = cur.rowcount
+            conn.commit()
+
+        return self._redirect(
+            f"/admin/brackets?updated={changed}&msg={urllib.parse.quote(msg)}"
+        )
 
 
 def main() -> None:
