@@ -1,55 +1,54 @@
 # Commander Tracker
 
-Questo repository contiene **Commander Tracker**, un progetto che:
-
-* traccia partite di Commander (Magic: The Gathering) in un **database SQLite**
-* genera **statistiche deterministiche** (win rate, metriche, filtri)
-* pubblica un **sito statico su GitHub Pages**
-* include un **tool admin locale** per inserire e gestire le partite
-
-Questo README è il **documento unico di riferimento** per sviluppo, deploy, dati e amministrazione.
+**Commander Tracker** è un progetto per tracciare partite di *Commander* (Magic: The Gathering) in un **database SQLite**, calcolare **statistiche deterministiche** e pubblicare un **sito statico** (GitHub Pages–friendly).  
+Include anche un **tool admin locale** (solo Python standard library) per inserire/modificare partite.
 
 ---
 
 ## Struttura del progetto
 
-```
-backend/                     # Logica Python (export stats + admin)
-  export_stats.py            # Generazione sito statico
-  commander_stats/           # Moduli di calcolo
-  admin_stdlib.py            # Tool admin locale
-  stats.v1.schema.json       # JSON Schema (contratto dati)
+```text
+backend/                       # Logica Python (export stats + admin)
+  export_stats.py              # Wrapper CLI per l'export
+  admin_stdlib.py              # Admin UI locale (HTTP server)
+  admin_stdlib.md              # Doc dell'admin tool
+  commander_stats/             # Moduli di calcolo + rendering output
+  stats.v1.schema.json         # JSON Schema (contratto dati)
 
 frontend/
-  site/                      # Frontend statico (HTML / CSS / JS)
+  site/                        # Frontend statico (HTML / CSS / JS)
 
 data/
-  commander_tracker.sqlite   # Database SQLite (VERSIONATO nel repo)
+  commander_tracker.sqlite     # Database SQLite (versionato nel repo)
 
-docs/                        # Output finale pubblicato su GitHub Pages
+docs/                          # Output finale pubblicabile (generato dall'export)
+  data/
+    stats.v1.json
+    stats.v1.schema.json
 
-.github/workflows/
-  pages.yml                  # Workflow GitHub Actions per Pages
+scripts/
+  publish.sh                   # Export + commit/push automatico (lato admin)
 ```
+
+> Nota: la cartella `docs/` può non essere presente appena cloni il repo: viene **generata** da `backend/export_stats.py`.
 
 ---
 
 ## Database SQLite (tracking & backup)
 
-Il database:
+Il database è:
 
-```
+```text
 data/commander_tracker.sqlite
 ```
 
-è **leggero** e viene **tracciato direttamente nel repository Git**.
-Questo fornisce:
+È **leggero** e viene **tracciato direttamente nel repository Git** per avere:
 
-* backup automatico
-* storico versionato
-* possibilità di rollback
+- backup automatico
+- storico versionato
+- possibilità di rollback
 
-### File da ignorare
+### File da ignorare (WAL/SHM)
 
 Nel `.gitignore` **devono** essere ignorati i file temporanei di SQLite:
 
@@ -62,9 +61,7 @@ Questi file non vanno mai versionati.
 
 ### Rollback del database
 
-Essendo il DB versionato, è possibile ripristinare una versione precedente usando Git.
-
-**Ripristino di una versione specifica del DB (consigliato):**
+Ripristino di una versione specifica del DB (consigliato):
 
 ```bash
 git log --oneline -- data/commander_tracker.sqlite
@@ -73,9 +70,7 @@ git commit -m "Rollback DB to <COMMIT_SHA>"
 git push
 ```
 
-Questo ripristina **solo il DB**, senza toccare il resto del repository.
-
-**Rollback temporaneo (senza commit, solo per test):**
+Rollback temporaneo (senza commit, solo per test):
 
 ```bash
 git checkout <COMMIT_SHA> -- data/commander_tracker.sqlite
@@ -83,181 +78,163 @@ git checkout <COMMIT_SHA> -- data/commander_tracker.sqlite
 git restore data/commander_tracker.sqlite
 ```
 
---- Rollback del database
-
-Essendo il DB versionato, è possibile ripristinare una versione precedente usando Git.
-
-**Ripristino di una versione specifica del DB (consigliato):**
-
-```bash
-git log --oneline -- data/commander_tracker.sqlite
-git checkout <COMMIT_SHA> -- data/commander_tracker.sqlite
-git commit -m "Rollback DB to <COMMIT_SHA>"
-git push
-```
-
-Questo ripristina **solo il DB**, senza toccare il resto del repository.
-
-**Rollback temporaneo (senza commit, solo per test):
+---
 
 ## Flusso dati end-to-end
 
 1. **Admin tool** inserisce / modifica partite nel DB SQLite
-2. Lo script Python di export:
-
-   * legge il DB
-   * calcola aggregazioni e metriche
-   * genera JSON deterministico
-3. Il frontend statico carica il JSON e renderizza grafici e filtri
-4. GitHub Pages pubblica il contenuto di `docs/`
-
----
-
-## Statistiche generate
-
-Le statistiche includono:
-
-* win rate (vittorie / partite)
-* filtri per:
-
-  * player
-  * commander
-  * bracket
-* metriche aggregate
-
-Il file principale generato è:
-
-```
-docs/data/stats.v1.json
-```
-
-che rispetta lo schema:
-
-```
-backend/stats.v1.schema.json
-```
-
-L’export è **deterministico**: a DB invariato, l’output non cambia (niente commit rumorosi).
+2. **Exporter**:
+   - legge il DB
+   - calcola aggregazioni e metriche
+   - genera JSON deterministico
+   - copia il sito statico in `docs/`
+3. Il **frontend statico** carica `docs/data/stats.v1.json` e renderizza filtri/grafici
+4. **GitHub Pages** pubblica `docs/` (se configurato nel repo)
 
 ---
 
-## GitHub Pages (configurazione attuale)
+## Admin tool (UI locale)
 
-### Metodo usato
+Documentazione completa: `backend/admin_stdlib.md`.
 
-* **Source:** GitHub Actions
-* **Cartella pubblicata:** `docs/`
-* **Workflow:** `.github/workflows/pages.yml`
+### Avvio (locale)
 
-Non viene usato il deploy automatico da branch (`Deploy from a branch`).
-
----
-
-## Trigger del deploy
-
-Il workflow Pages è configurato per deployare **solo quando cambia `docs/**`**:
-
-```yaml
-on:
-  push:
-    branches: ["main"]
-    paths:
-      - "docs/**"
-  workflow_dispatch:
-```
-
-### Effetti pratici
-
-| Cambiamento     | Commit | Deploy Pages |
-| --------------- | ------ | ------------ |
-| Solo DB         | ✅      | ❌            |
-| Backend / admin | ✅      | ❌            |
-| docs/data       | ✅      | ✅            |
-| DB + docs       | ✅      | ✅            |
-
----
-
-## Concurrency (anti-code GitHub Actions)
-
-Nel workflow Pages:
-
-```yaml
-concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: true
-```
-
-Questo garantisce che:
-
-* se fai più push ravvicinati
-* i deploy precedenti vengono cancellati
-* resta **solo l’ultimo deploy valido**
-
-Risolve problemi di:
-
-* runner queued
-* deploy cancellati per priorità
-
----
-
-## Generare / aggiornare il sito (locale)
-
-Dalla root del progetto:
+Dalla root del repo:
 
 ```bash
-python backend/export_stats.py \
-  --db data/commander_tracker.sqlite \
-  --docs docs
+export COMMANDER_DB=./data/commander_tracker.sqlite
+python3 backend/admin_stdlib.py
 ```
 
-Questo comando:
+Di default ascolta su `127.0.0.1:8000`.
 
-* rigenera completamente `docs/`
-* aggiorna JSON + frontend statico
-
----
-
-## Test del sito in locale
-
-````bash
-python -m http.server -d ## Workflow operativo consigliato
-
-1. Avvia il tool admin locale e inserisci/modifica partite
-2. Esegui lo script di aggiornamento (wrapper bash, es. `update_stats.sh`), che:
-   - stabilizza il DB SQLite
-   - esegue l’export delle statistiche
-   - aggiorna `docs/data/ Accesso remoto
+### Accesso remoto via SSH tunnel (es. da telefono)
 
 ```bash
 ssh -L 8080:127.0.0.1:8000 user@SERVER
-````
-
-Browser:
-
 ```
+
+Poi apri:
+
+```text
 http://127.0.0.1:8080/admin/games
 ```
 
 ---
 
-## Workflow operativo consigliato
+## Generare / aggiornare il sito (manuale)
 
-1. Avvia admin tool
-2. Inserisci / modifica partite
-3. Lancia lo script di aggiornamento (wrapper bash) che:
+Dalla root del progetto:
 
-   * ions
+```bash
+python3 backend/export_stats.py   --db data/commander_tracker.sqlite   --docs docs
+```
 
-* [x] Concurrency attiva
-* [x] Deploy solo su `docs/**`
-* [x] Tool admin solo locale
+Cosa fa:
+
+- rigenera completamente `docs/`
+- scrive/aggiorna:
+  - `docs/data/stats.v1.json` (deterministico a DB invariato)
+  - `docs/data/stats.v1.schema.json`
+
+### Test del sito in locale
+
+Dopo aver generato `docs/`:
+
+```bash
+python3 -m http.server -d docs 8081
+```
+
+Poi apri:
+
+```text
+http://127.0.0.1:8081
+```
 
 ---
 
-**Nota finale**
+## Pubblicazione/backup automatica lato admin (`scripts/publish.sh`)
 
-Se GitHub Pages sembra bloccato:
+Lo script `scripts/publish.sh` serve per il **workflow operativo lato admin**:
 
-* controllare **Actions → Deploy Pages**
-* ignorare eventuali vecchie run dinamiche non cancellabili
-* se il workflow `Deploy Pages` gira, il sito è sotto controllo
+- (opzionale) fa checkpoint del WAL per rendere il DB consistente
+- esegue l’export delle statistiche in `docs/`
+- fa stage **solo** di:
+  - `docs/data/**` (per triggerare GitHub Pages)
+  - `data/commander_tracker.sqlite` (backup versionato del DB)
+- crea commit e fa push **solo se ci sono cambiamenti**
+
+### Prerequisiti
+
+1. Repo clonato sulla macchina “admin”
+2. Virtualenv creato (per avere `python` “stabile” nello script)
+
+Esempio:
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+# se hai dipendenze extra (qui in genere non servono), installale
+```
+
+> L’export usa `backend/commander_stats` (solo stdlib + codice repo). L’admin tool usa solo stdlib.
+
+### Uso
+
+Da root del repo (o da qualsiasi path, se imposti `REPO_DIR`):
+
+```bash
+bash scripts/publish.sh "aggiunte partite del 2026-02-03"
+```
+
+Se non passi un messaggio:
+
+```bash
+bash scripts/publish.sh
+# commit message di default: "update data"
+```
+
+### Variabili d’ambiente supportate
+
+Lo script usa queste variabili (tutte opzionali):
+
+- `REPO_DIR` (default: `~/Projects/commander-tracker`)
+- `DB_PATH` (default: `$REPO_DIR/data/commander_tracker.sqlite`)
+- `DOCS_DIR` (default: `$REPO_DIR/docs`)
+- `VENV_DIR` (default: `$REPO_DIR/.venv`)
+
+Esempio (utile se il repo non è nella path di default):
+
+```bash
+export REPO_DIR="$HOME/commander-tracker"
+export VENV_DIR="$REPO_DIR/.venv"
+bash "$REPO_DIR/scripts/publish.sh" "sync"
+```
+
+### Workflow operativo consigliato (admin)
+
+1. Avvia l’admin tool e inserisci/modifica partite
+2. Chiudi (o lascia aperto) l’admin tool
+3. Esegui:
+
+```bash
+bash scripts/publish.sh "update partite"
+```
+
+Risultato:
+
+- il DB viene versionato (backup)
+- le statistiche vengono rigenerate
+- se `docs/data/**` cambia, GitHub Pages (se configurato) si aggiorna automaticamente
+
+---
+
+## Note su GitHub Pages (se presente nel repo)
+
+Molte installazioni configurano Pages per deployare **solo quando cambia `docs/**`** (es. via GitHub Actions con `paths: docs/**`).  
+Questo evita deploy inutili quando cambi solo backend o admin tool.
+
+Se Pages sembra “bloccato”:
+
+- controlla tab **Actions → Deploy Pages**
+- assicurati che il commit contenga cambiamenti in `docs/` (tipicamente `docs/data/**`)
