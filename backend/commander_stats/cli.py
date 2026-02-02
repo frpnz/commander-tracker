@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 import argparse
+import datetime
 import json
 from pathlib import Path
 
@@ -29,15 +31,22 @@ def main(argv: list[str] | None = None) -> int:
     data_dir = docs_dir / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    conn = connect(str(Path(args.db).resolve()))
+    db_path = Path(args.db).resolve()
+    # Stable timestamp: DB mtime. If DB didn't change, generated_utc won't change either.
+    mtime = os.path.getmtime(db_path)
+    generated_utc = datetime.datetime.utcfromtimestamp(mtime).replace(microsecond=0).isoformat() + "Z"
+    conn = connect(str(db_path))
     try:
-        stats = compute_stats(conn)
+        stats = compute_stats(conn, generated_utc=generated_utc)
     finally:
         conn.close()
 
     json_path = data_dir / "stats.v1.json"
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(stats, f, ensure_ascii=False, indent=2)
+    new_json = json.dumps(stats, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    old_json = json_path.read_text(encoding="utf-8") if json_path.exists() else None
+
+    if new_json != old_json:
+        json_path.write_text(new_json, encoding="utf-8")
 
     # Export JSON schema alongside the data for a visible contract
     schema_src = repo_root / "backend" / "stats.v1.schema.json"

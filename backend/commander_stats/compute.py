@@ -8,7 +8,7 @@ import math
 def _rows_to_dicts(rows) -> List[Dict[str, Any]]:
     return [dict(r) for r in rows]
 
-def compute_stats(conn: sqlite3.Connection) -> Dict[str, Any]:
+def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) -> Dict[str, Any]:
     """Compute aggregations used by the static frontend.
 
     Output contract (stats.v1.json):
@@ -442,7 +442,8 @@ def compute_stats(conn: sqlite3.Connection) -> Dict[str, Any]:
     cur.execute("SELECT COUNT(*) AS n FROM gameentry;")
     n_entries = int(cur.fetchone()["n"])
 
-    generated_utc = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    if generated_utc is None:
+        generated_utc = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
     # Finalize meta wins outputs (WBD)
     meta_wins_by_player = []
