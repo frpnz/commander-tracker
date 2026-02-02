@@ -32,9 +32,10 @@ def main(argv: list[str] | None = None) -> int:
     data_dir.mkdir(parents=True, exist_ok=True)
 
     db_path = Path(args.db).resolve()
-    # Stable timestamp: DB mtime. If DB didn't change, generated_utc won't change either.
-    mtime = os.path.getmtime(db_path)
-    generated_utc = datetime.datetime.utcfromtimestamp(mtime).replace(microsecond=0).isoformat() + "Z"
+
+    # Timestamp informativo (non lo useremo per decidere se riscrivere il file)
+    generated_utc = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+
     conn = connect(str(db_path))
     try:
         stats = compute_stats(conn, generated_utc=generated_utc)
@@ -42,10 +43,25 @@ def main(argv: list[str] | None = None) -> int:
         conn.close()
 
     json_path = data_dir / "stats.v1.json"
-    new_json = json.dumps(stats, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
-    old_json = json_path.read_text(encoding="utf-8") if json_path.exists() else None
 
-    if new_json != old_json:
+    def _strip_generated(obj: dict) -> dict:
+        c = dict(obj)
+        c.pop("generated_utc", None)
+        return c
+
+    # Confronto semantico ignorando generated_utc
+    old_obj = None
+    if json_path.exists():
+        try:
+            old_obj = json.loads(json_path.read_text(encoding="utf-8"))
+        except Exception:
+            old_obj = None
+
+    if old_obj is not None and _strip_generated(old_obj) == _strip_generated(stats):
+        # cambia solo generated_utc (o niente): non riscrivere il file
+        pass
+    else:
+        new_json = json.dumps(stats, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
         json_path.write_text(new_json, encoding="utf-8")
 
     # Export JSON schema alongside the data for a visible contract
