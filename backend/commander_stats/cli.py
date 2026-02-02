@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import os
 import argparse
-import datetime
 import json
 from pathlib import Path
 
@@ -33,36 +31,19 @@ def main(argv: list[str] | None = None) -> int:
 
     db_path = Path(args.db).resolve()
 
-    # Timestamp informativo (non lo useremo per decidere se riscrivere il file)
-    generated_utc = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
-
     conn = connect(str(db_path))
     try:
-        stats = compute_stats(conn, generated_utc=generated_utc)
+        # generated_utc is computed deterministically from DB content when omitted
+        stats = compute_stats(conn, generated_utc=None)
     finally:
         conn.close()
 
     json_path = data_dir / "stats.v1.json"
 
-    def _strip_generated(obj: dict) -> dict:
-        c = dict(obj)
-        c.pop("generated_utc", None)
-        return c
-
-    # Confronto semantico ignorando generated_utc
-    old_obj = None
-    if json_path.exists():
-        try:
-            old_obj = json.loads(json_path.read_text(encoding="utf-8"))
-        except Exception:
-            old_obj = None
-
-    if old_obj is not None and _strip_generated(old_obj) == _strip_generated(stats):
-        # cambia solo generated_utc (o niente): non riscrivere il file
-        pass
-    else:
-        new_json = json.dumps(stats, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
-        json_path.write_text(new_json, encoding="utf-8")
+    # Always write the JSON file. The output is now deterministic for an
+    # unchanged DB (including generated_utc).
+    new_json = json.dumps(stats, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    json_path.write_text(new_json, encoding="utf-8")
 
     # Export JSON schema alongside the data for a visible contract
     schema_src = repo_root / "backend" / "stats.v1.schema.json"

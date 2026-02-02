@@ -8,6 +8,49 @@ import math
 def _rows_to_dicts(rows) -> List[Dict[str, Any]]:
     return [dict(r) for r in rows]
 
+
+def _iso_utc_from_sqlite_dt(dt_str: str) -> str:
+    """Convert a SQLite DATETIME string to ISO-8601 UTC with trailing 'Z'.
+
+    The project DB stores played_at values like "YYYY-MM-DD HH:MM:SS".
+    We keep the same moment but render it in a stable, explicit UTC form.
+    """
+    dt_str = (dt_str or "").strip()
+    if not dt_str:
+        return "1970-01-01T00:00:00Z"
+
+    # Accept either "YYYY-MM-DD HH:MM:SS" or ISO-ish strings.
+    try:
+        if "T" in dt_str:
+            dt = datetime.datetime.fromisoformat(dt_str.replace("Z", ""))
+        else:
+            dt = datetime.datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+    except Exception:
+        # If parsing fails, fall back to a safe constant rather than
+        # reintroducing non-determinism.
+        return "1970-01-01T00:00:00Z"
+
+    return dt.replace(microsecond=0).isoformat() + "Z"
+
+
+def _deterministic_generated_utc(conn: sqlite3.Connection) -> str:
+    """A deterministic 'generated_utc' tied to the DB content.
+
+    Using the wall-clock time makes exports change on every run, which is noisy
+    for Git commits. We instead use the most recent played_at in the DB.
+    """
+    cur = conn.cursor()
+    cur.execute("SELECT MAX(played_at) AS max_played_at FROM game;")
+    row = cur.fetchone()
+    max_played_at = None
+    if row is not None:
+        # sqlite3.Row supports dict-style access in this project.
+        try:
+            max_played_at = row["max_played_at"]
+        except Exception:
+            max_played_at = row[0]
+    return _iso_utc_from_sqlite_dt(max_played_at or "")
+
 def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) -> Dict[str, Any]:
     """Compute aggregations used by the static frontend.
 
@@ -110,7 +153,7 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
             ge.bracket AS bracket
         FROM gameentry ge
         JOIN game g ON g.id = ge.game_id
-        ORDER BY g.id ASC
+        ORDER BY g.id ASC, ge.id ASC
         """
     )
     rows_entries = _rows_to_dicts(cur.fetchall())
@@ -443,7 +486,7 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
     n_entries = int(cur.fetchone()["n"])
 
     if generated_utc is None:
-        generated_utc = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+        generated_utc = _deterministic_generated_utc(conn)
 
     # Finalize meta wins outputs (WBD)
     meta_wins_by_player = []
