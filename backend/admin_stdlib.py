@@ -122,8 +122,12 @@ def page(title: str, body: str) -> str:
     .muted {{ color:#666; font-size: 0.9rem; }}
     input, select, textarea {{ padding:10px; border-radius:10px; border:1px solid #ccc; width: 100%; box-sizing: border-box; font-size: 1rem; }}
     label {{ display:block; font-size: 0.9rem; margin: 10px 0 6px; color:#333; }}
-    button {{ padding:10px 14px; border-radius:10px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer; width:auto; font-size: 1rem; }}
+    /* Buttons: slightly more compact by default (better on mobile via SSH tunnel) */
+    button {{ padding:8px 12px; border-radius:10px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer; width:auto; font-size: 0.95rem; }}
     button.primary {{ background:#111; color:#fff; border-color:#111; }}
+    .flash {{ border:1px solid #cfe3ff; background:#eef6ff; padding:10px 12px; border-radius:12px; margin: 0 0 12px; }}
+    .flash.ok {{ border-color:#cfead5; background:#eefaf1; }}
+    .flash.err {{ border-color:#ffd2d2; background:#fff0f0; }}
     .btn-row {{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }}
     .btn-row .spacer {{ flex: 1 1 auto; }}
     .btn-row button {{ flex: 0 0 auto; }}
@@ -140,7 +144,8 @@ def page(title: str, body: str) -> str:
       .row {{ flex-direction: column; gap: 12px; }}
       .card {{ padding: 12px; }}
       /* Buttons: readable, compact, no forced full-width */
-      button {{ width: auto; padding: 10px 12px; font-size: 16px; }}
+      button {{ width: auto; padding: 8px 10px; font-size: 15px; }}
+      .nav a {{ padding: 7px 9px; border-radius: 10px; }}
       .btn-row {{ gap: 8px; }}
       .btn-row button {{ flex: 0 1 auto; }}
       /* Tables should not force horizontal scrolling on mobile */
@@ -192,7 +197,7 @@ class Handler(BaseHTTPRequestHandler):
                     game_id = int(parts[2])
                 except ValueError:
                     return self._send_html(page("Errore", "<h1>ID non valido</h1>"), 400)
-                return self._get_game_detail(game_id)
+                return self._get_game_detail(game_id, query)
 
         if path == "/admin/brackets":
             updated = query.get("updated", [""])[0]
@@ -368,7 +373,7 @@ class Handler(BaseHTTPRequestHandler):
         """
         return self._send_html(page("Partite", body))
 
-    def _get_game_detail(self, game_id: int):
+    def _get_game_detail(self, game_id: int, query: dict[str, list[str]] | None = None):
         with db() as conn:
             cur = conn.cursor()
             cur.execute("SELECT * FROM game WHERE id=?", (game_id,))
@@ -475,8 +480,21 @@ class Handler(BaseHTTPRequestHandler):
             )
         entries_table = "\n".join(entry_rows) if entry_rows else "<tr><td colspan=5 class='muted'>Nessuna entry</td></tr>"
 
+        q = query or {}
+        flash_html = ""
+        if (q.get("saved", [""])[0] or "") == "1":
+            msg = (q.get("msg", [""])[0] or "Partita salvata correttamente ✅")
+            flash_html = f'<div class="flash ok"><b>{esc(msg)}</b></div>'
+        elif (q.get("updated", [""])[0] or "") == "1":
+            msg = (q.get("msg", [""])[0] or "Modifiche salvate ✅")
+            flash_html = f'<div class="flash ok"><b>{esc(msg)}</b></div>'
+        elif (q.get("error", [""])[0] or "") == "1":
+            msg = (q.get("msg", [""])[0] or "Operazione non riuscita")
+            flash_html = f'<div class="flash err"><b>{esc(msg)}</b></div>'
+
         body = f"""
         <h1>Partita #{game['id']}</h1>
+        {flash_html}
         <div class="row">
           <div class="card" style="flex:1; min-width: 320px;">
             <h3>Modifica partita</h3>
@@ -663,7 +681,8 @@ class Handler(BaseHTTPRequestHandler):
             game_id = cur.lastrowid
             conn.commit()
 
-        return self._redirect(f"/admin/games/{game_id}")
+        # Flash message on landing page (use querystring to avoid server-side state)
+        return self._redirect(f"/admin/games/{game_id}?saved=1")
 
     def _post_game_import(self, form: dict[str, str]):
         """Duplicate an existing game (winner/notes/entries) into a new one.
@@ -715,7 +734,10 @@ class Handler(BaseHTTPRequestHandler):
 
             conn.commit()
 
-        return self._redirect(f"/admin/games/{new_game_id}")
+        return self._redirect(
+            f"/admin/games/{new_game_id}?saved=1&msg="
+            + urllib.parse.quote("Partita importata e salvata ✅")
+        )
 
     def _post_game_update(self, game_id: int, form: dict[str, str]):
         notes = form.get("notes", "").strip() or None
@@ -737,7 +759,7 @@ class Handler(BaseHTTPRequestHandler):
             )
             conn.commit()
 
-        return self._redirect(f"/admin/games/{game_id}")
+        return self._redirect(f"/admin/games/{game_id}?updated=1")
 
     def _post_game_delete(self, game_id: int):
         with db() as conn:
@@ -773,7 +795,10 @@ class Handler(BaseHTTPRequestHandler):
             )
             conn.commit()
 
-        return self._redirect(f"/admin/games/{game_id}")
+        return self._redirect(
+            f"/admin/games/{game_id}?updated=1&msg="
+            + urllib.parse.quote("Entry aggiunta ✅")
+        )
 
     def _post_entry_update(self, entry_id: int, form: dict[str, str]):
         player = pick_select_or_new(form, "player_sel", "player_new")
@@ -803,7 +828,10 @@ class Handler(BaseHTTPRequestHandler):
             )
             conn.commit()
 
-        return self._redirect(f"/admin/games/{game_id}")
+        return self._redirect(
+            f"/admin/games/{game_id}?updated=1&msg="
+            + urllib.parse.quote("Entry aggiornata ✅")
+        )
 
     def _post_entry_delete(self, entry_id: int):
         with db() as conn:
@@ -816,7 +844,10 @@ class Handler(BaseHTTPRequestHandler):
             cur.execute("DELETE FROM gameentry WHERE id=?", (entry_id,))
             conn.commit()
 
-        return self._redirect(f"/admin/games/{game_id}")
+        return self._redirect(
+            f"/admin/games/{game_id}?updated=1&msg="
+            + urllib.parse.quote("Entry eliminata")
+        )
 
     def _post_brackets_apply(self, form: dict[str, str]):
         commander = form.get("commander", "").strip()
