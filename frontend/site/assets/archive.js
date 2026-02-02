@@ -5,6 +5,17 @@
 
 const $ = (sel) => document.querySelector(sel);
 
+// Compute a stable URL to the exported JSON regardless of trailing slashes
+// and whether the site is hosted at domain root or under a subpath
+// (e.g., GitHub Pages project sites).
+function statsJsonUrl() {
+  // Root = directory that contains the site's index.html
+  // If we're at /archive/ -> root is ../
+  // If we're at /stats/ or / -> still resolves correctly.
+  const root = new URL("./", new URL("../", document.baseURI));
+  return new URL("data/stats.v1.json", root).toString();
+}
+
 function setOptions(sel, values, { keepValue = true } = {}) {
   if (!sel) return;
   const prev = sel.value;
@@ -85,7 +96,7 @@ function renderListTable(data, state) {
     tdB.textContent = (r.bracket === null || r.bracket === undefined) ? "" : String(r.bracket);
     const tdG = document.createElement("td");
     tdG.className = "num";
-    tdG.textContent = String(r.games ?? 0);
+    tdG.textContent = String((r.games === null || r.games === undefined) ? 0 : r.games);
     tr.appendChild(tdP);
     tr.appendChild(tdC);
     tr.appendChild(tdB);
@@ -194,23 +205,23 @@ function renderRecentGames(data, state) {
 
 function buildState() {
   return {
-    player: $("#fPlayer")?.value || "",
-    commander: $("#fCommander")?.value || "",
-    bracket: $("#fBracket")?.value || "",
+    player: $("#fPlayer") && $("#fPlayer").value ? $("#fPlayer").value : "",
+    commander: $("#fCommander") && $("#fCommander").value ? $("#fCommander").value : "",
+    bracket: $("#fBracket") && $("#fBracket").value ? $("#fBracket").value : "",
   };
 }
 
 async function main() {
-  const res = await fetch("../data/stats.v1.json", { cache: "no-store" });
+  const res = await fetch(statsJsonUrl(), { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
   const data = await res.json();
 
-  const games = data.counts?.games ?? 0;
-  const entries = data.counts?.entries ?? 0;
-  const gen = data.generated_utc ?? "";
+  const games = (data.counts && data.counts.games !== undefined && data.counts.games !== null) ? data.counts.games : 0;
+  const entries = (data.counts && data.counts.entries !== undefined && data.counts.entries !== null) ? data.counts.entries : 0;
+  const gen = data.generated_utc ? data.generated_utc : "";
   $("#meta").textContent = `${games} game · ${entries} entries${gen ? " · gen " + gen : ""}`;
 
-  setOptions($("#fPlayer"), data.filters?.players || []);
+  setOptions($("#fPlayer"), (data.filters && data.filters.players) ? data.filters.players : []);
   buildCommanderOptions(data, "");
   buildBracketOptions(data, "", "");
 
@@ -250,6 +261,10 @@ async function main() {
 
 main().catch((err) => {
   console.error(err);
+  const meta = $("#meta");
+  if (meta) meta.textContent = "Errore caricando dati";
+  const hint = $("#hint");
+  if (hint) hint.textContent = `Errore: ${err.message || err}`;
   const wrap = $("#recentWrap");
   if (wrap) wrap.textContent = `Errore: ${err.message || err}`;
 });
