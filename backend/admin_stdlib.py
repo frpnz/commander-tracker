@@ -48,10 +48,38 @@ def esc(s: str | None) -> str:
     return html.escape(s or "", quote=True)
 
 
+def select_options(values: list[str], selected: str | None = None) -> str:
+    """Render <option> tags for a <select>, marking `selected` when it matches.
+
+    Values are escaped. The returned string does not include a leading empty option.
+    """
+    sel = (selected or "").strip()
+    out: list[str] = []
+    for v in values:
+        sv = (v or "").strip()
+        if not sv:
+            continue
+        if sv == sel:
+            out.append(f'<option value="{esc(sv)}" selected>{esc(sv)}</option>')
+        else:
+            out.append(f'<option value="{esc(sv)}">{esc(sv)}</option>')
+    return "\n".join(out)
+
+
 def parse_form(body: bytes) -> dict[str, str]:
     data = urllib.parse.parse_qs(body.decode("utf-8"), keep_blank_values=True)
     return {k: (v[0] if v else "") for k, v in data.items()}
 
+
+
+def pick_select_or_new(form: dict[str, str], sel_key: str, new_key: str) -> str:
+    sel = (form.get(sel_key, "") or "").strip()
+    new = (form.get(new_key, "") or "").strip()
+    if new:
+        return new
+    if sel and sel != "__NEW__":
+        return sel
+    return ""
 
 def iso_to_dtlocal(iso_str: str | None) -> str:
     """Convert DB timestamp to <input type=datetime-local> value."""
@@ -228,8 +256,9 @@ class Handler(BaseHTTPRequestHandler):
             )
             players = [r["player"] for r in cur.fetchall()]
 
-        # "Menu a tendina" che non blocca nuovi valori: <input list=...> (datalist)
+        # Valori esistenti dal DB per i menu (mobile-friendly)
         players_list = "\n".join(f'<option value="{esc(p)}"></option>' for p in players)
+        players_select = select_options(players)
 
         rows = []
         for g in games:
@@ -254,8 +283,13 @@ class Handler(BaseHTTPRequestHandler):
             <h3>Nuova partita</h3>
             <form method="post" action="/admin/games/create">
               <label>Winner (player)</label>
-              <input list="players" name="winner_player" placeholder="seleziona o scrivi...">
-              <datalist id="players">{players_list}</datalist>
+              <select name="winner_sel">
+                <option value="" selected>— nessuno —</option>
+                {players_select}
+                <option value="__NEW__">+ Nuovo…</option>
+              </select>
+              <label class="muted">Se “Nuovo…”, scrivi qui:</label>
+              <input name="winner_new" placeholder="Winner nuovo (opzionale)">
 
               <label>Note</label>
               <textarea name="notes" rows="3" placeholder="opzionale"></textarea>
@@ -309,10 +343,30 @@ class Handler(BaseHTTPRequestHandler):
         commanders_list = "\n".join(f'<option value="{esc(c)}"></option>' for c in commanders)
         brackets_list = "\n".join(f'<option value="{esc(b)}"></option>' for b in brackets)
 
+        # <select> options (affidabile su mobile)
+        winner_select = select_options(players, (game["winner_player"] or ""))
+        players_select = select_options(players)
+        commanders_select = select_options(commanders)
+        brackets_select = "\n".join(
+            f'<option value="{esc(b)}">{esc(b)}</option>' for b in brackets if b.strip()
+        )
+
         entry_rows = []
         for e in entries:
             bracket_val = "" if e["bracket"] is None else str(e["bracket"])
             bracket_show = "—" if e["bracket"] is None else esc(str(e["bracket"]))
+
+            # options per riga (con selezione attuale)
+            player_select_row = select_options(players, e["player"])
+            commander_select_row = select_options(commanders, e["commander"])
+            br_sel = bracket_val
+            bracket_select_row = "\n".join(
+                f'<option value="{esc(b)}" {"selected" if b == br_sel else ""}>{esc(b)}</option>'
+                for b in brackets
+                if b.strip()
+            )
+            bracket_none_selected = "selected" if br_sel == "" else ""
+
             entry_rows.append(
                 f"""
                 <tr>
@@ -325,13 +379,31 @@ class Handler(BaseHTTPRequestHandler):
                       <summary>Modifica</summary>
                       <form method="post" action="/admin/entries/{e['id']}/update" style="margin-top:10px;">
                         <label>Player</label>
-                        <input list="players" name="player" value="{esc(e['player'])}" required>
+                        <select name="player_sel" required>
+                          <option value="" disabled>Seleziona…</option>
+                          {player_select_row}
+                          <option value="__NEW__">+ Nuovo…</option>
+                        </select>
+                        <label class="muted">Se “Nuovo…”, scrivi qui:</label>
+                        <input name="player_new" placeholder="Player nuovo">
 
                         <label>Commander</label>
-                        <input list="commanders" name="commander" value="{esc(e['commander'])}" required>
+                        <select name="commander_sel" required>
+                          <option value="" disabled>Seleziona…</option>
+                          {commander_select_row}
+                          <option value="__NEW__">+ Nuovo…</option>
+                        </select>
+                        <label class="muted">Se “Nuovo…”, scrivi qui:</label>
+                        <input name="commander_new" placeholder="Commander nuovo">
 
                         <label>Bracket</label>
-                        <input list="brackets" name="bracket" value="{esc(bracket_val)}" inputmode="numeric" placeholder="seleziona o scrivi...">
+                        <select name="bracket_sel">
+                          <option value="" {bracket_none_selected}>— nessuno —</option>
+                          {bracket_select_row}
+                          <option value="__NEW__">+ Nuovo…</option>
+                        </select>
+                        <label class="muted">Se “Nuovo…”, scrivi qui:</label>
+                        <input name="bracket_new" value="{esc(bracket_val)}" inputmode="numeric" placeholder="Bracket (int)">
 
                         <div style="margin-top:10px; display:flex; gap:10px;">
                           <button class="primary" type="submit">Salva</button>
@@ -358,8 +430,13 @@ class Handler(BaseHTTPRequestHandler):
               <div class="muted" style="margin-top:4px;">{esc(str(game['played_at'] or ''))}</div>
 
               <label>Winner (player)</label>
-              <input list="players" name="winner_player" value="{esc(game['winner_player'] or '')}" placeholder="seleziona o scrivi...">
-              <datalist id="players">{players_list}</datalist>
+              <select name="winner_sel">
+                <option value="" selected>— nessuno —</option>
+                {winner_select}
+                <option value="__NEW__">+ Nuovo…</option>
+              </select>
+              <label class="muted">Se “Nuovo…”, scrivi qui:</label>
+              <input name="winner_new" placeholder="Winner nuovo (opzionale)" value="">
 
               <label>Note</label>
               <textarea name="notes" rows="3">{esc(game['notes'] or '')}</textarea>
@@ -380,9 +457,6 @@ class Handler(BaseHTTPRequestHandler):
           <div class="card" style="flex:2; min-width: 520px;">
             <h3>Entries</h3>
 
-            <datalist id="commanders">{commanders_list}</datalist>
-            <datalist id="brackets">{brackets_list}</datalist>
-            <datalist id="brackets">{brackets_list}</datalist>
 
             <div class="card" style="margin-bottom:14px;">
               <h4>Aggiungi entry</h4>
@@ -390,17 +464,35 @@ class Handler(BaseHTTPRequestHandler):
                 <div class="row">
                   <div style="flex:1; min-width:180px;">
                     <label>Player</label>
-                    <input list="players" name="player" required placeholder="seleziona o scrivi...">
+                    <select name="player_sel" required>
+                      <option value="" disabled selected>Seleziona…</option>
+                      {players_select}
+                      <option value="__NEW__">+ Nuovo…</option>
+                    </select>
+                    <label class="muted">Se “Nuovo…”, scrivi qui:</label>
+                    <input name="player_new" placeholder="Player nuovo">
                   </div>
 
                   <div style="flex:1; min-width:220px;">
                     <label>Commander</label>
-                    <input list="commanders" name="commander" required placeholder="seleziona o scrivi...">
+                    <select name="commander_sel" required>
+                      <option value="" disabled selected>Seleziona…</option>
+                      {commanders_select}
+                      <option value="__NEW__">+ Nuovo…</option>
+                    </select>
+                    <label class="muted">Se “Nuovo…”, scrivi qui:</label>
+                    <input name="commander_new" placeholder="Commander nuovo">
                   </div>
 
                   <div style="width:160px;">
                     <label>Bracket</label>
-                    <input list="brackets" name="bracket" inputmode="numeric" placeholder="seleziona o scrivi...">
+                    <select name="bracket_sel">
+                      <option value="" selected>— nessuno —</option>
+                      {brackets_select}
+                      <option value="__NEW__">+ Nuovo…</option>
+                    </select>
+                    <label class="muted">Se “Nuovo…”, scrivi qui:</label>
+                    <input name="bracket_new" inputmode="numeric" placeholder="Bracket (int)">
                   </div>
                 </div>
 
@@ -459,7 +551,6 @@ class Handler(BaseHTTPRequestHandler):
         <div class="row">
           <div class="card" style="flex:1; min-width: 360px;">
             <h3>Bulk update</h3>
-            <datalist id="brackets">{brackets_list}</datalist>
             <form method="post" action="/admin/brackets/apply" onsubmit="return confirm('Confermi update massivo?')">
               <label>Commander</label>
               <select name="commander" required>{cmd_opts}</select>
@@ -499,7 +590,7 @@ class Handler(BaseHTTPRequestHandler):
     # ---------------------------
     def _post_game_create(self, form: dict[str, str]):
         notes = form.get("notes", "").strip() or None
-        winner = form.get("winner_player", "").strip() or None
+        winner = pick_select_or_new(form, "winner_sel", "winner_new") or None
 
         played_iso = now_iso()
 
@@ -516,7 +607,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def _post_game_update(self, game_id: int, form: dict[str, str]):
         notes = form.get("notes", "").strip() or None
-        winner = form.get("winner_player", "").strip() or None
+        winner = pick_select_or_new(form, "winner_sel", "winner_new") or None
 
         set_now = form.get("set_now", "").strip() == "1"
 
@@ -545,9 +636,9 @@ class Handler(BaseHTTPRequestHandler):
         return self._redirect("/admin/games")
 
     def _post_entry_add(self, game_id: int, form: dict[str, str]):
-        player = form.get("player", "").strip()
-        commander = form.get("commander", "").strip()
-        bracket_s = form.get("bracket", "").strip()
+        player = pick_select_or_new(form, "player_sel", "player_new")
+        commander = pick_select_or_new(form, "commander_sel", "commander_new")
+        bracket_s = (form.get("bracket_new", "") or "").strip() if (form.get("bracket_sel", "").strip() == "__NEW__") else (form.get("bracket_sel", "") or "").strip()
 
         if not player or not commander:
             return self._send_html(page("Errore", "<h1>player e commander sono obbligatori</h1>"), 400)
@@ -573,9 +664,9 @@ class Handler(BaseHTTPRequestHandler):
         return self._redirect(f"/admin/games/{game_id}")
 
     def _post_entry_update(self, entry_id: int, form: dict[str, str]):
-        player = form.get("player", "").strip()
-        commander = form.get("commander", "").strip()
-        bracket_s = form.get("bracket", "").strip()
+        player = pick_select_or_new(form, "player_sel", "player_new")
+        commander = pick_select_or_new(form, "commander_sel", "commander_new")
+        bracket_s = (form.get("bracket_new", "") or "").strip() if (form.get("bracket_sel", "").strip() == "__NEW__") else (form.get("bracket_sel", "") or "").strip()
 
         if not player or not commander:
             return self._send_html(page("Errore", "<h1>player e commander sono obbligatori</h1>"), 400)
