@@ -21,6 +21,60 @@ def compute_stats(conn: sqlite3.Connection) -> Dict[str, Any]:
     """
     cur = conn.cursor()
 
+    # --- Games list (for the static frontend) ---
+    # Export a compact denormalized view of games + entries so the frontend can
+    # render "last N games" without direct DB access.
+    cur.execute(
+        """
+        SELECT
+            g.id          AS game_id,
+            g.played_at   AS played_at,
+            g.notes       AS notes,
+            g.winner_player AS winner_player,
+            ge.player     AS player,
+            ge.commander  AS commander,
+            ge.bracket    AS bracket
+        FROM game g
+        JOIN gameentry ge ON ge.game_id = g.id
+        ORDER BY
+            COALESCE(g.played_at, '') DESC,
+            g.id DESC,
+            ge.id ASC
+        """
+    )
+    _grows = _rows_to_dicts(cur.fetchall())
+    games_detail_map: Dict[int, Dict[str, Any]] = {}
+    for r in _grows:
+        gid = int(r.get("game_id") or 0)
+        g = games_detail_map.get(gid)
+        if g is None:
+            g = {
+                "id": gid,
+                "played_at": r.get("played_at"),
+                "notes": r.get("notes"),
+                "winner_player": r.get("winner_player"),
+                "entries": [],
+            }
+            games_detail_map[gid] = g
+        g["entries"].append(
+            {
+                "player": r.get("player"),
+                "commander": r.get("commander"),
+                "bracket": r.get("bracket"),
+            }
+        )
+    # Keep order as in the query above.
+    seen: set[int] = set()
+    games_detail: List[Dict[str, Any]] = []
+    for r in _grows:
+        gid = int(r.get("game_id") or 0)
+        if gid in seen:
+            continue
+        seen.add(gid)
+        g = games_detail_map.get(gid)
+        if g:
+            games_detail.append(g)
+
     # --- Weighted winrate (delta winner bracket vs avg table bracket excluding winner) ---
     # Delta: Δ = b_winner - avg(brackets_other_players)
     # (the average is computed excluding the winner).
@@ -491,6 +545,8 @@ def compute_stats(conn: sqlite3.Connection) -> Dict[str, Any]:
         "generated_utc": generated_utc,
         "counts": {"games": n_games, "entries": n_entries},
         "filters": {"players": players, "commanders": commanders, "brackets": brackets},
+        # Full games list (new in v1 output, backward compatible)
+        "games": games_detail,
         "by_player": by_player,
         "by_player_commander": by_player_commander,
         "by_player_weighted": by_player_weighted,

@@ -193,6 +193,77 @@
       ],
       "type": "object"
     },
+    "games": {
+      "description": "Denormalized games list used by the static frontend (latest games view).",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "entries": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "bracket": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "commander": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "player": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "player",
+                "commander",
+                "bracket"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "played_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "winner_player": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "played_at",
+          "winner_player",
+          "notes",
+          "entries"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
     "generated_utc": {
       "description": "UTC timestamp in ISO-8601, ends with Z",
       "type": "string"

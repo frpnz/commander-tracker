@@ -190,6 +190,18 @@ h2{margin:0; font-size:15px; letter-spacing:.2px}
 
 .table-wrap{overflow:auto; padding:0 6px 10px}
 
+/* --- Archivio: recent games list --- */
+.recent-wrap{display:flex; flex-direction:column; gap:12px; padding:6px 6px 12px}
+.recent-game{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px; background: rgba(11,16,32,.18)}
+.recent-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap}
+.recent-title{font-weight:750}
+.recent-winner{color:var(--text)}
+.recent-notes{margin-top:8px; color:var(--muted); font-size:12px}
+.recent-table-wrap{margin-top:10px; overflow:auto}
+.recent-table{width:100%; border-collapse:collapse; min-width:420px}
+.recent-table th,.recent-table td{border-bottom:1px solid rgba(255,255,255,.08); padding:8px 10px; text-align:left}
+.recent-table th{color:var(--muted); font-size:12px; font-weight:750}
+
 /* Meta Wins */
 .heatcell{border-radius:10px; padding:6px 10px; text-align:right; font-variant-numeric: tabular-nums;}
 

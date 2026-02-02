@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Archivio • Commander Tracker</title>
+  <link rel="stylesheet" href="../assets/style.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">♟️</div>
+      <div>
+        <div class="title">Archivio</div>
+        <div class="subtitle" id="subtitle">Player → Commander → Bracket + ultime partite</div>
+      </div>
+    </div>
+    <div class="meta" id="meta"></div>
+    <nav class="nav">
+      <a class="navlink" href="../">Home</a>
+      <a class="navlink active" href="./">Archivio</a>
+      <a class="navlink" href="../stats/">Stats</a>
+      <a class="navlink" href="../stats-weighted/">Stats (pesate)</a>
+      <a class="navlink" href="../meta-wins/">Meta Wins</a>
+      <a class="navlink" href="../meta-profile/">Meta Profile</a>
+      <a class="navlink" href="../metrics/">Info metriche</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card filters">
+      <div class="filters-row">
+        <label>
+          Player
+          <select id="fPlayer">
+            <option value="">Tutti</option>
+          </select>
+        </label>
+
+        <label>
+          Commander
+          <select id="fCommander">
+            <option value="">Tutti</option>
+          </select>
+        </label>
+
+        <label>
+          Bracket
+          <select id="fBracket">
+            <option value="">Tutti</option>
+          </select>
+        </label>
+
+        <div class="actions">
+          <button id="btnReset" class="btn">Reset</button>
+        </div>
+      </div>
+      <div class="hint" id="hint"></div>
+    </section>
+
+    <section class="grid">
+      <section class="card">
+        <div class="card-head">
+          <h2>Elenco</h2>
+          <div class="head-tools">
+            <div class="pill" id="countList"></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="tList">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Commander</th>
+                <th>Bracket</th>
+                <th class="num">Partite</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Ultime partite</h2>
+          <div class="head-tools">
+            <label class="sortlabel">
+              <span>Mostra</span>
+              <select id="fRecentN" class="sortselect">
+                <option value="10" selected>10</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="all">Tutte</option>
+              </select>
+            </label>
+            <div class="pill" id="countRecent"></div>
+          </div>
+        </div>
+        <div id="recentWrap" class="recent-wrap"></div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="muted">Static site • GitHub Pages friendly</span>
+  </footer>
+
+  <script src="../assets/archive.js"></script>
+</body>
+</html>
