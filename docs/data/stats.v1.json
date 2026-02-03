@@ -1,12 +1,12 @@
 {
   "by_player": [
     {
-      "games": 31,
+      "games": 32,
       "player": "Da",
       "wins": 11
     },
     {
-      "games": 28,
+      "games": 29,
       "player": "Fra",
       "wins": 10
     },
@@ -29,6 +29,11 @@
       "games": 15,
       "player": "Teo",
       "wins": 2
+    },
+    {
+      "games": 1,
+      "player": "Ivan",
+      "wins": 1
     }
   ],
   "by_player_commander": [
@@ -47,18 +52,18 @@
       "wins": 5
     },
     {
+      "bracket": 5,
+      "commander": "K'rrik",
+      "games": 12,
+      "player": "Da",
+      "wins": 5
+    },
+    {
       "bracket": 3,
       "commander": "Hylda",
       "games": 12,
       "player": "Teo",
       "wins": 1
-    },
-    {
-      "bracket": 5,
-      "commander": "K'rrik",
-      "games": 11,
-      "player": "Da",
-      "wins": 5
     },
     {
       "bracket": 5,
@@ -159,6 +164,13 @@
       "wins": 2
     },
     {
+      "bracket": 3,
+      "commander": "Edric",
+      "games": 2,
+      "player": "Fra",
+      "wins": 1
+    },
+    {
       "bracket": 5,
       "commander": "Marwyn",
       "games": 2,
@@ -201,17 +213,17 @@
       "wins": 0
     },
     {
-      "bracket": 3,
-      "commander": "Edric",
+      "bracket": 4,
+      "commander": "Sidisi",
       "games": 1,
       "player": "Fra",
       "wins": 1
     },
     {
-      "bracket": 4,
-      "commander": "Sidisi",
+      "bracket": 5,
+      "commander": "Mina",
       "games": 1,
-      "player": "Fra",
+      "player": "Ivan",
       "wins": 1
     },
     {
@@ -283,21 +295,21 @@
     },
     {
       "bracket": 5,
+      "commander": "K'rrik",
+      "games": 12,
+      "games_w": 10.77495317579672,
+      "player": "Da",
+      "wins": 5,
+      "wins_w": 4.284276147538999
+    },
+    {
+      "bracket": 5,
       "commander": "Sephiroth",
       "games": 13,
       "games_w": 10.499312093955803,
       "player": "Matti",
       "wins": 5,
       "wins_w": 3.6607079764250576
-    },
-    {
-      "bracket": 5,
-      "commander": "K'rrik",
-      "games": 11,
-      "games_w": 10.034134955115002,
-      "player": "Da",
-      "wins": 5,
-      "wins_w": 4.284276147538999
     },
     {
       "bracket": 3,
@@ -463,6 +475,15 @@
     },
     {
       "bracket": 3,
+      "commander": "Edric",
+      "games": 2,
+      "games_w": 1.9931409368735822,
+      "player": "Fra",
+      "wins": 1,
+      "wins_w": 1.2523227161918644
+    },
+    {
+      "bracket": 3,
       "commander": "Flubs",
       "games": 2,
       "games_w": 1.9523227161918644,
@@ -496,15 +517,6 @@
       "player": "Fra",
       "wins": 0,
       "wins_w": 0.0
-    },
-    {
-      "bracket": 3,
-      "commander": "Edric",
-      "games": 1,
-      "games_w": 1.2523227161918644,
-      "player": "Fra",
-      "wins": 1,
-      "wins_w": 1.2523227161918644
     },
     {
       "bracket": 4,
@@ -552,6 +564,15 @@
       "wins_w": 0.0
     },
     {
+      "bracket": 5,
+      "commander": "Mina",
+      "games": 1,
+      "games_w": 0.7408182206817179,
+      "player": "Ivan",
+      "wins": 1,
+      "wins_w": 0.7408182206817179
+    },
+    {
       "bracket": 4,
       "commander": "Sidisi",
       "games": 1,
@@ -581,15 +602,15 @@
   ],
   "by_player_weighted": [
     {
-      "games": 31,
-      "games_w": 27.67794513698345,
+      "games": 32,
+      "games_w": 28.418763357665167,
       "player": "Da",
       "wins": 11,
       "wins_w": 8.808257006690928
     },
     {
-      "games": 28,
-      "games_w": 25.894097789069672,
+      "games": 29,
+      "games_w": 26.63491600975139,
       "player": "Fra",
       "wins": 10,
       "wins_w": 9.30363437363436
@@ -621,11 +642,18 @@
       "player": "Teo",
       "wins": 2,
       "wins_w": 2.2214027581601696
+    },
+    {
+      "games": 1,
+      "games_w": 0.7408182206817179,
+      "player": "Ivan",
+      "wins": 1,
+      "wins_w": 0.7408182206817179
     }
   ],
   "counts": {
-    "entries": 140,
-    "games": 39
+    "entries": 143,
+    "games": 40
   },
   "filters": {
     "brackets": [
@@ -659,6 +687,7 @@
       "Lotho",
       "Magda",
       "Marwyn",
+      "Mina",
       "Piedemoccio e Squee",
       "Purphorose",
       "Raffine",
@@ -674,12 +703,36 @@
       "Da",
       "Fra",
       "Giamma",
+      "Ivan",
       "Matti",
       "Stanca",
       "Teo"
     ]
   },
   "games": [
+    {
+      "entries": [
+        {
+          "bracket": 3,
+          "commander": "Edric",
+          "player": "Fra"
+        },
+        {
+          "bracket": 5,
+          "commander": "K'rrik",
+          "player": "Da"
+        },
+        {
+          "bracket": 5,
+          "commander": "Mina",
+          "player": "Ivan"
+        }
+      ],
+      "id": 44,
+      "notes": null,
+      "played_at": "2026-02-03 09:45:22",
+      "winner_player": "Ivan"
+    },
     {
       "entries": [
         {
@@ -1693,7 +1746,7 @@
       "winner_player": "Fra"
     }
   ],
-  "generated_utc": "2026-02-02T16:47:24Z",
+  "generated_utc": "2026-02-03T09:45:22Z",
   "meta_profile": {
     "method": "delta_player_minus_avg_table_excl_player",
     "min_games_default": 3,
@@ -1704,17 +1757,17 @@
   },
   "meta_profile_by_player": [
     {
-      "games_total": 31,
-      "games_used": 31,
-      "mdi": 0.4543010752688172,
-      "mpi": 0.6962365591397849,
+      "games_total": 32,
+      "games_used": 32,
+      "mdi": 0.47135416666666663,
+      "mpi": 0.7057291666666666,
       "player": "Da"
     },
     {
-      "games_total": 28,
-      "games_used": 28,
-      "mdi": 0.27380952380952384,
-      "mpi": 0.6428571428571427,
+      "games_total": 29,
+      "games_used": 29,
+      "mdi": 0.19540229885057472,
+      "mpi": 0.6896551724137929,
       "player": "Fra"
     },
     {
@@ -1744,15 +1797,22 @@
       "mdi": -0.8555555555555555,
       "mpi": 0.9888888888888888,
       "player": "Teo"
+    },
+    {
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": 1.0,
+      "mpi": 1.0,
+      "player": "Ivan"
     }
   ],
   "meta_profile_by_player_commander": [
     {
       "commander": "K'rrik",
-      "games_total": 11,
-      "games_used": 11,
-      "mdi": 0.5757575757575757,
-      "mpi": 0.5757575757575757,
+      "games_total": 12,
+      "games_used": 12,
+      "mdi": 0.611111111111111,
+      "mpi": 0.611111111111111,
       "player": "Da"
     },
     {
@@ -1812,6 +1872,14 @@
       "player": "Fra"
     },
     {
+      "commander": "Edric",
+      "games_total": 2,
+      "games_used": 2,
+      "mdi": -1.375,
+      "mpi": 1.375,
+      "player": "Fra"
+    },
+    {
       "commander": "Liesa",
       "games_total": 2,
       "games_used": 2,
@@ -1868,14 +1936,6 @@
       "player": "Fra"
     },
     {
-      "commander": "Edric",
-      "games_total": 1,
-      "games_used": 1,
-      "mdi": -0.75,
-      "mpi": 0.75,
-      "player": "Fra"
-    },
-    {
       "commander": "Braids",
       "games_total": 1,
       "games_used": 1,
@@ -1922,6 +1982,14 @@
       "mdi": -0.861111111111111,
       "mpi": 0.861111111111111,
       "player": "Giamma"
+    },
+    {
+      "commander": "Mina",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": 1.0,
+      "mpi": 1.0,
+      "player": "Ivan"
     },
     {
       "commander": "Sephiroth",
@@ -2037,8 +2105,8 @@
     },
     {
       "bracket": 3,
-      "games": 29,
-      "win_rate": 0.13793103448275862,
+      "games": 30,
+      "win_rate": 0.13333333333333333,
       "wins": 4
     },
     {
@@ -2049,12 +2117,18 @@
     },
     {
       "bracket": 5,
-      "games": 79,
-      "win_rate": 0.35443037974683544,
-      "wins": 28
+      "games": 81,
+      "win_rate": 0.35802469135802467,
+      "wins": 29
     }
   ],
   "meta_wins_by_player": [
+    {
+      "player": "Ivan",
+      "wbd": 1.0,
+      "wins_total": 1,
+      "wins_used": 1
+    },
     {
       "player": "Da",
       "wbd": 0.7803030303030302,
@@ -2192,6 +2266,13 @@
       "wins_used": 1
     },
     {
+      "commander": "Mina",
+      "player": "Ivan",
+      "wbd": 1.0,
+      "wins_total": 1,
+      "wins_used": 1
+    },
+    {
       "commander": "Sephiroth",
       "player": "Matti",
       "wbd": 1.2833333333333337,
@@ -2322,8 +2403,8 @@
     {
       "bracket": 5,
       "commander": "K'rrik",
-      "games": 11,
-      "win_rate": 0.45454545454545453,
+      "games": 12,
+      "win_rate": 0.4166666666666667,
       "wins": 5
     },
     {
