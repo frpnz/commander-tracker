@@ -124,8 +124,8 @@
       "wins": 0
     },
     {
-      "bracket": 5,
-      "commander": "Piedemoccio",
+      "bracket": 4,
+      "commander": "Piedemoccio e Squee",
       "games": 3,
       "player": "Fra",
       "wins": 1
@@ -296,6 +296,15 @@
       "wins_w": 2.0
     },
     {
+      "bracket": 3,
+      "commander": "Hylda",
+      "games": 12,
+      "games_w": 10.238058630073775,
+      "player": "Teo",
+      "wins": 1,
+      "wins_w": 1.0
+    },
+    {
       "bracket": 5,
       "commander": "K'rrik",
       "games": 11,
@@ -305,22 +314,13 @@
       "wins_w": 4.284276147538999
     },
     {
-      "bracket": 3,
-      "commander": "Hylda",
-      "games": 12,
-      "games_w": 9.95161846507611,
-      "player": "Teo",
-      "wins": 1,
-      "wins_w": 1.0
-    },
-    {
       "bracket": 5,
       "commander": "Sephiroth",
       "games": 12,
-      "games_w": 9.758493873274086,
+      "games_w": 9.98274228060607,
       "player": "Matti",
       "wins": 5,
-      "wins_w": 3.6607079764250576
+      "wins_w": 3.598516218759377
     },
     {
       "bracket": 5,
@@ -335,16 +335,16 @@
       "bracket": 4,
       "commander": "Sisay",
       "games": 9,
-      "games_w": 8.46856008114018,
+      "games_w": 8.28647856773116,
       "player": "Da",
       "wins": 2,
-      "wins_w": 1.6015261971067756
+      "wins_w": 1.4816364413634358
     },
     {
       "bracket": 5,
       "commander": "Hearthhull",
       "games": 8,
-      "games_w": 6.523568171113942,
+      "games_w": 6.810008336111607,
       "player": "Da",
       "wins": 2,
       "wins_w": 1.4
@@ -353,7 +353,7 @@
       "bracket": 5,
       "commander": "Halana",
       "games": 6,
-      "games_w": 5.467033884033405,
+      "games_w": 5.404842126367725,
       "player": "Giamma",
       "wins": 1,
       "wins_w": 0.9277434863285529
@@ -407,7 +407,7 @@
       "bracket": 2,
       "commander": "Brion",
       "games": 4,
-      "games_w": 3.422542219153341,
+      "games_w": 3.302652463410001,
       "player": "Giamma",
       "wins": 0,
       "wins_w": 0.0
@@ -422,6 +422,15 @@
       "wins_w": 1.3498588075760032
     },
     {
+      "bracket": 4,
+      "commander": "Piedemoccio e Squee",
+      "games": 3,
+      "games_w": 2.6445053575167425,
+      "player": "Fra",
+      "wins": 1,
+      "wins_w": 1.1051709180756475
+    },
+    {
       "bracket": 2,
       "commander": "Ivy",
       "games": 3,
@@ -429,15 +438,6 @@
       "player": "Matti",
       "wins": 1,
       "wins_w": 1.161834242728283
-    },
-    {
-      "bracket": 5,
-      "commander": "Piedemoccio",
-      "games": 3,
-      "games_w": 2.5401467059280973,
-      "player": "Fra",
-      "wins": 1,
-      "wins_w": 0.8187307530779818
     },
     {
       "bracket": 3,
@@ -548,15 +548,6 @@
       "wins_w": 0.0
     },
     {
-      "bracket": 4,
-      "commander": "The Scarab God",
-      "games": 1,
-      "games_w": 0.8607079764250578,
-      "player": "Teo",
-      "wins": 0,
-      "wins_w": 0.0
-    },
-    {
       "bracket": 5,
       "commander": "Braids",
       "games": 1,
@@ -571,6 +562,15 @@
       "games": 1,
       "games_w": 0.7985162187593771,
       "player": "Stanca",
+      "wins": 0,
+      "wins_w": 0.0
+    },
+    {
+      "bracket": 4,
+      "commander": "The Scarab God",
+      "games": 1,
+      "games_w": 0.7985162187593771,
+      "player": "Teo",
       "wins": 0,
       "wins_w": 0.0
     },
@@ -614,28 +614,28 @@
   "by_player_weighted": [
     {
       "games": 31,
-      "games_w": 27.507899648732554,
+      "games_w": 27.612258300321198,
       "player": "Da",
       "wins": 11,
-      "wins_w": 8.76743878600921
+      "wins_w": 8.647549030265871
     },
     {
       "games": 28,
-      "games_w": 25.764870521500498,
+      "games_w": 25.869229173089142,
       "player": "Fra",
       "wins": 10,
-      "wins_w": 9.30363437363436
+      "wins_w": 9.590074538632024
     },
     {
       "games": 26,
-      "games_w": 23.11613798022772,
+      "games_w": 23.340386387559704,
       "player": "Matti",
       "wins": 10,
-      "wins_w": 8.4397891909907
+      "wins_w": 8.377597433325018
     },
     {
       "games": 21,
-      "games_w": 19.881446483437315,
+      "games_w": 19.699364970028295,
       "player": "Giamma",
       "wins": 4,
       "wins_w": 5.02746110148056
@@ -649,7 +649,7 @@
     },
     {
       "games": 15,
-      "games_w": 12.852459952739322,
+      "games_w": 13.076708360071304,
       "player": "Teo",
       "wins": 2,
       "wins_w": 2.2214027581601696
@@ -691,7 +691,7 @@
       "Lotho",
       "Magda",
       "Marwyn",
-      "Piedemoccio",
+      "Piedemoccio e Squee",
       "Purphorose",
       "Raffine",
       "Sephiroth",
@@ -1391,8 +1391,8 @@
           "player": "Matti"
         },
         {
-          "bracket": 5,
-          "commander": "Piedemoccio",
+          "bracket": 4,
+          "commander": "Piedemoccio e Squee",
           "player": "Fra"
         }
       ],
@@ -1442,8 +1442,8 @@
           "player": "Da"
         },
         {
-          "bracket": 5,
-          "commander": "Piedemoccio",
+          "bracket": 4,
+          "commander": "Piedemoccio e Squee",
           "player": "Fra"
         },
         {
@@ -1699,8 +1699,8 @@
     {
       "entries": [
         {
-          "bracket": 5,
-          "commander": "Piedemoccio",
+          "bracket": 4,
+          "commander": "Piedemoccio e Squee",
           "player": "Fra"
         },
         {
@@ -1738,29 +1738,29 @@
     {
       "games_total": 31,
       "games_used": 31,
-      "mdi": 0.4865591397849462,
-      "mpi": 0.6962365591397849,
+      "mdi": 0.5215053763440861,
+      "mpi": 0.7150537634408602,
       "player": "Da"
     },
     {
       "games_total": 28,
       "games_used": 28,
-      "mdi": 0.2916666666666667,
-      "mpi": 0.6607142857142856,
+      "mdi": 0.18452380952380953,
+      "mpi": 0.613095238095238,
       "player": "Fra"
     },
     {
       "games_total": 26,
       "games_used": 26,
-      "mdi": 0.266025641025641,
-      "mpi": 0.7724358974358972,
+      "mdi": 0.2884615384615385,
+      "mpi": 0.7948717948717948,
       "player": "Matti"
     },
     {
       "games_total": 21,
       "games_used": 21,
-      "mdi": -0.5753968253968254,
-      "mpi": 1.0515873015873016,
+      "mdi": -0.5396825396825397,
+      "mpi": 1.0396825396825395,
       "player": "Giamma"
     },
     {
@@ -1773,8 +1773,8 @@
     {
       "games_total": 15,
       "games_used": 15,
-      "mdi": -0.8555555555555555,
-      "mpi": 0.9888888888888888,
+      "mdi": -0.8166666666666664,
+      "mpi": 0.9499999999999997,
       "player": "Teo"
     }
   ],
@@ -1791,16 +1791,16 @@
       "commander": "Sisay",
       "games_total": 9,
       "games_used": 9,
-      "mdi": -0.1111111111111111,
-      "mpi": 0.6111111111111112,
+      "mdi": -0.027777777777777776,
+      "mpi": 0.6388888888888888,
       "player": "Da"
     },
     {
       "commander": "Hearthhull",
       "games_total": 8,
       "games_used": 8,
-      "mdi": 0.8020833333333334,
-      "mpi": 0.8020833333333334,
+      "mdi": 0.84375,
+      "mpi": 0.84375,
       "player": "Da"
     },
     {
@@ -1836,11 +1836,11 @@
       "player": "Fra"
     },
     {
-      "commander": "Piedemoccio",
+      "commander": "Piedemoccio e Squee",
       "games_total": 3,
       "games_used": 3,
-      "mdi": 1.0555555555555556,
-      "mpi": 1.0555555555555556,
+      "mdi": 0.05555555555555566,
+      "mpi": 0.611111111111111,
       "player": "Fra"
     },
     {
@@ -1919,8 +1919,8 @@
       "commander": "Halana",
       "games_total": 6,
       "games_used": 6,
-      "mdi": 0.7916666666666666,
-      "mpi": 0.7916666666666666,
+      "mdi": 0.8333333333333334,
+      "mpi": 0.8333333333333334,
       "player": "Giamma"
     },
     {
@@ -1935,8 +1935,8 @@
       "commander": "Brion",
       "games_total": 4,
       "games_used": 4,
-      "mdi": -1.875,
-      "mpi": 1.875,
+      "mdi": -1.75,
+      "mpi": 1.75,
       "player": "Giamma"
     },
     {
@@ -1959,8 +1959,8 @@
       "commander": "Sephiroth",
       "games_total": 13,
       "games_used": 13,
-      "mdi": 0.7564102564102563,
-      "mpi": 0.7564102564102563,
+      "mdi": 0.8012820512820513,
+      "mpi": 0.8012820512820513,
       "player": "Matti"
     },
     {
@@ -2031,8 +2031,8 @@
       "commander": "Hylda",
       "games_total": 12,
       "games_used": 12,
-      "mdi": -0.8958333333333334,
-      "mpi": 1.0625,
+      "mdi": -0.8680555555555554,
+      "mpi": 1.034722222222222,
       "player": "Teo"
     },
     {
@@ -2047,8 +2047,8 @@
       "commander": "The Scarab God",
       "games_total": 1,
       "games_used": 1,
-      "mdi": -0.75,
-      "mpi": 0.75,
+      "mdi": -0.5,
+      "mpi": 0.5,
       "player": "Teo"
     }
   ],
@@ -2075,35 +2075,35 @@
     },
     {
       "bracket": 4,
-      "games": 25,
-      "win_rate": 0.24,
-      "wins": 6
+      "games": 28,
+      "win_rate": 0.25,
+      "wins": 7
     },
     {
       "bracket": 5,
-      "games": 77,
-      "win_rate": 0.36363636363636365,
-      "wins": 28
+      "games": 74,
+      "win_rate": 0.36486486486486486,
+      "wins": 27
     }
   ],
   "meta_wins_by_player": [
     {
       "player": "Da",
-      "wbd": 0.8257575757575757,
+      "wbd": 0.8712121212121211,
       "wins_total": 11,
       "wins_used": 11
+    },
+    {
+      "player": "Matti",
+      "wbd": 0.7583333333333334,
+      "wins_total": 10,
+      "wins_used": 10
     },
     {
       "player": "Giamma",
       "wbd": -0.75,
       "wins_total": 4,
       "wins_used": 4
-    },
-    {
-      "player": "Matti",
-      "wbd": 0.7333333333333334,
-      "wins_total": 10,
-      "wins_used": 10
     },
     {
       "player": "Teo",
@@ -2113,7 +2113,7 @@
     },
     {
       "player": "Fra",
-      "wbd": 0.325,
+      "wbd": 0.225,
       "wins_total": 10,
       "wins_used": 10
     },
@@ -2149,7 +2149,7 @@
     {
       "commander": "Sisay",
       "player": "Da",
-      "wbd": 0.75,
+      "wbd": 1.0,
       "wins_total": 2,
       "wins_used": 2
     },
@@ -2182,9 +2182,9 @@
       "wins_used": 1
     },
     {
-      "commander": "Piedemoccio",
+      "commander": "Piedemoccio e Squee",
       "player": "Fra",
-      "wbd": 0.666666666666667,
+      "wbd": -0.33333333333333304,
       "wins_total": 1,
       "wins_used": 1
     },
@@ -2226,7 +2226,7 @@
     {
       "commander": "Sephiroth",
       "player": "Matti",
-      "wbd": 1.2833333333333337,
+      "wbd": 1.3333333333333335,
       "wins_total": 5,
       "wins_used": 5
     },
@@ -2325,6 +2325,13 @@
     },
     {
       "bracket": 4,
+      "commander": "Piedemoccio e Squee",
+      "games": 3,
+      "win_rate": 0.3333333333333333,
+      "wins": 1
+    },
+    {
+      "bracket": 4,
       "commander": "Sisay",
       "games": 9,
       "win_rate": 0.2222222222222222,
@@ -2371,13 +2378,6 @@
       "games": 4,
       "win_rate": 0.5,
       "wins": 2
-    },
-    {
-      "bracket": 5,
-      "commander": "Piedemoccio",
-      "games": 3,
-      "win_rate": 0.3333333333333333,
-      "wins": 1
     },
     {
       "bracket": 5,
