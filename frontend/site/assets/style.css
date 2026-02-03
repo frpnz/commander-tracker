@@ -1,24 +1,26 @@
 :root{
   --logo-url: url("../assets/logo.png");
+
+  --home-bg-url: url("../assets/home.png");
+  --home-bg-url-mobile: url("../assets/home-mobile.png");
+
   --bg:#0b1020;
   --text:#e9ecf7;
   --muted:#aab3d3;
   --accent:#6ee7ff;
   --accent2:#b8ff6e;
+
   --border:rgba(255,255,255,.10);
   --shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
 *{box-sizing:border-box}
 html,body{height:100%; overflow-x:hidden}
-html{color-scheme: dark;}
-html{ -webkit-text-size-adjust: 100%; }
+html{color-scheme: dark; -webkit-text-size-adjust: 100%;}
 
 body{
   margin:0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-  /* Solid base color; the decorative gradients are drawn in a fixed
-     pseudo-element to avoid visible tiling/pattern repetition while scrolling. */
   background: var(--bg);
   position: relative;
   min-height: 100vh;
@@ -26,6 +28,7 @@ body{
   overflow-x: hidden;
 }
 
+/* Decorative gradients on all pages */
 body::before{
   content:"";
   position:fixed;
@@ -53,7 +56,6 @@ body::before{
 .brand{display:flex; gap:12px; align-items:center}
 .logo{
   width:44px;height:44px;border-radius:14px;
-  /* Fill the available logo area with the logo image */
   background-image: var(--logo-url);
   background-repeat: no-repeat;
   background-position: center;
@@ -61,6 +63,7 @@ body::before{
   border:1px solid var(--border);
   box-shadow: var(--shadow);
 }
+
 .title{font-weight:750; letter-spacing:.2px}
 .subtitle{color:var(--muted); font-size:13px; margin-top:2px}
 .meta{color:var(--muted); font-size:13px; text-align:right}
@@ -70,7 +73,7 @@ body::before{
 .navlink:hover{color:var(--text); border-color:var(--border); background:rgba(255,255,255,.03)}
 .navlink.active{color:var(--text); border-color:var(--border); background:rgba(255,255,255,.05)}
 
-/* --- Cards (continuous background, no panel effect) --- */
+/* --- Cards --- */
 .card{
   background: rgba(11,16,32,.35);
   backdrop-filter: blur(12px);
@@ -80,27 +83,41 @@ body::before{
 }
 
 /* --- Buttons --- */
+/* Same color for all buttons */
 .btn{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  border:1px solid var(--border);
-  background: rgba(255,255,255,.05);
-  color:var(--text);
-  padding:10px 14px;
-  border-radius:12px;
-  cursor:pointer;
-  text-decoration:none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 1px solid rgba(110,231,255,.35);
+  background: linear-gradient(
+    135deg,
+    rgba(110,231,255,.18),
+    rgba(184,255,110,.14)
+  );
+
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+
+  width: auto; /* default width (content) */
 }
-.btn:hover{border-color: rgba(110,231,255,.35)}
-.btn-primary,.btn.primary{
-  background: linear-gradient(135deg, rgba(110,231,255,.18), rgba(184,255,110,.14));
-  border-color: rgba(110,231,255,.35);
+
+.btn:hover{ border-color: rgba(110,231,255,.6) }
+
+/* Primary: keep width different (full width when layout expects it) */
+.btn.primary,
+.btn-primary{
+  width: 100%;
 }
 
 /* --- Home --- */
 .hero{padding:28px}
 .muted{color:var(--muted)}
+
 /* Home preview image (shown on mobile) */
 .home-visual{
   display:none;
@@ -114,8 +131,13 @@ body::before{
   border:1px solid var(--border);
   box-shadow: var(--shadow);
 }
-.hero-actions{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap}
 
+.hero-actions{
+  margin-top:14px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
 
 /* --- Filters (stats) --- */
 .filters{padding:14px 14px 10px}
@@ -181,20 +203,19 @@ select option{background: var(--bg); color: var(--text);}
   padding:14px 14px 8px;
   display:flex; align-items:center; justify-content:space-between;
 }
-
 .head-tools{display:flex; gap:10px; align-items:center}
 
-/* Small sorting dropdowns in table headers */
 .sortlabel{display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--muted); align-items:flex-end}
-/* We keep an accessible label in markup; hide the tiny "Ordina" text for a cleaner UI */
 .sortlabel > span{display:none}
 .sortselect{
   min-width:150px;
   padding:8px 10px;
   border-radius:12px;
 }
+
 h1{margin:0 0 8px 0; font-size:22px; letter-spacing:.2px}
 h2{margin:0; font-size:15px; letter-spacing:.2px}
+
 .pill{
   font-size:12px;
   color:var(--muted);
@@ -205,10 +226,8 @@ h2{margin:0; font-size:15px; letter-spacing:.2px}
 }
 
 .is-hidden{display:none !important;}
-
 .table-wrap{overflow:auto; padding:0 6px 10px}
 
-/* --- Archivio: recent games list --- */
 .recent-wrap{display:flex; flex-direction:column; gap:12px; padding:6px 6px 12px}
 .recent-game{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px; background: rgba(11,16,32,.18)}
 .recent-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap}
@@ -228,6 +247,7 @@ h2{margin:0; font-size:15px; letter-spacing:.2px}
 .mpibar{width:90px; max-width:120px; height:8px; border-radius:999px; background: rgba(255,255,255,.10); overflow:hidden; border:1px solid rgba(255,255,255,.14)}
 .mpibar > span{display:block; height:100%; width:0%; background: rgba(110,231,255,.55)}
 .mpilabel{min-width:52px; text-align:right; font-variant-numeric: tabular-nums; color: var(--text)}
+
 table{width:100%; border-collapse:separate; border-spacing:0; min-width:560px}
 thead th{
   position:sticky; top:0;
@@ -258,8 +278,6 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
 }
 
 .footnote{padding:8px 14px 14px; color:var(--muted); font-size:12px}
-
-/* --- Chart HTML legend (2-row compact) --- */
 .html-legend{margin-top:10px; display:grid; grid-auto-flow:column; grid-template-rows:repeat(2, auto); gap:6px 14px; justify-content:center; align-items:center; color:var(--muted); font-size:12px}
 .html-legend .item{display:inline-flex; align-items:center; gap:8px; white-space:nowrap; cursor:pointer; user-select:none}
 .html-legend .swatch{width:10px; height:10px; border-radius:999px; border:1px solid rgba(255,255,255,.25)}
@@ -357,12 +375,40 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
   #tList tbody td:nth-child(2){flex:1 1 44%; min-width:0}
   #tList tbody td:nth-child(3){flex:0 0 auto}
   #tList tbody td:nth-child(4){flex:0 0 auto; text-align:right}
-
 }
 
+/* --- Home background image (desktop) --- */
+body.home{
+  /* background image sits behind card */
+  background-color: #0b0e14; /* fallback */
+}
+body.home::after{
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
 
+  background-image: var(--home-bg-url);
+  background-repeat: no-repeat;
+  background-size: contain;      /* desktop: contain, no cropping */
+  background-position: center 80%;
+
+  opacity: .45;
+}
+
+/* Home: make the background image more visible (card slightly more transparent) */
+body.home .card{
+  background: rgba(11,16,32,.18);
+  backdrop-filter: blur(10px);
+}
+
+/* --- Home mobile layout + blurred mobile background --- */
 @media (max-width: 860px){
+  /* show inline preview image */
   body.home .home-visual{display:block}
+
+  /* buttons grid 2×N */
   body.home .hero-actions{
     display:grid;
     grid-template-columns: 1fr 1fr;
@@ -373,44 +419,31 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
     justify-content:center;
     padding:12px 12px;
   }
-  body.home .hero-actions .btn.primary{grid-column: 1 / -1}
+  /* primary full row (keeps “different width”) */
+  body.home .hero-actions .btn.primary,
+  body.home .hero-actions .btn-primary{
+    grid-column: 1 / -1;
+  }
 
-  body.home{
+  /* swap background to mobile image + blur */
+  body.home::after{
+    background-image: var(--home-bg-url-mobile);
+    background-size: cover;      /* mobile: fill the screen */
+    background-position: center;
+    filter: blur(18px);
+    transform: scale(1.08);
+    opacity: .35;
+  }
+
+  /* mobile overlay gradients (sit above blurred image, below content) */
+  body::before{
     background:
-      radial-gradient(
-        1200px 600px at 50% 0%,
-        rgba(110,231,255,.12),
-        rgba(11,16,32,0) 70%
-      ),
-      linear-gradient(
-        to bottom,
+      radial-gradient(1200px 600px at 50% 0%, rgba(110,231,255,.12), rgba(11,16,32,0) 70%),
+      linear-gradient(to bottom,
         rgba(11,16,32,0.00) 0%,
         rgba(11,16,32,0.35) 65%,
         rgba(11,16,32,0.85) 100%
-      ),
-      var(--home-bg-url-mobile);
-    background-size: cover, cover, contain;
-    background-repeat: no-repeat, no-repeat, no-repeat;
-    background-position: center top, center bottom, center 97%;
+      );
+    background-repeat:no-repeat;
   }
-}
-
-
-:root {
-  --home-bg-url: url("../assets/home.png");
-  --home-bg-url-mobile: url("../assets/home-mobile.png");
-}
-
-body.home {
-  background-image: var(--home-bg-url);
-  background-size: contain;          /* NON cover */
-  background-repeat: no-repeat;
-  background-position: center 80%;
-  background-color: #0b0e14;          /* fallback elegante */
-}
-
-/* Home: make the background image more visible */
-body.home .card{
-  background: rgba(11,16,32,.18);
-  backdrop-filter: blur(10px);
 }
