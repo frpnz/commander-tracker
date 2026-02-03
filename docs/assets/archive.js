@@ -65,6 +65,13 @@ function buildBracketOptions(data, player, commander) {
 }
 
 function renderListTable(data, state) {
+  // "Elenco" is hidden by default until the user selects at least one filter.
+  if (!hasAnyFilter(state)) {
+    const hint = $("#hint");
+    if (hint) hint.textContent = "";
+    return;
+  }
+
   const tbody = $("#tList tbody");
   tbody.innerHTML = "";
   const rows = (data.by_player_commander || [])
@@ -135,8 +142,8 @@ function renderRecentGames(data, state) {
   const filtered = all.filter((g) => gameMatchesFilters(g, state));
 
   const sel = $("#fRecentN");
-  const nRaw = sel ? sel.value : "10";
-  const n = (nRaw === "all") ? Infinity : Number(nRaw || 10);
+  const nRaw = sel ? sel.value : "3";
+  const n = (nRaw === "all") ? Infinity : Number(nRaw || 3);
   const slice = filtered.slice(0, n);
 
   $("#countRecent").textContent = `${slice.length} / ${filtered.length}`;
@@ -214,6 +221,27 @@ function buildState() {
   };
 }
 
+function hasAnyFilter(state) {
+  return !!(state && (state.player || state.commander || state.bracket));
+}
+
+function updateListVisibility(state) {
+  const ph = $("#listPlaceholder");
+  const wrap = $("#listTableWrap");
+  const on = hasAnyFilter(state);
+
+  if (ph) ph.style.display = on ? "none" : "block";
+  if (wrap) wrap.style.display = on ? "block" : "none";
+
+  // Keep UI clean when the list is "closed".
+  if (!on) {
+    const tbody = $("#tList tbody");
+    if (tbody) tbody.innerHTML = "";
+    const count = $("#countList");
+    if (count) count.textContent = "";
+  }
+}
+
 async function main() {
   const res = await fetch(statsJsonUrl(), { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
@@ -230,6 +258,7 @@ async function main() {
 
   const rerender = () => {
     const state = buildState();
+    updateListVisibility(state);
     renderListTable(data, state);
     renderRecentGames(data, state);
   };
@@ -255,7 +284,7 @@ async function main() {
     $("#fCommander").value = "";
     buildBracketOptions(data, "", "");
     $("#fBracket").value = "";
-    $("#fRecentN").value = "10";
+    $("#fRecentN").value = "3";
     rerender();
   });
 

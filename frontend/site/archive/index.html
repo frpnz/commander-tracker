@@ -59,6 +59,28 @@
     </section>
 
     <section class="grid">
+      <!-- 1) Archivio partite (prima) -->
+      <section class="card">
+        <div class="card-head">
+          <h2>Ultime partite</h2>
+          <div class="head-tools">
+            <label class="sortlabel">
+              <span>Mostra</span>
+              <select id="fRecentN" class="sortselect">
+                <option value="3" selected>3</option>
+                <option value="10">10</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="all">Tutte</option>
+              </select>
+            </label>
+            <div class="pill" id="countRecent"></div>
+          </div>
+        </div>
+        <div id="recentWrap" class="recent-wrap"></div>
+      </section>
+
+      <!-- 2) Elenco (chiuso di default finché non selezioni un filtro) -->
       <section class="card">
         <div class="card-head">
           <h2>Elenco</h2>
@@ -66,7 +88,10 @@
             <div class="pill" id="countList"></div>
           </div>
         </div>
-        <div class="table-wrap">
+        <div id="listPlaceholder" class="muted" style="padding:12px;">
+          Seleziona almeno un filtro (Player / Commander / Bracket) per mostrare l’elenco.
+        </div>
+        <div class="table-wrap" id="listTableWrap" style="display:none;">
           <table id="tList">
             <thead>
               <tr>
@@ -79,25 +104,6 @@
             <tbody></tbody>
           </table>
         </div>
-      </section>
-
-      <section class="card">
-        <div class="card-head">
-          <h2>Ultime partite</h2>
-          <div class="head-tools">
-            <label class="sortlabel">
-              <span>Mostra</span>
-              <select id="fRecentN" class="sortselect">
-                <option value="10" selected>10</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="all">Tutte</option>
-              </select>
-            </label>
-            <div class="pill" id="countRecent"></div>
-          </div>
-        </div>
-        <div id="recentWrap" class="recent-wrap"></div>
       </section>
     </section>
   </main>
