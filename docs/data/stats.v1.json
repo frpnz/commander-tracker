@@ -42,7 +42,7 @@
     {
       "bracket": 5,
       "commander": "Sephiroth",
-      "games": 12,
+      "games": 13,
       "player": "Matti",
       "wins": 5
     },
@@ -257,13 +257,6 @@
       "wins": 0
     },
     {
-      "bracket": 4,
-      "commander": "Sephiroth",
-      "games": 1,
-      "player": "Matti",
-      "wins": 0
-    },
-    {
       "bracket": 2,
       "commander": "Finn",
       "games": 1,
@@ -290,6 +283,15 @@
     },
     {
       "bracket": 5,
+      "commander": "Sephiroth",
+      "games": 13,
+      "games_w": 10.499312093955803,
+      "player": "Matti",
+      "wins": 5,
+      "wins_w": 3.6607079764250576
+    },
+    {
+      "bracket": 5,
       "commander": "K'rrik",
       "games": 11,
       "games_w": 10.034134955115002,
@@ -305,15 +307,6 @@
       "player": "Teo",
       "wins": 1,
       "wins_w": 1.0
-    },
-    {
-      "bracket": 5,
-      "commander": "Sephiroth",
-      "games": 12,
-      "games_w": 9.758493873274086,
-      "player": "Matti",
-      "wins": 5,
-      "wins_w": 3.6607079764250576
     },
     {
       "bracket": 5,
@@ -337,10 +330,10 @@
       "bracket": 5,
       "commander": "Hearthhull",
       "games": 8,
-      "games_w": 6.523568171113942,
+      "games_w": 6.56438639179566,
       "player": "Da",
       "wins": 2,
-      "wins_w": 1.4
+      "wins_w": 1.440818220681718
     },
     {
       "bracket": 5,
@@ -382,7 +375,7 @@
       "bracket": 3,
       "commander": "Volo",
       "games": 4,
-      "games_w": 3.540818220681718,
+      "games_w": 3.5816364413634356,
       "player": "Stanca",
       "wins": 0,
       "wins_w": 0.0
@@ -584,24 +577,15 @@
       "player": "Fra",
       "wins": 0,
       "wins_w": 0.0
-    },
-    {
-      "bracket": 4,
-      "commander": "Sephiroth",
-      "games": 1,
-      "games_w": 0.7,
-      "player": "Matti",
-      "wins": 0,
-      "wins_w": 0.0
     }
   ],
   "by_player_weighted": [
     {
       "games": 31,
-      "games_w": 27.63712691630173,
+      "games_w": 27.67794513698345,
       "player": "Da",
       "wins": 11,
-      "wins_w": 8.76743878600921
+      "wins_w": 8.808257006690928
     },
     {
       "games": 28,
@@ -612,7 +596,7 @@
     },
     {
       "games": 26,
-      "games_w": 23.245365247796897,
+      "games_w": 23.286183468478615,
       "player": "Matti",
       "wins": 10,
       "wins_w": 8.569016458559876
@@ -626,7 +610,7 @@
     },
     {
       "games": 19,
-      "games_w": 18.234615463668437,
+      "games_w": 18.275433684350155,
       "player": "Stanca",
       "wins": 2,
       "wins_w": 2.0
@@ -727,7 +711,7 @@
           "player": "Da"
         },
         {
-          "bracket": 4,
+          "bracket": 5,
           "commander": "Sephiroth",
           "player": "Matti"
         },
@@ -1722,8 +1706,8 @@
     {
       "games_total": 31,
       "games_used": 31,
-      "mdi": 0.4704301075268817,
-      "mpi": 0.7123655913978494,
+      "mdi": 0.4543010752688172,
+      "mpi": 0.6962365591397849,
       "player": "Da"
     },
     {
@@ -1736,8 +1720,8 @@
     {
       "games_total": 26,
       "games_used": 26,
-      "mdi": 0.2467948717948718,
-      "mpi": 0.753205128205128,
+      "mdi": 0.28525641025641024,
+      "mpi": 0.7916666666666665,
       "player": "Matti"
     },
     {
@@ -1750,8 +1734,8 @@
     {
       "games_total": 19,
       "games_used": 19,
-      "mdi": -0.17105263157894737,
-      "mpi": 0.49561403508771934,
+      "mdi": -0.19736842105263158,
+      "mpi": 0.5219298245614036,
       "player": "Stanca"
     },
     {
@@ -1783,8 +1767,8 @@
       "commander": "Hearthhull",
       "games_total": 8,
       "games_used": 8,
-      "mdi": 0.8020833333333334,
-      "mpi": 0.8020833333333334,
+      "mdi": 0.7395833333333334,
+      "mpi": 0.7395833333333334,
       "player": "Da"
     },
     {
@@ -1943,8 +1927,8 @@
       "commander": "Sephiroth",
       "games_total": 13,
       "games_used": 13,
-      "mdi": 0.7564102564102563,
-      "mpi": 0.7564102564102563,
+      "mdi": 0.8333333333333333,
+      "mpi": 0.8333333333333333,
       "player": "Matti"
     },
     {
@@ -1999,8 +1983,8 @@
       "commander": "Volo",
       "games_total": 4,
       "games_used": 4,
-      "mdi": -1.25,
-      "mpi": 1.25,
+      "mdi": -1.375,
+      "mpi": 1.375,
       "player": "Stanca"
     },
     {
@@ -2059,21 +2043,21 @@
     },
     {
       "bracket": 4,
-      "games": 25,
-      "win_rate": 0.24,
+      "games": 24,
+      "win_rate": 0.25,
       "wins": 6
     },
     {
       "bracket": 5,
-      "games": 78,
-      "win_rate": 0.358974358974359,
+      "games": 79,
+      "win_rate": 0.35443037974683544,
       "wins": 28
     }
   ],
   "meta_wins_by_player": [
     {
       "player": "Da",
-      "wbd": 0.8257575757575757,
+      "wbd": 0.7803030303030302,
       "wins_total": 11,
       "wins_used": 11
     },
@@ -2119,7 +2103,7 @@
     {
       "commander": "Hearthhull",
       "player": "Da",
-      "wbd": 1.4166666666666667,
+      "wbd": 1.1666666666666667,
       "wins_total": 2,
       "wins_used": 2
     },
@@ -2366,8 +2350,8 @@
     {
       "bracket": 5,
       "commander": "Sephiroth",
-      "games": 12,
-      "win_rate": 0.4166666666666667,
+      "games": 13,
+      "win_rate": 0.38461538461538464,
       "wins": 5
     },
     {
