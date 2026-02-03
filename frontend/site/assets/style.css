@@ -343,15 +343,9 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
   #tList tbody td:nth-child(2){flex:1 1 44%; min-width:0}
   #tList tbody td:nth-child(3){flex:0 0 auto}
   #tList tbody td:nth-child(4){flex:0 0 auto; text-align:right}
-
 }
 
-
-@media (max-width: 520px){
-  .hero-actions .btn{flex:1 1 100%; justify-content:center; padding:12px 16px}
-}
-
-
+/* --- Home background image --- */
 :root {
   --home-bg-url: url("../assets/home.png");
 }
@@ -402,6 +396,8 @@ body.home .card{
   body.home{
     background-position: center 97%;
   }
+
+  /* Home: buttons slightly lighter on mobile */
   body.home .btn{
     background: rgba(255,255,255,.035);
     border-color: rgba(255,255,255,.08);
@@ -410,5 +406,21 @@ body.home .card{
   body.home .btn.primary{
     background: linear-gradient(135deg, rgba(110,231,255,.14), rgba(184,255,110,.10));
     border-color: rgba(110,231,255,.25);
+  }
+
+  /* Home: CTA buttons layout -> 2 columns (6 buttons => 3 rows) */
+  .hero-actions{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+  .hero-actions .btn{
+    width:100%;
+    justify-content:center;
+    padding:12px 10px;
+    font-size:0.95rem;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
 }
