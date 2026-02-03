@@ -236,7 +236,7 @@
       "wins": 0
     },
     {
-      "bracket": 2,
+      "bracket": 3,
       "commander": "Jan Jansen",
       "games": 1,
       "player": "Fra",
@@ -593,7 +593,7 @@
       "wins_w": 0.0
     },
     {
-      "bracket": 2,
+      "bracket": 3,
       "commander": "Jan Jansen",
       "games": 1,
       "games_w": 0.7,
@@ -1671,7 +1671,7 @@
     {
       "entries": [
         {
-          "bracket": 2,
+          "bracket": 3,
           "commander": "Jan Jansen",
           "player": "Fra"
         },
@@ -1738,22 +1738,22 @@
     {
       "games_total": 31,
       "games_used": 31,
-      "mdi": 0.532258064516129,
-      "mpi": 0.7258064516129032,
+      "mdi": 0.5215053763440861,
+      "mpi": 0.7150537634408602,
       "player": "Da"
     },
     {
       "games_total": 28,
       "games_used": 28,
-      "mdi": 0.1488095238095238,
-      "mpi": 0.6488095238095237,
+      "mdi": 0.18452380952380953,
+      "mpi": 0.613095238095238,
       "player": "Fra"
     },
     {
       "games_total": 26,
       "games_used": 26,
-      "mdi": 0.30128205128205127,
-      "mpi": 0.8076923076923076,
+      "mdi": 0.2884615384615385,
+      "mpi": 0.7948717948717948,
       "player": "Matti"
     },
     {
@@ -1773,8 +1773,8 @@
     {
       "games_total": 15,
       "games_used": 15,
-      "mdi": -0.7944444444444443,
-      "mpi": 0.9277777777777776,
+      "mdi": -0.8166666666666664,
+      "mpi": 0.9499999999999997,
       "player": "Teo"
     }
   ],
@@ -1799,8 +1799,8 @@
       "commander": "Hearthhull",
       "games_total": 8,
       "games_used": 8,
-      "mdi": 0.8854166666666666,
-      "mpi": 0.8854166666666666,
+      "mdi": 0.84375,
+      "mpi": 0.84375,
       "player": "Da"
     },
     {
@@ -1868,19 +1868,19 @@
       "player": "Fra"
     },
     {
-      "commander": "Jan Jansen",
-      "games_total": 1,
-      "games_used": 1,
-      "mdi": -2.333333333333333,
-      "mpi": 2.333333333333333,
-      "player": "Fra"
-    },
-    {
       "commander": "Sidisi",
       "games_total": 1,
       "games_used": 1,
       "mdi": 1.5,
       "mpi": 1.5,
+      "player": "Fra"
+    },
+    {
+      "commander": "Jan Jansen",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": -1.333333333333333,
+      "mpi": 1.333333333333333,
       "player": "Fra"
     },
     {
@@ -1959,8 +1959,8 @@
       "commander": "Sephiroth",
       "games_total": 13,
       "games_used": 13,
-      "mdi": 0.8269230769230769,
-      "mpi": 0.8269230769230769,
+      "mdi": 0.8012820512820513,
+      "mpi": 0.8012820512820513,
       "player": "Matti"
     },
     {
@@ -2031,8 +2031,8 @@
       "commander": "Hylda",
       "games_total": 12,
       "games_used": 12,
-      "mdi": -0.8402777777777777,
-      "mpi": 1.0069444444444444,
+      "mdi": -0.8680555555555554,
+      "mpi": 1.034722222222222,
       "player": "Teo"
     },
     {
@@ -2063,14 +2063,14 @@
   "meta_wins_by_bracket": [
     {
       "bracket": 2,
-      "games": 9,
-      "win_rate": 0.1111111111111111,
+      "games": 8,
+      "win_rate": 0.125,
       "wins": 1
     },
     {
       "bracket": 3,
-      "games": 29,
-      "win_rate": 0.13793103448275862,
+      "games": 30,
+      "win_rate": 0.13333333333333333,
       "wins": 4
     },
     {
@@ -2095,7 +2095,7 @@
     },
     {
       "player": "Matti",
-      "wbd": 0.7916666666666666,
+      "wbd": 0.7583333333333334,
       "wins_total": 10,
       "wins_used": 10
     },
@@ -2226,7 +2226,7 @@
     {
       "commander": "Sephiroth",
       "player": "Matti",
-      "wbd": 1.4,
+      "wbd": 1.3333333333333335,
       "wins_total": 5,
       "wins_used": 5
     },
