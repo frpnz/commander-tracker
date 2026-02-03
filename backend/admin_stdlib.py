@@ -29,6 +29,7 @@ import html
 import urllib.parse
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
+import json
 
 
 REPO_DEFAULT_DB = os.path.join(os.path.dirname(__file__), "..", "data", "commander_tracker.sqlite")
@@ -233,6 +234,14 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Location", location)
         self.end_headers()
 
+    def _send_json(self, payload: dict, status: int = 200) -> None:
+        data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
     def do_GET(self):
         path, _, qs = self.path.partition("?")
         query = urllib.parse.parse_qs(qs)
@@ -242,6 +251,10 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/admin/games":
             return self._get_games()
+
+        # Admin UI helpers (JSON)
+        if path == "/admin/api/bracket_suggestions":
+            return self._get_api_bracket_suggestions(query)
 
         if path.startswith("/admin/games/"):
             parts = path.strip("/").split("/")
@@ -307,6 +320,37 @@ class Handler(BaseHTTPRequestHandler):
     # ---------------------------
     # Pages
     # ---------------------------
+
+    def _get_api_bracket_suggestions(self, query: dict[str, list[str]]):
+        """Return suggested brackets for a specific (player, commander) pair.
+
+        Used by the "Aggiungi entry" form to auto-select the bracket already stored
+        in the DB for that exact pair.
+        """
+        player = (query.get("player", [""])[0] or "").strip()
+        commander = (query.get("commander", [""])[0] or "").strip()
+
+        if not player or not commander:
+            return self._send_json({"brackets": []}, 200)
+
+        with db() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                SELECT bracket, COUNT(*) AS n
+                FROM gameentry
+                WHERE player=? AND commander=? AND bracket IS NOT NULL
+                GROUP BY bracket
+                ORDER BY n DESC, bracket ASC
+                LIMIT 20
+                """,
+                (player, commander),
+            )
+            rows = cur.fetchall()
+
+        brackets = [int(r["bracket"]) for r in rows if r["bracket"] is not None]
+        return self._send_json({"brackets": brackets}, 200)
+
     def _get_games(self):
         with db() as conn:
             cur = conn.cursor()
@@ -468,6 +512,10 @@ class Handler(BaseHTTPRequestHandler):
             f'<option value="{esc(b)}">{esc(b)}</option>' for b in brackets if b.strip()
         )
 
+        # Used by the "Aggiungi entry" form to re-order options when we have
+        # bracket suggestions from the DB for (player, commander).
+        all_brackets_json = json.dumps([b for b in brackets if (b or "").strip()], ensure_ascii=False)
+
         entry_rows = []
         for e in entries:
             bracket_val = "" if e["bracket"] is None else str(e["bracket"])
@@ -496,7 +544,7 @@ class Handler(BaseHTTPRequestHandler):
                       <summary>Modifica</summary>
                       <form method="post" action="/admin/entries/{e['id']}/update" style="margin-top:10px;">
                         <label>Player</label>
-                        <select name="player_sel" required>
+                    <select id="entry_add_player_sel" name="player_sel" required>
                           <option value="" disabled>Seleziona…</option>
                           {player_select_row}
                           <option value="__NEW__">+ Nuovo…</option>
@@ -505,7 +553,7 @@ class Handler(BaseHTTPRequestHandler):
                         <input name="player_new" placeholder="Player nuovo">
 
                         <label>Commander</label>
-                        <select name="commander_sel" required>
+                    <select id="entry_add_commander_sel" name="commander_sel" required>
                           <option value="" disabled>Seleziona…</option>
                           {commander_select_row}
                           <option value="__NEW__">+ Nuovo…</option>
@@ -514,7 +562,7 @@ class Handler(BaseHTTPRequestHandler):
                         <input name="commander_new" placeholder="Commander nuovo">
 
                         <label>Bracket</label>
-                        <select name="bracket_sel">
+                    <select id="entry_add_bracket_sel" name="bracket_sel">
                           <option value="" {bracket_none_selected}>— nessuno —</option>
                           {bracket_select_row}
                           <option value="__NEW__">+ Nuovo…</option>
@@ -594,7 +642,7 @@ class Handler(BaseHTTPRequestHandler):
                 <div class="field-row">
                   <div class="field">
                     <label>Player</label>
-                    <select name="player_sel" required>
+                    <select id="entry_add_player_sel" name="player_sel" required>
                       <option value="" disabled selected>Seleziona…</option>
                       {players_select}
                       <option value="__NEW__">+ Nuovo…</option>
@@ -605,7 +653,7 @@ class Handler(BaseHTTPRequestHandler):
 
                   <div class="field">
                     <label>Commander</label>
-                    <select name="commander_sel" required>
+                    <select id="entry_add_commander_sel" name="commander_sel" required>
                       <option value="" disabled selected>Seleziona…</option>
                       {commanders_select}
                       <option value="__NEW__">+ Nuovo…</option>
@@ -616,7 +664,7 @@ class Handler(BaseHTTPRequestHandler):
 
                   <div class="field">
                     <label>Bracket</label>
-                    <select name="bracket_sel">
+                    <select id="entry_add_bracket_sel" name="bracket_sel">
                       <option value="" selected>— nessuno —</option>
                       {brackets_select}
                       <option value="__NEW__">+ Nuovo…</option>
@@ -630,6 +678,72 @@ class Handler(BaseHTTPRequestHandler):
                   <button class="primary" type="submit">Aggiungi</button>
                 </div>
               </form>
+
+              <script>
+              // Auto-select bracket from DB based on (player, commander).
+              // If multiple brackets exist for that exact pair, show them all (most used first).
+              (function(){{
+                const playerSel = document.getElementById('entry_add_player_sel');
+                const cmdSel = document.getElementById('entry_add_commander_sel');
+                const bracketSel = document.getElementById('entry_add_bracket_sel');
+                if (!playerSel || !cmdSel || !bracketSel) return;
+
+                const ALL_BRACKETS = {all_brackets_json};
+
+                function rebuildBracketOptions(suggested){{
+                  const current = bracketSel.value || '';
+                  const sug = (Array.isArray(suggested) ? suggested : []).map(x => String(x));
+                  const sugSet = new Set(sug);
+
+                  bracketSel.innerHTML = '';
+                  bracketSel.add(new Option('— nessuno —', ''));
+
+                  // Suggested first
+                  sug.forEach(b => {{
+                    const o = new Option(b, b);
+                    o.dataset.suggested = '1';
+                    bracketSel.add(o);
+                  }});
+
+                  // Then all the others (global list)
+                  (ALL_BRACKETS || []).forEach(b => {{
+                    const s = String(b);
+                    if (!s || sugSet.has(s)) return;
+                    bracketSel.add(new Option(s, s));
+                  }});
+
+                  bracketSel.add(new Option('+ Nuovo…', '__NEW__'));
+
+                  // Auto-selection behaviour
+                  if (sug.length === 1) {{
+                    bracketSel.value = sug[0];
+                  }} else if (sug.length > 1) {{
+                    // Keep current if still valid, otherwise select the most-used suggestion.
+                    bracketSel.value = sugSet.has(current) ? current : sug[0];
+                  }} else {{
+                    // No suggestion: keep current
+                    bracketSel.value = current;
+                  }}
+                }}
+
+                async function updateFromDB(){{
+                  const p = playerSel.value;
+                  const c = cmdSel.value;
+                  if (!p || !c || p === '__NEW__' || c === '__NEW__') return;
+                  try {{
+                    const url = `/admin/api/bracket_suggestions?player=${{encodeURIComponent(p)}}&commander=${{encodeURIComponent(c)}}`;
+                    const r = await fetch(url, {{ headers: {{ 'Accept': 'application/json' }} }});
+                    const data = await r.json();
+                    rebuildBracketOptions(data && data.brackets);
+                  }} catch (e) {{
+                    // Silent: admin tool should keep working even without JS.
+                  }}
+                }}
+
+                playerSel.addEventListener('change', updateFromDB);
+                cmdSel.addEventListener('change', updateFromDB);
+              }})();
+              </script>
             </div>
 
             <div class="table-wrap">
