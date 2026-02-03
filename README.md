@@ -227,6 +227,43 @@ Risultato:
 - le statistiche vengono rigenerate
 - se `docs/data/**` cambia, GitHub Pages (se configurato) si aggiorna automaticamente
 
+### Background su server Ubuntu (systemd)
+
+1. Creare /etc/systemd/system/commander-admin.service
+```bash
+[Unit]
+Description=Commander Tracker Admin (local only)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/path/al/repo
+Environment=COMMANDER_DB=/path/al/repo/data/commander_tracker.sqlite
+ExecStart=/path/al/venv/bin/uvicorn backend.admin_app.app:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+```
+2. Poi
+```bash
+sudo systemctl daemon-reload #  Ricaricare i file di servizio (da eseguire sempre dopo aver modificato: /etc/systemd/system/commander-admin.service)
+sudo systemctl enable --now commander-admin #  Fa partire automaticamente l’admin backend ad ogni boot
+```
+A questo punto il backend admin gira come servizio systemd con nome: commander-admin
+3. Utils
+```bash
+sudo systemctl status commander-admin #  Stato del servizio
+sudo systemctl restart commander-admin #  Riavvio del servizio
+sudo systemctl stop commander-admin #  Arresto del servizio
+sudo systemctl start commander-admin #  Avvio del servizio
+sudo systemctl disable commander-admin #  Disabilitazione all’avvio automatico
+sudo journalctl -u commander-admin #  Log completi del servizio
+sudo journalctl -u commander-admin -f #  Log in tempo reale
+sudo systemctl is-active commander-admin #  Verifica rapida se è attivo
+sudo systemctl is-enabled commander-admin #  Verifica se è abilitato al boot
+```
 ---
 
 ## Note su GitHub Pages (se presente nel repo)
