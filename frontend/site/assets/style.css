@@ -360,7 +360,7 @@ body.home {
   background-image: var(--home-bg-url);
   background-size: contain;          /* NON cover */
   background-repeat: no-repeat;
-  background-position: center top;
+  background-position: center 80%;
   background-color: #0b0e14;          /* fallback elegante */
 }
 
