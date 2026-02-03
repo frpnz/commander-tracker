@@ -6,12 +6,12 @@
       "wins": 11
     },
     {
-      "games": 28,
+      "games": 29,
       "player": "Fra",
       "wins": 10
     },
     {
-      "games": 26,
+      "games": 27,
       "player": "Matti",
       "wins": 10
     },
@@ -152,11 +152,25 @@
       "wins": 1
     },
     {
+      "bracket": 3,
+      "commander": "Flubs",
+      "games": 3,
+      "player": "Matti",
+      "wins": 0
+    },
+    {
       "bracket": 5,
       "commander": "Karn",
       "games": 2,
       "player": "Da",
       "wins": 2
+    },
+    {
+      "bracket": 3,
+      "commander": "Edric",
+      "games": 2,
+      "player": "Fra",
+      "wins": 1
     },
     {
       "bracket": 5,
@@ -192,20 +206,6 @@
       "games": 2,
       "player": "Fra",
       "wins": 0
-    },
-    {
-      "bracket": 3,
-      "commander": "Flubs",
-      "games": 2,
-      "player": "Matti",
-      "wins": 0
-    },
-    {
-      "bracket": 3,
-      "commander": "Edric",
-      "games": 1,
-      "player": "Fra",
-      "wins": 1
     },
     {
       "bracket": 4,
@@ -399,6 +399,15 @@
       "wins_w": 0.0
     },
     {
+      "bracket": 3,
+      "commander": "Flubs",
+      "games": 3,
+      "games_w": 2.9523227161918646,
+      "player": "Matti",
+      "wins": 0,
+      "wins_w": 0.0
+    },
+    {
       "bracket": 4,
       "commander": "Chandra",
       "games": 3,
@@ -424,6 +433,15 @@
       "player": "Fra",
       "wins": 1,
       "wins_w": 0.8187307530779818
+    },
+    {
+      "bracket": 3,
+      "commander": "Edric",
+      "games": 2,
+      "games_w": 2.2523227161918644,
+      "player": "Fra",
+      "wins": 1,
+      "wins_w": 1.2523227161918644
     },
     {
       "bracket": 3,
@@ -462,15 +480,6 @@
       "wins_w": 1.0
     },
     {
-      "bracket": 3,
-      "commander": "Flubs",
-      "games": 2,
-      "games_w": 1.9523227161918644,
-      "player": "Matti",
-      "wins": 0,
-      "wins_w": 0.0
-    },
-    {
       "bracket": 5,
       "commander": "Karn",
       "games": 2,
@@ -496,15 +505,6 @@
       "player": "Fra",
       "wins": 0,
       "wins_w": 0.0
-    },
-    {
-      "bracket": 3,
-      "commander": "Edric",
-      "games": 1,
-      "games_w": 1.2523227161918644,
-      "player": "Fra",
-      "wins": 1,
-      "wins_w": 1.2523227161918644
     },
     {
       "bracket": 4,
@@ -588,15 +588,15 @@
       "wins_w": 8.808257006690928
     },
     {
-      "games": 28,
-      "games_w": 25.894097789069672,
+      "games": 29,
+      "games_w": 26.894097789069672,
       "player": "Fra",
       "wins": 10,
       "wins_w": 9.30363437363436
     },
     {
-      "games": 26,
-      "games_w": 23.286183468478615,
+      "games": 27,
+      "games_w": 24.286183468478615,
       "player": "Matti",
       "wins": 10,
       "wins_w": 8.569016458559876
@@ -624,8 +624,8 @@
     }
   ],
   "counts": {
-    "entries": 140,
-    "games": 39
+    "entries": 142,
+    "games": 40
   },
   "filters": {
     "brackets": [
@@ -680,6 +680,24 @@
     ]
   },
   "games": [
+    {
+      "entries": [
+        {
+          "bracket": 3,
+          "commander": "Edric",
+          "player": "Fra"
+        },
+        {
+          "bracket": 3,
+          "commander": "Flubs",
+          "player": "Matti"
+        }
+      ],
+      "id": 44,
+      "notes": null,
+      "played_at": "2026-02-03 02:05:54",
+      "winner_player": "Ivan"
+    },
     {
       "entries": [
         {
@@ -1693,7 +1711,7 @@
       "winner_player": "Fra"
     }
   ],
-  "generated_utc": "2026-02-02T16:47:24Z",
+  "generated_utc": "2026-02-03T02:05:54Z",
   "meta_profile": {
     "method": "delta_player_minus_avg_table_excl_player",
     "min_games_default": 3,
@@ -1711,17 +1729,17 @@
       "player": "Da"
     },
     {
-      "games_total": 28,
-      "games_used": 28,
-      "mdi": 0.27380952380952384,
-      "mpi": 0.6428571428571427,
+      "games_total": 29,
+      "games_used": 29,
+      "mdi": 0.26436781609195403,
+      "mpi": 0.6206896551724137,
       "player": "Fra"
     },
     {
-      "games_total": 26,
-      "games_used": 26,
-      "mdi": 0.28525641025641024,
-      "mpi": 0.7916666666666665,
+      "games_total": 27,
+      "games_used": 27,
+      "mdi": 0.27469135802469136,
+      "mpi": 0.7623456790123455,
       "player": "Matti"
     },
     {
@@ -1828,6 +1846,14 @@
       "player": "Fra"
     },
     {
+      "commander": "Edric",
+      "games_total": 2,
+      "games_used": 2,
+      "mdi": -0.375,
+      "mpi": 0.375,
+      "player": "Fra"
+    },
+    {
       "commander": "Marwyn",
       "games_total": 2,
       "games_used": 2,
@@ -1861,14 +1887,6 @@
     },
     {
       "commander": "Baba",
-      "games_total": 1,
-      "games_used": 1,
-      "mdi": -0.75,
-      "mpi": 0.75,
-      "player": "Fra"
-    },
-    {
-      "commander": "Edric",
       "games_total": 1,
       "games_used": 1,
       "mdi": -0.75,
@@ -1949,10 +1967,10 @@
     },
     {
       "commander": "Flubs",
-      "games_total": 2,
-      "games_used": 2,
-      "mdi": -1.0416666666666665,
-      "mpi": 1.0416666666666665,
+      "games_total": 3,
+      "games_used": 3,
+      "mdi": -0.6944444444444443,
+      "mpi": 0.6944444444444443,
       "player": "Matti"
     },
     {
@@ -2037,8 +2055,8 @@
     },
     {
       "bracket": 3,
-      "games": 29,
-      "win_rate": 0.13793103448275862,
+      "games": 31,
+      "win_rate": 0.12903225806451613,
       "wins": 4
     },
     {
@@ -2090,6 +2108,12 @@
       "wbd": 0.0,
       "wins_total": 2,
       "wins_used": 2
+    },
+    {
+      "player": "Ivan",
+      "wbd": null,
+      "wins_total": 1,
+      "wins_used": 0
     }
   ],
   "meta_wins_by_player_commander": [
@@ -2192,6 +2216,13 @@
       "wins_used": 1
     },
     {
+      "commander": "",
+      "player": "Ivan",
+      "wbd": null,
+      "wins_total": 1,
+      "wins_used": 0
+    },
+    {
       "commander": "Sephiroth",
       "player": "Matti",
       "wbd": 1.2833333333333337,
@@ -2255,6 +2286,13 @@
       "games": 3,
       "win_rate": 0.3333333333333333,
       "wins": 1
+    },
+    {
+      "bracket": 3,
+      "commander": "Flubs",
+      "games": 3,
+      "win_rate": 0.0,
+      "wins": 0
     },
     {
       "bracket": 3,
