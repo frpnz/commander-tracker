@@ -343,104 +343,49 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
   #tList tbody td:nth-child(2){flex:1 1 44%; min-width:0}
   #tList tbody td:nth-child(3){flex:0 0 auto}
   #tList tbody td:nth-child(4){flex:0 0 auto; text-align:right}
+
 }
 
-/* --- Home background image + texture continuation --- */
-:root{
+
+@media (max-width: 520px){
+  .hero-actions .btn{flex:1 1 100%; justify-content:center; padding:12px 16px}
+
+  body.home{
+    background:
+      radial-gradient(
+        1200px 600px at 50% 0%,
+        rgba(110,231,255,.12),
+        rgba(11,16,32,0) 70%
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(11,16,32,0.00) 0%,
+        rgba(11,16,32,0.35) 65%,
+        rgba(11,16,32,0.85) 100%
+      ),
+      var(--home-bg-url-mobile);
+    background-size: cover, cover, contain;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: center top, center bottom, center 97%;
+  }
+}
+
+
+:root {
   --home-bg-url: url("../assets/home.png");
+  --home-bg-url-mobile: url("../assets/home-mobile.png");
 }
 
-body.home{
-  background:
-    /* “continua” la texture sopra */
-    radial-gradient(
-      1200px 600px at 50% 0%,
-      rgba(110,231,255,.12),
-      rgba(11,16,32,0) 70%
-    ),
-
-    /* “continua” e scurisce gradualmente verso il basso */
-    linear-gradient(
-      to bottom,
-      rgba(11,16,32,0.00) 0%,
-      rgba(11,16,32,0.35) 65%,
-      rgba(11,16,32,0.85) 100%
-    ),
-
-    /* immagine */
-    var(--home-bg-url);
-
-  background-size:
-    cover,
-    cover,
-    contain;
-
-  background-repeat:
-    no-repeat,
-    no-repeat,
-    no-repeat;
-
-  background-position:
-    center top,
-    center bottom,
-    center 80%;
-
-  background-color:#0b0e14;
-  position:relative;
+body.home {
+  background-image: var(--home-bg-url);
+  background-size: contain;          /* NON cover */
+  background-repeat: no-repeat;
+  background-position: center 80%;
+  background-color: #0b0e14;          /* fallback elegante */
 }
 
 /* Home: make the background image more visible */
 body.home .card{
   background: rgba(11,16,32,.18);
   backdrop-filter: blur(10px);
-}
-
-@media (max-width: 720px){
-  body.home{
-    background-position:
-      center top,
-      center bottom,
-      center 92%;
-  }
-  body.home .card{
-    background: rgba(11,16,32,.10);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
-}
-
-@media (max-width: 520px){
-  body.home{
-    background-position:
-      center top,
-      center bottom,
-      center 97%;
-  }
-
-  /* Home: buttons slightly lighter on mobile */
-  body.home .btn{
-    background: rgba(255,255,255,.035);
-    border-color: rgba(255,255,255,.08);
-  }
-  body.home .btn-primary,
-  body.home .btn.primary{
-    background: linear-gradient(135deg, rgba(110,231,255,.14), rgba(184,255,110,.10));
-    border-color: rgba(110,231,255,.25);
-  }
-
-  /* Home: CTA buttons layout -> 2 columns (6 buttons => 3 rows) */
-  .hero-actions{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:10px;
-  }
-  .hero-actions .btn{
-    width:100%;
-    justify-content:center;
-    padding:12px 10px;
-    font-size:0.95rem;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
 }
