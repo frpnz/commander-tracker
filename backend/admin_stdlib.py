@@ -272,6 +272,10 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/admin/brackets/apply":
             return self._post_brackets_apply(form)
 
+        # Rename a commander for a specific player (player + old commander -> new commander)
+        if path == "/admin/brackets/rename_commander":
+            return self._post_rename_commander(form)
+
         return self._send_html(page("404", "<h1>Not found</h1>"), 404)
 
     # ---------------------------
@@ -654,11 +658,15 @@ class Handler(BaseHTTPRequestHandler):
 
         body = f"""
         <h1>Tool Bracket</h1>
-        <p class="muted">Aggiorna <code>gameentry.bracket</code> <b>solo</b> per le entries che matchano la coppia <code>(commander, player)</code>. Se non specifichi il player, verrà autodetect (se univoco).</p>
+        <p class="muted">Qui trovi 2 strumenti:</p>
+        <ul class="muted" style="margin-top:6px;">
+          <li><b>Bulk update bracket</b>: aggiorna <code>gameentry.bracket</code> per le entries che matchano la coppia <code>(commander, player)</code> (se il player non è specificato, viene autodetect se univoco).</li>
+          <li><b>Rinomina commander</b>: aggiorna <code>gameentry.commander</code> per uno specifico <code>(player, commander)</code>.</li>
+        </ul>
         {info}
         <div class="row">
           <div class="card" style="flex:1;">
-            <h3>Bulk update</h3>
+            <h3>Bulk update bracket</h3>
             <form method="post" action="/admin/brackets/apply" onsubmit="return confirm('Confermi update massivo?')">
               <label>Commander</label>
               <select name="commander" required>{cmd_opts}</select>
@@ -668,12 +676,37 @@ class Handler(BaseHTTPRequestHandler):
 
               <label>Player (opzionale)</label>
               <select name="player">
-                <option value="">— tutti —</option>
+                <option value="">— autodetect / tutti —</option>
                 {player_opts}
               </select>
 
               <div style="margin-top:12px;">
                 <button class="primary" type="submit">Applica</button>
+              </div>
+            </form>
+
+            <hr style="border:0; border-top:1px solid #eee; margin:16px 0;">
+
+            <h3>Rinomina commander per player</h3>
+            <p class="muted">Inserisci <b>player + commander</b> e imposta il nuovo nome del commander. Aggiorna tutte le entries storiche che matchano la coppia.</p>
+            <form method="post" action="/admin/brackets/rename_commander" onsubmit="return confirm('Confermi rinomina commander?')">
+              <label>Player</label>
+              <select name="player" required>
+                <option value="" disabled selected>Seleziona…</option>
+                {player_opts}
+              </select>
+
+              <label>Commander attuale</label>
+              <select name="old_commander" required>
+                <option value="" disabled selected>Seleziona…</option>
+                {cmd_opts}
+              </select>
+
+              <label>Nuovo nome commander</label>
+              <input name="new_commander" required placeholder="Es. Atraxa, Praetors' Voice">
+
+              <div style="margin-top:12px;">
+                <button class="primary" type="submit">Rinomina</button>
               </div>
             </form>
           </div>
@@ -692,6 +725,39 @@ class Handler(BaseHTTPRequestHandler):
         </div>
         """
         return self._send_html(page("Tool Bracket", body))
+
+    def _post_rename_commander(self, form: dict[str, str]):
+        player = (form.get("player", "") or "").strip()
+        old_cmd = (form.get("old_commander", "") or "").strip()
+        new_cmd = (form.get("new_commander", "") or "").strip()
+
+        if not player or not old_cmd or not new_cmd:
+            return self._redirect(
+                "/admin/brackets?updated=0&msg="
+                + urllib.parse.quote("Player, commander attuale e nuovo nome sono obbligatori")
+            )
+
+        if new_cmd == old_cmd:
+            return self._redirect(
+                "/admin/brackets?updated=0&msg="
+                + urllib.parse.quote("Nessuna modifica: nuovo nome uguale a quello attuale")
+            )
+
+        with db() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "UPDATE gameentry SET commander=? WHERE player=? AND commander=?",
+                (new_cmd, player, old_cmd),
+            )
+            n = cur.rowcount or 0
+            conn.commit()
+
+        return self._redirect(
+            "/admin/brackets?updated="
+            + urllib.parse.quote(str(n))
+            + "&msg="
+            + urllib.parse.quote("Commander rinominato ✅")
+        )
 
     # ---------------------------
     # POST handlers
