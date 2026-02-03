@@ -1,5 +1,5 @@
 :root{
-  --logo-url: url("../assets/logo.png");
+  --logo-url: url("../assets/logo.jpeg");
 
   --home-bg-url: url("../assets/home.png");
   --home-bg-url-mobile: url("../assets/home-mobile.png");
@@ -145,7 +145,7 @@ body.home .hero{
   flex-direction:column;
 }
 body.home .hero-actions{
-  order:1;
+  order:2;
   flex-wrap:nowrap; /* desktop: single row */
   overflow-x:auto;  /* fallback: if screen is narrow, allow horizontal scroll */
   max-width:100%;
@@ -160,7 +160,7 @@ body.home .hero-actions::-webkit-scrollbar-thumb{
   border-radius:999px;
 }
 body.home .hero-actions::-webkit-scrollbar-track{background: transparent}
-body.home .home-visual{order:2;}
+body.home .home-visual{order:1;}
 
 /* Home desktop: buttons all in one row, same width */
 body.home .hero-actions .btn{
