@@ -97,13 +97,17 @@ function renderListTable(data, state) {
     const tr = document.createElement("tr");
     const tdP = document.createElement("td");
     tdP.textContent = r.player || "";
+    tdP.setAttribute("data-label", "Player");
     const tdC = document.createElement("td");
     tdC.textContent = r.commander || "";
+    tdC.setAttribute("data-label", "Commander");
     const tdB = document.createElement("td");
     tdB.textContent = (r.bracket === null || r.bracket === undefined) ? "" : String(r.bracket);
+    tdB.setAttribute("data-label", "Bracket");
     const tdG = document.createElement("td");
     tdG.className = "num";
     tdG.textContent = String((r.games === null || r.games === undefined) ? 0 : r.games);
+    tdG.setAttribute("data-label", "Partite");
     tr.appendChild(tdP);
     tr.appendChild(tdC);
     tr.appendChild(tdB);
