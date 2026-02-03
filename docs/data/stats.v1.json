@@ -6,7 +6,7 @@
       "wins": 11
     },
     {
-      "games": 28,
+      "games": 29,
       "player": "Fra",
       "wins": 10
     },
@@ -26,7 +26,7 @@
       "wins": 2
     },
     {
-      "games": 15,
+      "games": 16,
       "player": "Teo",
       "wins": 2
     }
@@ -236,6 +236,13 @@
       "wins": 0
     },
     {
+      "bracket": 4,
+      "commander": "Edric",
+      "games": 1,
+      "player": "Fra",
+      "wins": 0
+    },
+    {
       "bracket": 3,
       "commander": "Jan Jansen",
       "games": 1,
@@ -275,6 +282,13 @@
       "commander": "Kaalia",
       "games": 1,
       "player": "Stanca",
+      "wins": 0
+    },
+    {
+      "bracket": null,
+      "commander": "Finn",
+      "games": 1,
+      "player": "Teo",
       "wins": 0
     },
     {
@@ -530,6 +544,15 @@
       "wins_w": 0.0
     },
     {
+      "bracket": 4,
+      "commander": "Edric",
+      "games": 1,
+      "games_w": 1.0,
+      "player": "Fra",
+      "wins": 0,
+      "wins_w": 0.0
+    },
+    {
       "bracket": 3,
       "commander": "Karona",
       "games": 1,
@@ -544,6 +567,15 @@
       "games": 1,
       "games_w": 1.0,
       "player": "Stanca",
+      "wins": 0,
+      "wins_w": 0.0
+    },
+    {
+      "bracket": null,
+      "commander": "Finn",
+      "games": 1,
+      "games_w": 1.0,
+      "player": "Teo",
       "wins": 0,
       "wins_w": 0.0
     },
@@ -620,8 +652,8 @@
       "wins_w": 8.76743878600921
     },
     {
-      "games": 28,
-      "games_w": 25.764870521500498,
+      "games": 29,
+      "games_w": 26.764870521500498,
       "player": "Fra",
       "wins": 10,
       "wins_w": 9.30363437363436
@@ -648,16 +680,16 @@
       "wins_w": 2.0
     },
     {
-      "games": 15,
-      "games_w": 12.852459952739322,
+      "games": 16,
+      "games_w": 13.852459952739322,
       "player": "Teo",
       "wins": 2,
       "wins_w": 2.2214027581601696
     }
   ],
   "counts": {
-    "entries": 140,
-    "games": 39
+    "entries": 142,
+    "games": 40
   },
   "filters": {
     "brackets": [
@@ -712,6 +744,24 @@
     ]
   },
   "games": [
+    {
+      "entries": [
+        {
+          "bracket": 4,
+          "commander": "Edric",
+          "player": "Fra"
+        },
+        {
+          "bracket": null,
+          "commander": "Finn",
+          "player": "Teo"
+        }
+      ],
+      "id": 44,
+      "notes": null,
+      "played_at": "2026-02-03 01:40:08",
+      "winner_player": null
+    },
     {
       "entries": [
         {
@@ -1725,7 +1775,7 @@
       "winner_player": "Fra"
     }
   ],
-  "generated_utc": "2026-02-02T16:47:24Z",
+  "generated_utc": "2026-02-03T01:40:08Z",
   "meta_profile": {
     "method": "delta_player_minus_avg_table_excl_player",
     "min_games_default": 3,
@@ -1743,7 +1793,7 @@
       "player": "Da"
     },
     {
-      "games_total": 28,
+      "games_total": 29,
       "games_used": 28,
       "mdi": 0.2916666666666667,
       "mpi": 0.6607142857142856,
@@ -1771,7 +1821,7 @@
       "player": "Stanca"
     },
     {
-      "games_total": 15,
+      "games_total": 16,
       "games_used": 15,
       "mdi": -0.8555555555555555,
       "mpi": 0.9888888888888888,
@@ -1901,7 +1951,7 @@
     },
     {
       "commander": "Edric",
-      "games_total": 1,
+      "games_total": 2,
       "games_used": 1,
       "mdi": -0.75,
       "mpi": 0.75,
@@ -2050,6 +2100,14 @@
       "mdi": -0.75,
       "mpi": 0.75,
       "player": "Teo"
+    },
+    {
+      "commander": "Finn",
+      "games_total": 1,
+      "games_used": 0,
+      "mdi": null,
+      "mpi": null,
+      "player": "Teo"
     }
   ],
   "meta_wins": {
@@ -2075,8 +2133,8 @@
     },
     {
       "bracket": 4,
-      "games": 25,
-      "win_rate": 0.24,
+      "games": 26,
+      "win_rate": 0.23076923076923078,
       "wins": 6
     },
     {
