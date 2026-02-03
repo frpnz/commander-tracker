@@ -394,7 +394,7 @@ body.home .card{
 
 @media (max-width: 520px){
   body.home{
-    background-position: center 97%;
+    background-position: center 70%;
   }
 
   /* Home: buttons slightly lighter on mobile */
