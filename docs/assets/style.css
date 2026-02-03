@@ -139,37 +139,41 @@ body::before{
   flex-wrap:wrap;
 }
 
-/* Home: reorder actions before image (without changing HTML) */
+/* Home: MODIFICATO PER ADATTAMENTO AUTOMATICO E NO SCROLL */
 body.home .hero{
   display:flex;
   flex-direction:column;
 }
 body.home .hero-actions{
   order:2;
-  flex-wrap:nowrap; /* desktop: single row */
-  overflow-x:auto;  /* fallback: if screen is narrow, allow horizontal scroll */
-  max-width:100%;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom:4px;
+  display: flex;        /* Usa flexbox */
+  flex-wrap: wrap;      /* PERMETTE DI ANDARE A CAPO AUTOMATICAMENTE */
+  overflow-x: visible;  /* DISABILITA LO SCROLL ORIZZONTALE */
+  width: 100%;          /* Occupa tutto lo spazio */
+  max-width: 100%;
+  padding-bottom: 4px;
+  gap: 12px;            /* Spaziatura uniforme */
 }
 
-/* subtle horizontal scrollbar (only shows when needed) */
-body.home .hero-actions::-webkit-scrollbar{height:8px}
-body.home .hero-actions::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,.12);
-  border-radius:999px;
-}
-body.home .hero-actions::-webkit-scrollbar-track{background: transparent}
+/* Rimuove scrollbar personalizzata (non serve più senza scroll) */
+body.home .hero-actions::-webkit-scrollbar{display:none;}
 body.home .home-visual{order:1;}
 
-/* Home desktop: buttons all in one row, same width */
+/* Home buttons: Logica elastica */
 body.home .hero-actions .btn{
-  flex:1 0 0;      /* equal-width buttons when there's room */
-  min-width:140px; /* prevent unreadable tiny buttons; triggers scroll when needed */
-  width:auto;
+  /* flex-grow: 1 (si allarga per riempire lo spazio)
+     flex-shrink: 1 (si restringe se serve)
+     flex-basis: 140px (dimensione ideale minima prima di andare a capo)
+  */
+  flex: 1 1 140px;
+  width: auto;
+  min-width: 0; /* Previene overflow su schermi minuscoli */
+  justify-content: center;
 }
+
 body.home .hero-actions .btn.primary,
 body.home .hero-actions .btn-primary{
+  /* Il pulsante primario si comporta come gli altri, ma può essere enfatizzato se vuoi */
   width:auto;
 }
 
@@ -443,21 +447,14 @@ body.home .card{
   /* show inline preview image */
   body.home .home-visual{display:block}
 
-  /* buttons grid 2×N */
-  body.home .hero-actions{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:10px;
-  }
+  /* MODIFICATO: RIMOSSA la griglia fissa.
+     Ora i pulsanti usano la logica flex (definita sopra)
+     per adattarsi automaticamente.
+  */
+
+  /* Facciamo i pulsanti un po' più alti per il touch */
   body.home .hero-actions .btn{
-    width:100%;
-    justify-content:center;
-    padding:12px 12px;
-  }
-  /* primary full row (keeps “different width”) */
-  body.home .hero-actions .btn.primary,
-  body.home .hero-actions .btn-primary{
-    grid-column: 1 / -1;
+    padding:14px 12px;
   }
 
   /* swap background to mobile image + blur */
