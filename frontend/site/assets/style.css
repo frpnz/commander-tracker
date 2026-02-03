@@ -139,6 +139,41 @@ body::before{
   flex-wrap:wrap;
 }
 
+/* Home: reorder actions before image (without changing HTML) */
+body.home .hero{
+  display:flex;
+  flex-direction:column;
+}
+body.home .hero-actions{
+  order:1;
+  flex-wrap:nowrap; /* desktop: single row */
+  overflow-x:auto;  /* fallback: if screen is narrow, allow horizontal scroll */
+  max-width:100%;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom:4px;
+}
+
+/* subtle horizontal scrollbar (only shows when needed) */
+body.home .hero-actions::-webkit-scrollbar{height:8px}
+body.home .hero-actions::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.12);
+  border-radius:999px;
+}
+body.home .hero-actions::-webkit-scrollbar-track{background: transparent}
+body.home .home-visual{order:2;}
+
+/* Home desktop: buttons all in one row, same width */
+body.home .hero-actions .btn{
+  flex:1 0 0;      /* equal-width buttons when there's room */
+  min-width:140px; /* prevent unreadable tiny buttons; triggers scroll when needed */
+  width:auto;
+}
+body.home .hero-actions .btn.primary,
+body.home .hero-actions .btn-primary{
+  width:auto;
+}
+
+
 /* --- Filters (stats) --- */
 .filters{padding:14px 14px 10px}
 .filters-row{
