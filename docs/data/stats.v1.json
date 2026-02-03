@@ -250,15 +250,15 @@
       "wins": 0
     },
     {
-      "bracket": 4,
-      "commander": "Sephiroth",
+      "bracket": 3,
+      "commander": "Karona",
       "games": 1,
       "player": "Matti",
       "wins": 0
     },
     {
-      "bracket": 3,
-      "commander": "Tramutanti",
+      "bracket": 4,
+      "commander": "Sephiroth",
       "games": 1,
       "player": "Matti",
       "wins": 0
@@ -531,7 +531,7 @@
     },
     {
       "bracket": 3,
-      "commander": "Tramutanti",
+      "commander": "Karona",
       "games": 1,
       "games_w": 1.0,
       "player": "Matti",
@@ -685,6 +685,7 @@
       "K'rrik",
       "Kaalia",
       "Karn",
+      "Karona",
       "Kruphix",
       "Liesa",
       "Lotho",
@@ -698,7 +699,6 @@
       "Sidisi",
       "Sisay",
       "Tezzeret",
-      "Tramutanti",
       "Vivi",
       "Volo"
     ],
@@ -1522,7 +1522,7 @@
         },
         {
           "bracket": 3,
-          "commander": "Tramutanti",
+          "commander": "Karona",
           "player": "Matti"
         },
         {
@@ -1996,7 +1996,7 @@
       "player": "Matti"
     },
     {
-      "commander": "Tramutanti",
+      "commander": "Karona",
       "games_total": 1,
       "games_used": 1,
       "mdi": 0.0,
