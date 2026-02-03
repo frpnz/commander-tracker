@@ -345,21 +345,21 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
   #tList tbody td:nth-child(4){flex:0 0 auto; text-align:right}
 }
 
-/* --- Home background image --- */
-:root {
+/* --- Home background image + texture continuation --- */
+:root{
   --home-bg-url: url("../assets/home.png");
 }
 
-body.home {
+body.home{
   background:
-    /* continuità sopra (radial) */
+    /* “continua” la texture sopra */
     radial-gradient(
       1200px 600px at 50% 0%,
       rgba(110,231,255,.12),
       rgba(11,16,32,0) 70%
     ),
 
-    /* continuità sotto (linear) */
+    /* “continua” e scurisce gradualmente verso il basso */
     linear-gradient(
       to bottom,
       rgba(11,16,32,0.00) 0%,
@@ -385,26 +385,8 @@ body.home {
     center bottom,
     center 80%;
 
-  background-color: #0b0e14;
-  position: relative;
-}
-
-
-
-/* Home: darken the bottom portion (under the CTA area) while keeping the top of the image cleaner */
-body.home::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:-1; /* above body background, below content */
-  background: linear-gradient(
-    to bottom,
-    rgba(11,16,32,0.00) 0%,
-    rgba(11,16,32,0.00) 55%,
-    rgba(11,16,32,0.35) 78%,
-    rgba(11,16,32,0.65) 100%
-  );
+  background-color:#0b0e14;
+  position:relative;
 }
 
 /* Home: make the background image more visible */
@@ -415,7 +397,10 @@ body.home .card{
 
 @media (max-width: 720px){
   body.home{
-    background-position: center 92%;
+    background-position:
+      center top,
+      center bottom,
+      center 92%;
   }
   body.home .card{
     background: rgba(11,16,32,.10);
@@ -426,7 +411,10 @@ body.home .card{
 
 @media (max-width: 520px){
   body.home{
-    background-position: center 80%;
+    background-position:
+      center top,
+      center bottom,
+      center 97%;
   }
 
   /* Home: buttons slightly lighter on mobile */
