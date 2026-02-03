@@ -279,7 +279,7 @@
     },
     {
       "bracket": 4,
-      "commander": "Scrab",
+      "commander": "The Scarab God",
       "games": 1,
       "player": "Teo",
       "wins": 0
@@ -567,7 +567,7 @@
     },
     {
       "bracket": 4,
-      "commander": "Scrab",
+      "commander": "The Scarab God",
       "games": 1,
       "games_w": 0.7985162187593771,
       "player": "Teo",
@@ -694,11 +694,11 @@
       "Piedemoccio",
       "Purphorose",
       "Raffine",
-      "Scrab",
       "Sephiroth",
       "Sidisi",
       "Sisay",
       "Tezzeret",
+      "The Scarab God",
       "Vivi",
       "Volo"
     ],
@@ -1377,7 +1377,7 @@
         },
         {
           "bracket": 4,
-          "commander": "Scrab",
+          "commander": "The Scarab God",
           "player": "Teo"
         },
         {
@@ -2044,7 +2044,7 @@
       "player": "Teo"
     },
     {
-      "commander": "Scrab",
+      "commander": "The Scarab God",
       "games_total": 1,
       "games_used": 1,
       "mdi": -0.5,
