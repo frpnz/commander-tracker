@@ -53,12 +53,38 @@ def select_options(values: list[str], selected: str | None = None) -> str:
 
     Values are escaped. The returned string does not include a leading empty option.
     """
+    # UX: all admin dropdowns should be alphabetically ordered (case-insensitive)
+    # and free of empty/duplicate values.
     sel = (selected or "").strip()
-    out: list[str] = []
+
+    cleaned: list[str] = []
+    seen: set[str] = set()
     for v in values:
         sv = (v or "").strip()
         if not sv:
             continue
+        k = sv.casefold()
+        if k in seen:
+            continue
+        seen.add(k)
+        cleaned.append(sv)
+
+    # If the list looks numeric (e.g. brackets "1", "2", "10"), sort numerically.
+    def _is_int_str(x: str) -> bool:
+        x = x.strip()
+        if not x:
+            return False
+        if x[0] in "+-":
+            return x[1:].isdigit()
+        return x.isdigit()
+
+    if cleaned and all(_is_int_str(x) for x in cleaned):
+        cleaned.sort(key=lambda s: int(s.strip()))
+    else:
+        cleaned.sort(key=lambda s: s.casefold())
+
+    out: list[str] = []
+    for sv in cleaned:
         if sv == sel:
             out.append(f'<option value="{esc(sv)}" selected>{esc(sv)}</option>')
         else:
@@ -629,13 +655,18 @@ class Handler(BaseHTTPRequestHandler):
             cur.execute("SELECT DISTINCT bracket FROM gameentry WHERE bracket IS NOT NULL ORDER BY bracket ASC LIMIT 200")
             brackets = [str(r["bracket"]) for r in cur.fetchall()]
 
+        # Dropdowns: alphabetical (case-insensitive). Tables can keep "most used" ordering.
+        commanders_alpha = sorted(commanders, key=lambda r: str(r["commander"] or "").casefold())
+        players_alpha = sorted(players, key=lambda r: str(r["player"] or "").casefold())
+
         cmd_opts = "\n".join(
             f'<option value="{esc(r["commander"])}">{esc(r["commander"])} ({r["n"]})</option>'
-            for r in commanders
+            for r in commanders_alpha
         )
         # player opzionale, sempre a tendina classica
         player_opts = "\n".join(
-            f'<option value="{esc(r["player"])}">{esc(r["player"])} ({r["n"]})</option>' for r in players
+            f'<option value="{esc(r["player"])}">{esc(r["player"])} ({r["n"]})</option>'
+            for r in players_alpha
         )
 
         brackets_list = "\n".join(f'<option value="{esc(b)}"></option>' for b in brackets)
