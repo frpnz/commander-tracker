@@ -138,6 +138,27 @@ def page(title: str, body: str) -> str:
     details summary {{ cursor:pointer; }}
     code {{ background:#f2f2f2; padding:2px 6px; border-radius:6px; }}
 
+    /* Multi-field rows inside forms (player/commander/bracket) */
+    .field-row {{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }}
+    .field-row > .field {{ flex:1 1 220px; min-width: 180px; }}
+
+    /* Responsive tables: on mobile, render rows as cards */
+    table.responsive thead {{ display: table-header-group; }}
+
+    @media (max-width: 640px) {{
+      table.responsive thead {{ display:none; }}
+      table.responsive, table.responsive tbody, table.responsive tr {{ display:block; width:100%; }}
+      table.responsive tr {{ border:1px solid #eee; border-radius:14px; padding:10px 10px 6px; margin: 10px 0; background:#fff; }}
+      table.responsive td {{ display:flex; justify-content:space-between; gap:14px; padding:8px 0; border-bottom:1px solid #f1f1f1; }}
+      table.responsive td:last-child {{ border-bottom:0; }}
+      table.responsive td::before {{ content: attr(data-label); font-weight:600; color:#555; padding-right:10px; flex: 0 0 auto; }}
+      table.responsive td[data-label='Azioni'] {{ flex-direction: column; align-items: stretch; }}
+      table.responsive td[data-label='Azioni']::before {{ content: 'Azioni'; }}
+      details {{ margin-top: 2px; }}
+      details summary {{ padding: 8px 10px; border:1px solid #ddd; border-radius: 12px; list-style: none; }}
+      details summary::-webkit-details-marker {{ display:none; }}
+    }}
+
     /* Mobile */
     @media (max-width: 640px) {{
       body {{ margin: 12px; font-size: 16px; }}
@@ -152,6 +173,12 @@ def page(title: str, body: str) -> str:
       .table-wrap {{ overflow-x: visible; }}
       table {{ min-width: 0; }}
       th, td {{ padding: 8px; font-size: 15px; }}
+
+      /* Forms: tighter labels and stacked field rows */
+      label {{ margin: 8px 0 6px; }}
+      input, select, textarea {{ padding: 9px; }}
+      .field-row {{ flex-direction: column; align-items: stretch; gap: 10px; }}
+      .field-row > .field {{ flex: 1 1 auto; min-width: 0; }}
     }}
   </style>
 </head>
@@ -300,11 +327,11 @@ class Handler(BaseHTTPRequestHandler):
             rows.append(
                 f"""
                 <tr>
-                  <td>{g['id']}</td>
-                  <td>{esc(str(g['played_at'] or ''))}</td>
-                  <td>{esc(str(g['winner_player'] or '—'))}</td>
-                  <td>{g['entries_count']}</td>
-                  <td><a href="/admin/games/{g['id']}">Apri</a></td>
+                  <td data-label="ID">{g['id']}</td>
+                  <td data-label="Quando">{esc(str(g['played_at'] or ''))}</td>
+                  <td data-label="Winner">{esc(str(g['winner_player'] or '—'))}</td>
+                  <td data-label="Entries">{g['entries_count']}</td>
+                  <td data-label="Azioni"><a href="/admin/games/{g['id']}">Apri</a></td>
                 </tr>
                 """
             )
@@ -314,7 +341,7 @@ class Handler(BaseHTTPRequestHandler):
         <h1>Partite</h1>
         <p class="muted">La data/ora della nuova partita viene presa automaticamente dall'orologio di sistema.</p>
         <div class="row">
-          <div class="card" style="flex:1; min-width: 320px;">
+          <div class="card" style="flex:1;">
             <h3>Nuova partita</h3>
             <form method="post" action="/admin/games/create">
               <label>Winner (player)</label>
@@ -360,10 +387,10 @@ class Handler(BaseHTTPRequestHandler):
             </form>
           </div>
 
-          <div class="card" style="flex:2; min-width: 420px;">
+          <div class="card" style="flex:2;">
             <h3>Elenco</h3>
             <div class="table-wrap">
-              <table>
+              <table class="responsive">
                 <thead><tr><th>ID</th><th>Quando</th><th>Winner</th><th>Entries</th><th></th></tr></thead>
                 <tbody>{table}</tbody>
               </table>
@@ -430,11 +457,11 @@ class Handler(BaseHTTPRequestHandler):
             entry_rows.append(
                 f"""
                 <tr>
-                  <td>{e['id']}</td>
-                  <td>{esc(e['player'])}</td>
-                  <td>{esc(e['commander'])}</td>
-                  <td>{bracket_show}</td>
-                  <td>
+                  <td data-label="ID">{e['id']}</td>
+                  <td data-label="Player">{esc(e['player'])}</td>
+                  <td data-label="Commander">{esc(e['commander'])}</td>
+                  <td data-label="Bracket">{bracket_show}</td>
+                  <td data-label="Azioni">
                     <details>
                       <summary>Modifica</summary>
                       <form method="post" action="/admin/entries/{e['id']}/update" style="margin-top:10px;">
@@ -527,15 +554,15 @@ class Handler(BaseHTTPRequestHandler):
             </form>
           </div>
 
-          <div class="card" style="flex:2; min-width: 520px;">
+          <div class="card" style="flex:2;">
             <h3>Entries</h3>
 
 
             <div class="card" style="margin-bottom:14px;">
               <h4>Aggiungi entry</h4>
               <form method="post" action="/admin/games/{game_id}/entries/add">
-                <div class="row">
-                  <div style="flex:1; min-width:180px;">
+                <div class="field-row">
+                  <div class="field">
                     <label>Player</label>
                     <select name="player_sel" required>
                       <option value="" disabled selected>Seleziona…</option>
@@ -546,7 +573,7 @@ class Handler(BaseHTTPRequestHandler):
                     <input name="player_new" placeholder="Player nuovo">
                   </div>
 
-                  <div style="flex:1; min-width:220px;">
+                  <div class="field">
                     <label>Commander</label>
                     <select name="commander_sel" required>
                       <option value="" disabled selected>Seleziona…</option>
@@ -557,7 +584,7 @@ class Handler(BaseHTTPRequestHandler):
                     <input name="commander_new" placeholder="Commander nuovo">
                   </div>
 
-                  <div style="width:160px;">
+                  <div class="field">
                     <label>Bracket</label>
                     <select name="bracket_sel">
                       <option value="" selected>— nessuno —</option>
@@ -576,7 +603,7 @@ class Handler(BaseHTTPRequestHandler):
             </div>
 
             <div class="table-wrap">
-            <table>
+            <table class="responsive">
               <thead><tr><th>ID</th><th>Player</th><th>Commander</th><th>Bracket</th><th>Azioni</th></tr></thead>
               <tbody>{entries_table}</tbody>
             </table>
@@ -617,7 +644,10 @@ class Handler(BaseHTTPRequestHandler):
         info = "\n".join(info_bits)
 
         table_rows = (
-            "\n".join(f"<tr><td>{esc(r['commander'])}</td><td>{r['n']}</td></tr>" for r in commanders)
+            "\n".join(
+                f"<tr><td data-label='Commander'>{esc(r['commander'])}</td><td data-label='# entries'>{r['n']}</td></tr>"
+                for r in commanders
+            )
             if commanders
             else "<tr><td colspan=2 class='muted'>Nessun commander</td></tr>"
         )
@@ -627,7 +657,7 @@ class Handler(BaseHTTPRequestHandler):
         <p class="muted">Aggiorna <code>gameentry.bracket</code> per tutte le entries del <b>player associato</b> al commander scelto (opzionale: forza il player). Utile per correggere anche eventuali varianti/typo del nome commander salvate nel DB.</p>
         {info}
         <div class="row">
-          <div class="card" style="flex:1; min-width: 360px;">
+          <div class="card" style="flex:1;">
             <h3>Bulk update</h3>
             <form method="post" action="/admin/brackets/apply" onsubmit="return confirm('Confermi update massivo?')">
               <label>Commander</label>
@@ -650,10 +680,10 @@ class Handler(BaseHTTPRequestHandler):
 
           <datalist id="brackets">{brackets_list}</datalist>
 
-          <div class="card" style="flex:2; min-width: 420px;">
+          <div class="card" style="flex:2;">
             <h3>Commander presenti</h3>
             <div class="table-wrap">
-            <table>
+            <table class="responsive">
               <thead><tr><th>Commander</th><th># entries</th></tr></thead>
               <tbody>{table_rows}</tbody>
             </table>
