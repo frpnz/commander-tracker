@@ -654,7 +654,7 @@ class Handler(BaseHTTPRequestHandler):
 
         body = f"""
         <h1>Tool Bracket</h1>
-        <p class="muted">Aggiorna <code>gameentry.bracket</code> per tutte le entries del <b>player associato</b> al commander scelto (opzionale: forza il player). Utile per correggere anche eventuali varianti/typo del nome commander salvate nel DB.</p>
+        <p class="muted">Aggiorna <code>gameentry.bracket</code> <b>solo</b> per le entries che matchano la coppia <code>(commander, player)</code>. Se non specifichi il player, verrà autodetect (se univoco).</p>
         {info}
         <div class="row">
           <div class="card" style="flex:1;">
@@ -896,8 +896,8 @@ class Handler(BaseHTTPRequestHandler):
             cur = conn.cursor()
 
             # Commander e player sono legati 1:1 (assunzione del progetto).
-            # Per correggere anche varianti/typo del nome commander nel DB,
-            # facciamo l'update per PLAYER (non per commander) dopo averlo risolto.
+            # Qui vogliamo aggiornare SOLO il bracket del commander selezionato
+            # (non tutti i commander del player).
 
             resolved_player = player
             msg = ""
@@ -946,8 +946,8 @@ class Handler(BaseHTTPRequestHandler):
                     )
 
             cur.execute(
-                "UPDATE gameentry SET bracket=? WHERE player=?",
-                (new_bracket, resolved_player),
+                "UPDATE gameentry SET bracket=? WHERE commander=? AND player=?",
+                (new_bracket, commander, resolved_player),
             )
             changed = cur.rowcount
             conn.commit()
