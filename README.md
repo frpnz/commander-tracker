@@ -227,6 +227,7 @@ Risultato:
 - le statistiche vengono rigenerate
 - se `docs/data/**` cambia, GitHub Pages (se configurato) si aggiorna automaticamente
 
+---
 ### Background su server Ubuntu (systemd)
 
 1. Creare /etc/systemd/system/commander-admin.service
