@@ -1,4 +1,5 @@
 :root{
+  --logo-url: url("../assets/logo.png");
   --bg:#0b1020;
   --text:#e9ecf7;
   --muted:#aab3d3;
@@ -53,7 +54,10 @@ body::before{
 .logo{
   width:44px;height:44px;border-radius:14px;
   display:grid;place-items:center;
-  background: linear-gradient(135deg, rgba(110,231,255,.22), rgba(184,255,110,.18));
+  background-image: var(--logo-url), linear-gradient(135deg, rgba(110,231,255,.22), rgba(184,255,110,.18));
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, center;
+  background-size: 28px 28px, cover;
   border:1px solid var(--border);
   box-shadow: var(--shadow);
 }
@@ -291,17 +295,6 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
   }
   tbody tr:hover td{background: transparent}
 
-  /* Archivio (Elenco): su schermi piccoli evita l'effetto "tutto a destra".
-     Mostra label sopra al valore, più leggibile e compatto. */
-  #tList tbody td{
-    flex-direction:column;
-    align-items:flex-start;
-    justify-content:flex-start;
-    gap:4px;
-  }
-  #tList tbody td::before{margin:0; font-size:12px}
-  #tList td.num{text-align:left}
-
   /* Archivio: recent games table -> stacked rows (no horizontal scroll) */
   .recent-table-wrap{overflow:visible}
   .recent-table{min-width:0; border-collapse:separate; border-spacing:0 10px}
@@ -332,4 +325,17 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
 
 @media (max-width: 520px){
   .hero-actions .btn{flex:1 1 100%; justify-content:center; padding:12px 16px}
+}
+
+
+:root {
+  --home-bg-url: url("../assets/home.png");
+}
+
+body.home {
+  background-image: var(--home-bg-url);
+  background-size: contain;          /* NON cover */
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-color: #0b0e14;          /* fallback elegante */
 }

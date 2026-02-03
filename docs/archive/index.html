@@ -9,7 +9,7 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="logo">🏰</div>
+      <div class="logo" aria-label="Commander Tracker"></div>
       <div>
         <div class="title">Archivio</div>
         <div class="subtitle" id="subtitle">Player → Commander → Bracket + ultime partite</div>
@@ -59,7 +59,6 @@
     </section>
 
     <section class="grid">
-      <!-- 1) Elenco (chiuso di default finché non selezioni un filtro) -->
       <section class="card">
         <div class="card-head">
           <h2>Elenco</h2>
@@ -67,10 +66,8 @@
             <div class="pill" id="countList"></div>
           </div>
         </div>
-        <div id="listPlaceholder" class="muted" style="padding:12px;">
-          Seleziona almeno un filtro (Player / Commander / Bracket) per mostrare l’elenco.
-        </div>
-        <div class="table-wrap" id="listTableWrap" style="display:none;">
+        <div class="hint" id="listGate" style="display:none"></div>
+        <div class="table-wrap" id="listTableWrap">
           <table id="tList">
             <thead>
               <tr>
@@ -85,7 +82,6 @@
         </div>
       </section>
 
-      <!-- 2) Archivio partite (sotto) -->
       <section class="card">
         <div class="card-head">
           <h2>Ultime partite</h2>
