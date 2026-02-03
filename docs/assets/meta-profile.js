@@ -1,308 +1,239 @@
-/* Meta Profile page
-   - Riquadro 1: Bubble Plot dei player (MDI su X, MPI su Y, Raggio = volume di gioco)
-   - Riquadro 2: Heatmap table dei commander per il player selezionato
-
-   Data source: ../data/stats.v1.json
+/* Meta Profile (vettori)
+   - X: MDI  (delta player bracket vs media tavolo, player escluso)  -> signed
+   - Y: OEWR_Z (Over-Expected Win Rate: actual - expected, expected=softmax(bracket)) -> signed
+   - Ogni player è una freccia che parte dall'origine (0,0) e punta verso (MDI, OEWR)
+   - La bolla in punta è proporzionale al volume di partite (games_total)
 */
 
 (function () {
   "use strict";
 
-  const SAT_MIN = -1.0;
-  const SAT_MAX = 1.0;
-  const MPI_SAT_MAX = 1.0; // visual saturation for the bar in the table
-
   const elMeta = document.getElementById("meta");
-  const elP1Info = document.getElementById("p1info");
-  const elP2Info = document.getElementById("p2info");
-  const elPlayer = document.getElementById("fPlayer");
-  const elMinGames = document.getElementById("fMinGames");
-  const tBody = document.querySelector("#tCmd tbody");
+  const canvas = document.getElementById("mdiMpiPlayers");
 
   let chart = null;
   let stats = null;
+
+  function getPlayerColor(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    const h = Math.abs(hash) % 360;
+    return { stroke: `hsl(${h}, 70%, 60%)`, fill: `hsla(${h}, 70%, 60%, 0.25)` };
+  }
 
   function clamp(x, lo, hi) {
     return x < lo ? lo : x > hi ? hi : x;
   }
 
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
-
-  function hexToRgb(hex) {
-    const h = hex.replace("#", "");
-    const n = parseInt(h, 16);
-    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-  }
-
-  function rgbToCss({ r, g, b }, a = 1) {
-    return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
-  }
-
-  // Palette divergente: Blu (Underdog) -> Grigio (Neutro) -> Rosso (Pubstomper)
-  const C_NEG = hexToRgb("#2563eb"); // blue-600
-  const C_ZERO = hexToRgb("#9ca3af"); // gray-400
-  const C_POS = hexToRgb("#ef4444"); // red-500
-
-  function colorForMdi(mdi, alpha = 0.9) {
-    if (mdi === null || mdi === undefined || Number.isNaN(mdi)) return "rgba(156,163,175,0.25)";
-    const x = clamp(mdi, SAT_MIN, SAT_MAX);
-    if (x === 0) return rgbToCss(C_ZERO, alpha);
-
-    // Gradiente verso il Blu (negativo)
-    if (x < 0) {
-      const t = (x - 0) / (SAT_MIN - 0);
-      return rgbToCss(
-        {
-          r: lerp(C_ZERO.r, C_NEG.r, t),
-          g: lerp(C_ZERO.g, C_NEG.g, t),
-          b: lerp(C_ZERO.b, C_NEG.b, t),
-        },
-        alpha
-      );
+  function computeAxisLimit(points) {
+    let m = 0;
+    for (const p of points) {
+      if (typeof p.mdi === "number") m = Math.max(m, Math.abs(p.mdi));
+      if (typeof p.oewr_z === "number") m = Math.max(m, Math.abs(p.oewr_z));
     }
-
-    // Gradiente verso il Rosso (positivo)
-    const t = (x - 0) / (SAT_MAX - 0);
-    return rgbToCss(
-      {
-        r: lerp(C_ZERO.r, C_POS.r, t),
-        g: lerp(C_ZERO.g, C_POS.g, t),
-        b: lerp(C_ZERO.b, C_POS.b, t),
-      },
-      alpha
-    );
+    if (!isFinite(m) || m <= 0) m = 1;
+    m *= 1.12; // padding
+    m = Math.max(0.75, Math.min(3.0, m)); // sane clamp
+    return m;
   }
 
-  function fmt2(x) {
-    if (x === null || x === undefined || Number.isNaN(x)) return "—";
-    return (Math.round(Number(x) * 100) / 100).toFixed(2);
-  }
+  // --- PLUGIN: sfondo quadranti + assi zero + vettori ---
+  const vectorPlugin = {
+    id: "vectorPlugin",
+    beforeDraw: (c) => {
+      const { ctx, chartArea, scales } = c;
+      if (!chartArea) return;
+      const { top, bottom, left, right } = chartArea;
+      const x0 = scales.x.getPixelForValue(0);
+      const y0 = scales.y.getPixelForValue(0);
 
-  function setMeta(stats) {
-    const g = stats?.counts?.games ?? 0;
-    const e = stats?.counts?.entries ?? 0;
-    const ts = stats?.generated_utc ?? "";
-    if (elMeta) elMeta.textContent = `${g} games · ${e} entries · ${ts}`;
-  }
+      // Sfondi quadranti (molto tenui)
+      ctx.save();
+      ctx.fillStyle = "rgba(34, 197, 94, 0.05)"; // top-right
+      ctx.fillRect(x0, top, right - x0, y0 - top);
+      ctx.fillStyle = "rgba(59, 130, 246, 0.05)"; // top-left
+      ctx.fillRect(left, top, x0 - left, y0 - top);
+      ctx.fillStyle = "rgba(245, 158, 11, 0.05)"; // bottom-right
+      ctx.fillRect(x0, y0, right - x0, bottom - y0);
+      ctx.fillStyle = "rgba(156, 163, 175, 0.05)"; // bottom-left
+      ctx.fillRect(left, y0, x0 - left, bottom - y0);
 
-  function populatePlayers(players) {
-    elPlayer.innerHTML = "";
-    for (const p of players) {
-      const opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p;
-      elPlayer.appendChild(opt);
-    }
-  }
+      // Assi centrali
+      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(left, y0);
+      ctx.lineTo(right, y0);
+      ctx.moveTo(x0, top);
+      ctx.lineTo(x0, bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-  // --- RENDER BUBBLE CHART ---
-  function renderPlayersScatter(rows) {
-    const clean = (rows || [])
-      .filter((r) => r && typeof r.player === "string")
-      .map((r) => ({
-        player: r.player,
-        mdi: Number(r.mdi),
-        mpi: Number(r.mpi),
-        games_used: Number(r.games_used ?? 0),
-        games_total: Number(r.games_total ?? 0),
-      }))
-      .filter((r) => r.games_total > 0 && !Number.isNaN(r.mdi) && !Number.isNaN(r.mpi))
-      .sort((a, b) => b.games_used - a.games_used);
+      // Label quadranti (coerenti con MDI/OEWR)
+      ctx.fillStyle = "rgba(255, 255, 255, 0.22)";
+      ctx.font = "bold 11px Inter, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
 
-    if (elP1Info) {
-      elP1Info.textContent = `Scala colori MDI saturata su ±1.0 · ${clean.length} player`;
-    }
+      const cxL = left + (x0 - left) / 2;
+      const cxR = x0 + (right - x0) / 2;
+      const cyT = top + 18;
+      const cyB = bottom - 16;
 
-    const ctx = document.getElementById("mdiMpiPlayers").getContext("2d");
-    if (chart) {
-      chart.destroy();
-      chart = null;
-    }
+      ctx.fillText("OUTPLAYING", cxL, cyT);      // MDI<0, OEWR>0
+      ctx.fillText("DOMINANT", cxR, cyT);       // MDI>0, OEWR>0
+      ctx.fillText("STRUGGLING", cxL, cyB);     // MDI<0, OEWR<0
+      ctx.fillText("INEFFICIENT", cxR, cyB);    // MDI>0, OEWR<0
 
-    // Calcolo range automatico per asse Y (MPI)
-    const mpiMax = Math.max(0.25, ...clean.map((r) => r.mpi));
-    const yMax = Math.min(2.0, Math.max(0.75, Math.ceil(mpiMax * 10) / 10 + 0.1));
+      ctx.restore();
+    },
+    afterDatasetsDraw: (c) => {
+      const { ctx, scales } = c;
+      const x0 = scales.x.getPixelForValue(0);
+      const y0 = scales.y.getPixelForValue(0);
 
-    chart = new Chart(ctx, {
-      type: "bubble", // Usa il tipo nativo Bubble
-      data: {
-        datasets: [
-          {
-            label: "Players",
-            data: clean.map((r) => ({
-              x: r.mdi,
-              y: r.mpi,
-              // Calcolo raggio (r): minimo 5px, cresce con la radice quadrata dei giochi, max 20px
-              r: clamp(5 + Math.sqrt(r.games_used) * 1.5, 5, 20),
-              // Salviamo l'intero oggetto per usarlo nel tooltip
-              _raw: r
-            })),
-            backgroundColor: (context) => {
-              // Usa la coordinata X (MDI) per il colore
-              return colorForMdi(context.raw.x, 0.85);
-            },
-            borderColor: "rgba(255,255,255,0.3)",
-            borderWidth: 1,
-            hoverBackgroundColor: (context) => {
-               return colorForMdi(context.raw.x, 1.0);
-            },
-            hoverBorderColor: "#fff",
-            hoverBorderWidth: 2,
-            hoverRadius: 2, // Espande leggermente al passaggio del mouse
-          },
-        ],
-      },
+      c.data.datasets.forEach((ds, di) => {
+        const meta = c.getDatasetMeta(di);
+        if (meta.hidden) return;
+
+        meta.data.forEach((pt, i) => {
+          const raw = ds.data[i];
+          if (!raw) return;
+
+          const tx = pt.x;
+          const ty = pt.y;
+          const dx = tx - x0;
+          const dy = ty - y0;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (!isFinite(dist) || dist < 2) return;
+
+          const rPx = (pt.options && pt.options.radius) ? pt.options.radius : 6;
+          const pad = 6;
+          const cut = clamp((rPx + pad) / dist, 0, 0.9);
+          const ex = tx - dx * cut;
+          const ey = ty - dy * cut;
+
+          // Linea vettore (tratteggiata)
+          ctx.save();
+          ctx.strokeStyle = pt.options.borderColor || "rgba(255,255,255,0.6)";
+          ctx.globalAlpha = 0.65;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 4]);
+          ctx.beginPath();
+          ctx.moveTo(x0, y0);
+          ctx.lineTo(ex, ey);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Punta freccia
+          const ang = Math.atan2(ty - y0, tx - x0);
+          const ah = 9; // head length
+          const aw = 6; // head width
+          ctx.translate(ex, ey);
+          ctx.rotate(ang);
+          ctx.globalAlpha = 0.85;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(-ah, -aw / 2);
+          ctx.lineTo(-ah, aw / 2);
+          ctx.closePath();
+          ctx.fillStyle = pt.options.borderColor || "rgba(255,255,255,0.6)";
+          ctx.fill();
+          ctx.restore();
+        });
+      });
+    },
+  };
+
+  function render(points) {
+    if (!canvas) return;
+    if (chart) chart.destroy();
+
+    const axis = computeAxisLimit(points);
+    const datasets = (points || [])
+      .filter((p) => typeof p.mdi === "number" && typeof p.oewr_z === "number")
+      .map((p) => {
+        const col = getPlayerColor(p.player);
+        const games = Number(p.games_total || 0);
+        const r = Math.max(5, Math.sqrt(Math.max(1, games)) * 2);
+        return {
+          label: p.player,
+          data: [{ x: p.mdi, y: p.oewr_z, r, oewr: p.oewr }],
+          backgroundColor: col.fill,
+          borderColor: col.stroke,
+          borderWidth: 2,
+          hoverRadius: r + 3,
+        };
+      });
+
+    chart = new Chart(canvas.getContext("2d"), {
+      type: "bubble",
+      data: { datasets },
+      plugins: [vectorPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (context) => {
-                const item = context.raw._raw;
-                return `${item.player} · MDI: ${fmt2(item.mdi)} · MPI: ${fmt2(item.mpi)} · Games: ${item.games_used}`;
-              },
-            },
-            backgroundColor: 'rgba(11, 16, 32, 0.95)',
-            titleColor: '#aab3d3',
-            bodyColor: '#e9ecf7',
-            borderColor: 'rgba(255,255,255,0.1)',
-            borderWidth: 1,
-            padding: 10,
-            displayColors: true,
-            boxPadding: 4
-          },
-        },
         scales: {
           x: {
-            title: { display: true, text: "MDI (Δ bracket vs tavolo)", color: '#aab3d3' },
-            suggestedMin: SAT_MIN,
-            suggestedMax: SAT_MAX,
-            grid: {
-              color: (ctx) => ctx.tick.value === 0 ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.05)",
-              lineWidth: (ctx) => ctx.tick.value === 0 ? 1 : 1
+            min: -axis,
+            max: axis,
+            title: {
+              display: true,
+              text: "MDI (power relativo)  ← sotto tavolo | sopra tavolo →",
+              color: "#aab3d3",
             },
-            ticks: { color: '#aab3d3' },
+            ticks: { color: "#aab3d3" },
+            grid: { color: "rgba(255,255,255,0.08)" },
           },
           y: {
-            title: { display: true, text: "MPI (Pressione)", color: '#aab3d3' },
-            min: 0,
-            suggestedMax: yMax,
-            grid: { color: "rgba(255,255,255,0.05)" },
-            ticks: { color: '#aab3d3' },
+            min: -axis,
+            max: axis,
+            title: {
+              display: true,
+              text: "OEWR_Z (z-score vs attesa)  ← sotto attesa | sopra attesa →",
+              color: "#aab3d3",
+            },
+            ticks: { color: "#aab3d3" },
+            grid: { color: "rgba(255,255,255,0.08)" },
+          },
+        },
+        plugins: {
+          legend: {
+            position: "right",
+            labels: { color: "#e9ecf7", boxWidth: 12, usePointStyle: true },
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const x = ctx.raw.x;
+                const y = ctx.raw.y;
+                const mag = Math.sqrt(x * x + y * y);
+                const oewr = ctx.raw.oewr;
+                const oewrPP = (oewr === null || oewr === undefined) ? null : (100.0 * oewr);
+                const oewrTxt = (oewrPP === null) ? "n/a" : `${oewrPP.toFixed(1)}pp`;
+                return `${ctx.dataset.label}: MDI ${x.toFixed(2)}, OEWR_Z ${y.toFixed(2)}, OEWR ${oewrTxt}, |v| ${mag.toFixed(2)}`;
+              },
+            },
           },
         },
       },
     });
   }
 
-  // --- RENDER TABLE (COMMANDERS) ---
-  function renderCommanderTable(player, minGames) {
-    const rows = (stats.meta_profile_by_player_commander || [])
-      .filter((r) => r && r.player === player)
-      .map((r) => ({
-        commander: r.commander || "",
-        games_used: Number(r.games_used ?? 0),
-        games_total: Number(r.games_total ?? 0),
-        mdi: r.mdi,
-        mpi: r.mpi,
-      }))
-      .filter((r) => r.games_used >= minGames)
-      .sort((a, b) => {
-        if (b.games_used !== a.games_used) return b.games_used - a.games_used;
-        const am = Number(a.mpi ?? 0);
-        const bm = Number(b.mpi ?? 0);
-        if (bm !== am) return bm - am;
-        return a.commander.localeCompare(b.commander);
-      });
+  async function init() {
+    try {
+      const res = await fetch("../data/stats.v1.json", { cache: "no-cache" });
+      stats = await res.json();
 
-    tBody.innerHTML = "";
-    for (const r of rows) {
-      const tr = document.createElement("tr");
+      if (elMeta) elMeta.textContent = `Generato il: ${stats.generated_utc}`;
 
-      const tdC = document.createElement("td");
-      tdC.textContent = r.commander;
-      // Colora il nome del commander leggermente per legarlo al visual
-      tdC.style.fontWeight = "600";
-      tdC.style.color = "#e9ecf7";
-
-      const tdG = document.createElement("td");
-      tdG.className = "num";
-      tdG.textContent = `${r.games_used}`;
-      tdG.title = `Games totali con bracket: ${r.games_total}`;
-
-      const tdMdi = document.createElement("td");
-      tdMdi.className = "num heatcell";
-      tdMdi.textContent = fmt2(r.mdi);
-      tdMdi.style.background = colorForMdi(r.mdi, 0.85);
-      tdMdi.style.color = "#fff";
-      tdMdi.style.textShadow = "0 1px 2px rgba(0,0,0,0.5)";
-      tdMdi.title = `MDI: ${fmt2(r.mdi)} (saturazione ±1.0)`;
-
-      const tdMpi = document.createElement("td");
-      tdMpi.className = "num";
-      const wrap = document.createElement("div");
-      wrap.className = "mpicell";
-      const bar = document.createElement("div");
-      bar.className = "mpibar";
-      const fill = document.createElement("span");
-      const v = Number(r.mpi ?? 0);
-      const pct = clamp(v / MPI_SAT_MAX, 0, 1) * 100;
-      fill.style.width = `${pct.toFixed(1)}%`;
-      bar.appendChild(fill);
-      const lab = document.createElement("span");
-      lab.className = "mpilabel";
-      lab.textContent = fmt2(r.mpi);
-      wrap.appendChild(bar);
-      wrap.appendChild(lab);
-      tdMpi.appendChild(wrap);
-      tdMpi.title = `MPI: ${fmt2(r.mpi)} (barra saturata a ${MPI_SAT_MAX.toFixed(1)})`;
-
-      tr.appendChild(tdC);
-      tr.appendChild(tdG);
-      tr.appendChild(tdMdi);
-      tr.appendChild(tdMpi);
-      tBody.appendChild(tr);
-    }
-
-    if (elP2Info) {
-      elP2Info.textContent = `${rows.length} commander · min games ${minGames}`;
+      const points = stats.meta_profile_by_player || [];
+      render(points);
+    } catch (e) {
+      console.error("Errore caricamento profilo:", e);
     }
   }
 
-  function bind() {
-    elPlayer.addEventListener("change", () => {
-      renderCommanderTable(elPlayer.value, Number(elMinGames.value));
-    });
-    elMinGames.addEventListener("change", () => {
-      renderCommanderTable(elPlayer.value, Number(elMinGames.value));
-    });
-  }
-
-  async function load() {
-    const res = await fetch("../data/stats.v1.json", { cache: "no-cache" });
-    if (!res.ok) throw new Error(`Failed to load stats.v1.json: ${res.status}`);
-    stats = await res.json();
-    setMeta(stats);
-
-    const players = (stats.filters && stats.filters.players) || [];
-    populatePlayers(players);
-    if (players.length) elPlayer.value = players[0];
-
-    // Carica il grafico con i dati aggregati per player
-    renderPlayersScatter(stats.meta_profile_by_player || []);
-
-    // Carica la tabella commander
-    renderCommanderTable(elPlayer.value, Number(elMinGames.value));
-  }
-
-  bind();
-  load().catch((err) => {
-    // eslint-disable-next-line no-console
-    console.error(err);
-    if (elP1Info) elP1Info.textContent = "Errore nel caricamento dati";
-  });
+  window.addEventListener("DOMContentLoaded", init);
 })();

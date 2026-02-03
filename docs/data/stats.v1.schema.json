@@ -268,6 +268,123 @@
       "description": "UTC timestamp in ISO-8601, ends with Z",
       "type": "string"
     },
+    "meta_profile": {
+      "type": "object"
+    },
+    "meta_profile_by_player": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "games_total": {
+            "type": "integer"
+          },
+          "games_used": {
+            "type": "integer"
+          },
+          "mdi": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "mpi": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "oewr": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "oewr_used": {
+            "type": "integer"
+          },
+          "oewr_z": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "player": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "player",
+          "games_total",
+          "games_used",
+          "oewr_used",
+          "mdi",
+          "mpi",
+          "oewr",
+          "oewr_z"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "meta_profile_by_player_commander": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "commander": {
+            "type": "string"
+          },
+          "games_total": {
+            "type": "integer"
+          },
+          "games_used": {
+            "type": "integer"
+          },
+          "mdi": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "mpi": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "oewr": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "oewr_used": {
+            "type": "integer"
+          },
+          "oewr_z": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "player": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "player",
+          "commander",
+          "games_total",
+          "games_used",
+          "oewr_used",
+          "mdi",
+          "mpi",
+          "oewr",
+          "oewr_z"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
     "meta_wins": {
       "additionalProperties": false,
       "description": "Metadata for Meta Wins (WBD) computations and visualization defaults.",
@@ -403,6 +520,40 @@
       },
       "type": "array"
     },
+    "meta_wins_commander_winrate": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "bracket": {
+            "type": "integer"
+          },
+          "commander": {
+            "type": "string"
+          },
+          "games": {
+            "type": "integer"
+          },
+          "win_rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "wins": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "commander",
+          "bracket",
+          "games",
+          "wins",
+          "win_rate"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
     "version": {
       "const": "v1"
     },
@@ -430,40 +581,6 @@
         "w_max"
       ],
       "type": "object"
-    },
-    "meta_wins_commander_winrate": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "commander": {
-            "type": "string"
-          },
-          "bracket": {
-            "type": "integer"
-          },
-          "games": {
-            "type": "integer"
-          },
-          "wins": {
-            "type": "integer"
-          },
-          "win_rate": {
-            "type": [
-              "number",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "commander",
-          "bracket",
-          "games",
-          "wins",
-          "win_rate"
-        ]
-      }
     }
   },
   "required": [
@@ -474,7 +591,10 @@
     "by_player",
     "by_player_commander",
     "meta_wins_by_bracket",
-    "meta_wins_commander_winrate"
+    "meta_wins_commander_winrate",
+    "meta_profile",
+    "meta_profile_by_player",
+    "meta_profile_by_player_commander"
   ],
   "title": "Commander Tracker Stats v1",
   "type": "object"

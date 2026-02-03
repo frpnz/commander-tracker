@@ -201,6 +201,23 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
     meta_by_player: Dict[str, Dict[str, Any]] = {}
     meta_by_player_commander: Dict[Tuple[str, str], Dict[str, Any]] = {}
 
+    # --- Over-Expected Win Rate (OEWR) ---
+    # Signed performance above/below what we'd expect from relative bracket power.
+    #
+    # For each game with numeric brackets for *all* players:
+    #   expected_p_i = softmax(k * bracket_i)
+    #   residual_i = actual_win_i - expected_p_i
+    #   OEWR(player) = mean(residual_i)
+    #
+    # Interpretation:
+    #   OEWR > 0  -> player wins more often than expected given brackets
+    #   OEWR < 0  -> player wins less often than expected given brackets
+    #
+    # We keep this inside the "meta profile" family because it is a per-table
+    # context-aware normalization. The parameter k controls how strongly bracket
+    # differences influence expected win probability.
+    OEWR_K = 0.80
+
     for g in games.values():
         winner = g.get("winner")
         entries = g.get("entries") or []
@@ -276,6 +293,27 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
             sum_all += float(bb)
             count_all += 1
 
+        # --- OEWR aggregation ---
+        # Only compute when we have a complete numeric bracket vector.
+        # (This avoids renormalizing away missing data.)
+        can_oewr = (winner is not None) and (len(entries) > 0) and (count_all == len(entries)) and (winner in br_by_player)
+        expected_by_player: Dict[str, float] = {}
+        if can_oewr:
+            # Stable softmax: subtract max before exp.
+            bvals = list(br_by_player.values())
+            bmax = max(bvals) if bvals else 0.0
+            exps: Dict[str, float] = {}
+            denom = 0.0
+            for p, bp in br_by_player.items():
+                ev = math.exp(OEWR_K * (float(bp) - float(bmax)))
+                exps[p] = ev
+                denom += ev
+            if denom > 0.0:
+                for p, ev in exps.items():
+                    expected_by_player[p] = ev / denom
+            else:
+                can_oewr = False
+
         for e in entries:
             p = e.get("player") or ""
             c = e.get("commander") or ""
@@ -283,13 +321,32 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
             # Track total games even when bracket is missing/unusable.
             curm = meta_by_player.get(p)
             if curm is None:
-                curm = {"player": p, "games_total": 0, "games_used": 0, "mdi_sum": 0.0, "mpi_sum": 0.0}
+                curm = {
+                    "player": p,
+                    "games_total": 0,
+                    "games_used": 0,
+                    "mdi_sum": 0.0,
+                    "mpi_sum": 0.0,
+                    "oewr_used": 0,
+                    "oewr_sum": 0.0,
+                    "oewr_var_sum": 0.0,
+                }
                 meta_by_player[p] = curm
             curm["games_total"] += 1
 
             curmc = meta_by_player_commander.get((p, c))
             if curmc is None:
-                curmc = {"player": p, "commander": c, "games_total": 0, "games_used": 0, "mdi_sum": 0.0, "mpi_sum": 0.0}
+                curmc = {
+                    "player": p,
+                    "commander": c,
+                    "games_total": 0,
+                    "games_used": 0,
+                    "mdi_sum": 0.0,
+                    "mpi_sum": 0.0,
+                    "oewr_used": 0,
+                    "oewr_sum": 0.0,
+                    "oewr_var_sum": 0.0,
+                }
                 meta_by_player_commander[(p, c)] = curmc
             curmc["games_total"] += 1
 
@@ -312,6 +369,19 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
             curmc["games_used"] += 1
             curmc["mdi_sum"] += d
             curmc["mpi_sum"] += abs(d)
+
+            # OEWR: residual vs expected probability (signed).
+            if can_oewr:
+                exp_p = expected_by_player.get(p)
+                if exp_p is not None:
+                    actual = 1.0 if p == winner else 0.0
+                    residual = float(actual) - float(exp_p)
+                    curm["oewr_used"] += 1
+                    curm["oewr_sum"] += residual
+                    curm["oewr_var_sum"] += float(exp_p) * (1.0 - float(exp_p))
+                    curmc["oewr_used"] += 1
+                    curmc["oewr_sum"] += residual
+                    curmc["oewr_var_sum"] += float(exp_p) * (1.0 - float(exp_p))
 
         for e in entries:
             p = e.get("player") or ""
@@ -539,15 +609,23 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
     meta_profile_by_player = []
     for r in meta_by_player.values():
         used = int(r.get("games_used") or 0)
+        used_oewr = int(r.get("oewr_used") or 0)
         mdi = (float(r.get("mdi_sum") or 0.0) / used) if used > 0 else None
         mpi = (float(r.get("mpi_sum") or 0.0) / used) if used > 0 else None
+        oewr = (float(r.get("oewr_sum") or 0.0) / used_oewr) if used_oewr > 0 else None
+        var_sum = float(r.get("oewr_var_sum") or 0.0)
+        oewr_z = (float(r.get("oewr_sum") or 0.0) / math.sqrt(var_sum)) if var_sum > 0.0 else None
+
         meta_profile_by_player.append(
             {
                 "player": r.get("player") or "",
                 "games_total": int(r.get("games_total") or 0),
                 "games_used": used,
+                "oewr_used": used_oewr,
                 "mdi": mdi,
                 "mpi": mpi,
+                "oewr": oewr,
+                "oewr_z": oewr_z,
             }
         )
     meta_profile_by_player.sort(
@@ -562,16 +640,24 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
     meta_profile_by_player_commander = []
     for r in meta_by_player_commander.values():
         used = int(r.get("games_used") or 0)
+        used_oewr = int(r.get("oewr_used") or 0)
         mdi = (float(r.get("mdi_sum") or 0.0) / used) if used > 0 else None
         mpi = (float(r.get("mpi_sum") or 0.0) / used) if used > 0 else None
+        oewr = (float(r.get("oewr_sum") or 0.0) / used_oewr) if used_oewr > 0 else None
+        var_sum = float(r.get("oewr_var_sum") or 0.0)
+        oewr_z = (float(r.get("oewr_sum") or 0.0) / math.sqrt(var_sum)) if var_sum > 0.0 else None
+
         meta_profile_by_player_commander.append(
             {
                 "player": r.get("player") or "",
                 "commander": r.get("commander") or "",
                 "games_total": int(r.get("games_total") or 0),
                 "games_used": used,
+                "oewr_used": used_oewr,
                 "mdi": mdi,
                 "mpi": mpi,
+                "oewr": oewr,
+                "oewr_z": oewr_z,
             }
         )
     meta_profile_by_player_commander.sort(
@@ -612,6 +698,8 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
         "meta_wins_by_player_commander": meta_wins_by_player_commander,
         "meta_profile": {
             "method": "delta_player_minus_avg_table_excl_player",
+            "oewr_method": "softmax_expected_win_residual",
+            "oewr_k": OEWR_K,
             "saturation_mdi": {"min": -1.0, "max": 1.0},
             "min_games_default": 3,
         },
