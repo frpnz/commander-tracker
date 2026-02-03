@@ -1,11 +1,8 @@
 /* Meta Profile page
-   - Riquadro 1: scatter of players (MDI on X, MPI on Y)
-   - Riquadro 2: heatmap table of commanders (MDI heat, MPI bar) for selected player
+   - Riquadro 1: Bubble Plot dei player (MDI su X, MPI su Y, Raggio = volume di gioco)
+   - Riquadro 2: Heatmap table dei commander per il player selezionato
 
    Data source: ../data/stats.v1.json
-   Fields:
-     stats.meta_profile_by_player: [{player, games_total, games_used, mdi, mpi}]
-     stats.meta_profile_by_player_commander: [{player, commander, games_total, games_used, mdi, mpi}]
 */
 
 (function () {
@@ -43,7 +40,7 @@
     return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
   }
 
-  // Diverging palette: blue (neg) -> gray (0) -> red (pos)
+  // Palette divergente: Blu (Underdog) -> Grigio (Neutro) -> Rosso (Pubstomper)
   const C_NEG = hexToRgb("#2563eb"); // blue-600
   const C_ZERO = hexToRgb("#9ca3af"); // gray-400
   const C_POS = hexToRgb("#ef4444"); // red-500
@@ -52,8 +49,10 @@
     if (mdi === null || mdi === undefined || Number.isNaN(mdi)) return "rgba(156,163,175,0.25)";
     const x = clamp(mdi, SAT_MIN, SAT_MAX);
     if (x === 0) return rgbToCss(C_ZERO, alpha);
+
+    // Gradiente verso il Blu (negativo)
     if (x < 0) {
-      const t = (x - 0) / (SAT_MIN - 0); // 0..1
+      const t = (x - 0) / (SAT_MIN - 0);
       return rgbToCss(
         {
           r: lerp(C_ZERO.r, C_NEG.r, t),
@@ -63,7 +62,9 @@
         alpha
       );
     }
-    const t = (x - 0) / (SAT_MAX - 0); // 0..1
+
+    // Gradiente verso il Rosso (positivo)
+    const t = (x - 0) / (SAT_MAX - 0);
     return rgbToCss(
       {
         r: lerp(C_ZERO.r, C_POS.r, t),
@@ -96,18 +97,19 @@
     }
   }
 
+  // --- RENDER BUBBLE CHART ---
   function renderPlayersScatter(rows) {
     const clean = (rows || [])
       .filter((r) => r && typeof r.player === "string")
       .map((r) => ({
         player: r.player,
-        mdi: r.mdi,
-        mpi: r.mpi,
+        mdi: Number(r.mdi),
+        mpi: Number(r.mpi),
         games_used: Number(r.games_used ?? 0),
         games_total: Number(r.games_total ?? 0),
       }))
-      .filter((r) => r.games_total > 0)
-      .sort((a, b) => (b.games_used || 0) - (a.games_used || 0));
+      .filter((r) => r.games_total > 0 && !Number.isNaN(r.mdi) && !Number.isNaN(r.mpi))
+      .sort((a, b) => b.games_used - a.games_used);
 
     if (elP1Info) {
       elP1Info.textContent = `Scala colori MDI saturata su ±1.0 · ${clean.length} player`;
@@ -119,37 +121,36 @@
       chart = null;
     }
 
-    // Auto range for MPI, but keep it sensible.
-    const mpiMax = Math.max(0.25, ...clean.map((r) => Number(r.mpi ?? 0)));
+    // Calcolo range automatico per asse Y (MPI)
+    const mpiMax = Math.max(0.25, ...clean.map((r) => r.mpi));
     const yMax = Math.min(2.0, Math.max(0.75, Math.ceil(mpiMax * 10) / 10 + 0.1));
 
     chart = new Chart(ctx, {
-      type: "scatter",
+      type: "bubble", // Usa il tipo nativo Bubble
       data: {
         datasets: [
           {
             label: "Players",
             data: clean.map((r) => ({
-              x: r.mdi === null || r.mdi === undefined ? null : Number(r.mdi),
-              y: r.mpi === null || r.mpi === undefined ? null : Number(r.mpi),
-              player: r.player,
-              games_used: r.games_used,
-              games_total: r.games_total,
-              mdi: r.mdi,
-              mpi: r.mpi,
+              x: r.mdi,
+              y: r.mpi,
+              // Calcolo raggio (r): minimo 5px, cresce con la radice quadrata dei giochi, max 20px
+              r: clamp(5 + Math.sqrt(r.games_used) * 1.5, 5, 20),
+              // Salviamo l'intero oggetto per usarlo nel tooltip
+              _raw: r
             })),
-            parsing: false,
-            pointBackgroundColor: (ctx) => colorForMdi(ctx.raw?.mdi, 0.9),
-            pointBorderColor: "rgba(255,255,255,0.25)",
-            pointBorderWidth: 1,
-            pointRadius: (ctx) => {
-              const n = Number(ctx.raw?.games_used ?? 0);
-              return clamp(4 + Math.sqrt(n) * 1.1, 4, 12);
+            backgroundColor: (context) => {
+              // Usa la coordinata X (MDI) per il colore
+              return colorForMdi(context.raw.x, 0.85);
             },
-            pointHoverRadius: (ctx) => {
-              const n = Number(ctx.raw?.games_used ?? 0);
-              return clamp(6 + Math.sqrt(n) * 1.2, 6, 14);
+            borderColor: "rgba(255,255,255,0.3)",
+            borderWidth: 1,
+            hoverBackgroundColor: (context) => {
+               return colorForMdi(context.raw.x, 1.0);
             },
+            hoverBorderColor: "#fff",
+            hoverBorderWidth: 2,
+            hoverRadius: 2, // Espande leggermente al passaggio del mouse
           },
         ],
       },
@@ -160,33 +161,45 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => {
-                const r = ctx.raw;
-                return `${r.player} · MDI: ${fmt2(r.mdi)} · MPI: ${fmt2(r.mpi)} · games usate: ${r.games_used}/${r.games_total}`;
+              label: (context) => {
+                const item = context.raw._raw;
+                return `${item.player} · MDI: ${fmt2(item.mdi)} · MPI: ${fmt2(item.mpi)} · Games: ${item.games_used}`;
               },
             },
+            backgroundColor: 'rgba(11, 16, 32, 0.95)',
+            titleColor: '#aab3d3',
+            bodyColor: '#e9ecf7',
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            padding: 10,
+            displayColors: true,
+            boxPadding: 4
           },
         },
         scales: {
           x: {
-            title: { display: true, text: "MDI (Δ bracket vs tavolo)" },
+            title: { display: true, text: "MDI (Δ bracket vs tavolo)", color: '#aab3d3' },
             suggestedMin: SAT_MIN,
             suggestedMax: SAT_MAX,
-            grid: { display: true, drawTicks: false },
-            ticks: { display: true },
+            grid: {
+              color: (ctx) => ctx.tick.value === 0 ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.05)",
+              lineWidth: (ctx) => ctx.tick.value === 0 ? 1 : 1
+            },
+            ticks: { color: '#aab3d3' },
           },
           y: {
-            title: { display: true, text: "MPI (pressione)" },
+            title: { display: true, text: "MPI (Pressione)", color: '#aab3d3' },
             min: 0,
             suggestedMax: yMax,
-            grid: { display: true, drawTicks: false },
-            ticks: { display: true },
+            grid: { color: "rgba(255,255,255,0.05)" },
+            ticks: { color: '#aab3d3' },
           },
         },
       },
     });
   }
 
+  // --- RENDER TABLE (COMMANDERS) ---
   function renderCommanderTable(player, minGames) {
     const rows = (stats.meta_profile_by_player_commander || [])
       .filter((r) => r && r.player === player)
@@ -212,6 +225,9 @@
 
       const tdC = document.createElement("td");
       tdC.textContent = r.commander;
+      // Colora il nome del commander leggermente per legarlo al visual
+      tdC.style.fontWeight = "600";
+      tdC.style.color = "#e9ecf7";
 
       const tdG = document.createElement("td");
       tdG.className = "num";
@@ -222,7 +238,8 @@
       tdMdi.className = "num heatcell";
       tdMdi.textContent = fmt2(r.mdi);
       tdMdi.style.background = colorForMdi(r.mdi, 0.85);
-      tdMdi.style.color = "rgba(255,255,255,0.95)";
+      tdMdi.style.color = "#fff";
+      tdMdi.style.textShadow = "0 1px 2px rgba(0,0,0,0.5)";
       tdMdi.title = `MDI: ${fmt2(r.mdi)} (saturazione ±1.0)`;
 
       const tdMpi = document.createElement("td");
@@ -275,7 +292,10 @@
     populatePlayers(players);
     if (players.length) elPlayer.value = players[0];
 
+    // Carica il grafico con i dati aggregati per player
     renderPlayersScatter(stats.meta_profile_by_player || []);
+
+    // Carica la tabella commander
     renderCommanderTable(elPlayer.value, Number(elMinGames.value));
   }
 
