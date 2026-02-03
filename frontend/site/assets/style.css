@@ -53,11 +53,11 @@ body::before{
 .brand{display:flex; gap:12px; align-items:center}
 .logo{
   width:44px;height:44px;border-radius:14px;
-  display:grid;place-items:center;
-  background-image: var(--logo-url), linear-gradient(135deg, rgba(110,231,255,.22), rgba(184,255,110,.18));
-  background-repeat: no-repeat, no-repeat;
-  background-position: center, center;
-  background-size: 28px 28px, cover;
+  /* Fill the available logo area with the logo image */
+  background-image: var(--logo-url);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
   border:1px solid var(--border);
   box-shadow: var(--shadow);
 }
@@ -320,6 +320,30 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
     color:var(--muted);
     font-weight:650;
   }
+
+  /* Archivio: list table -> keep each entry on a single line on mobile */
+  #tList{min-width:0}
+  #tList thead{display:none}
+  #tList tbody tr{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+  }
+  #tList tbody td{
+    display:block;
+    padding:0;
+    border:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #tList tbody td::before{content:none}
+  #tList tbody td:nth-child(1){flex:1 1 36%; min-width:0}
+  #tList tbody td:nth-child(2){flex:1 1 44%; min-width:0}
+  #tList tbody td:nth-child(3){flex:0 0 auto}
+  #tList tbody td:nth-child(4){flex:0 0 auto; text-align:right}
+
 }
 
 
@@ -338,4 +362,10 @@ body.home {
   background-repeat: no-repeat;
   background-position: center top;
   background-color: #0b0e14;          /* fallback elegante */
+}
+
+/* Home: make the background image more visible */
+body.home .card{
+  background: rgba(11,16,32,.18);
+  backdrop-filter: blur(10px);
 }
