@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Nuova partita</title>
+  <link rel="stylesheet" href="../assets/style.css?v=20260204"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-label="Commander Tracker"></div>
+      <div>
+        <div class="title">Nuova partita</div>
+        <div class="subtitle">Compila e scarica un JSON importabile in admin</div>
+      </div>
+    </div>
+    <div class="meta" id="meta"></div>
+    <nav class="nav" id="nav"></nav>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Dati partita</div>
+          <div class="card-subtitle muted">Nessun upload: il sito genera un file da portare in admin.</div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <form id="gameForm">
+          <div class="grid2">
+            <label>Data e ora
+              <input id="playedAt" name="playedAt" type="datetime-local" required/>
+            </label>
+
+            <label>Vincitore
+              <input id="winner" name="winner" list="playersList" placeholder="Seleziona o scrivi" required/>
+            </label>
+          </div>
+
+          <label style="margin-top:12px;">Note (opzionale)
+            <textarea id="notes" name="notes" rows="3" placeholder="Eventuali note..."></textarea>
+          </label>
+
+          <hr style="border:0; border-top:1px solid rgba(255,255,255,.10); margin:16px 0;">
+
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <div>
+              <div class="card-title" style="font-size:14px;">Entries</div>
+              <div class="muted" style="font-size:12px;">Aggiungi i player/commanders della partita.</div>
+            </div>
+            <button id="addRow" class="pill" type="button">+ Aggiungi player</button>
+          </div>
+
+          <div id="entries" style="margin-top:10px; display:grid; gap:10px;"></div>
+
+          <div class="actions" style="margin-top:14px;">
+            <button id="copyBtn" class="pill" type="button">Copia JSON</button>
+            <button id="downloadBtn" class="primary" type="submit">Scarica file</button>
+          </div>
+
+          <div class="hint" id="hint">
+            In admin: vai su <b>Importa JSON</b> e incolla il contenuto del file.
+          </div>
+
+          <div class="hint" id="status" style="display:none;"></div>
+        </form>
+
+        <datalist id="playersList"></datalist>
+        <datalist id="commandersList"></datalist>
+      </div>
+    </section>
+  </main>
+
+  <script src="../assets/nav.js"></script>
+  <script src="../assets/new-game.js?v=20260204"></script>
+</body>
+</html>

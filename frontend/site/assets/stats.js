@@ -7,6 +7,39 @@
    Player colors are shared via window.PlayerColors.
 */
 
+
+// --- Plugin: print win rate on bars ---
+const barValueLabels = {
+  id: "barValueLabels",
+  afterDatasetsDraw(chart, args, opts) {
+    const { ctx } = chart;
+    const meta = chart.getDatasetMeta(0);
+    const data = chart.data.datasets[0].data || [];
+
+    ctx.save();
+    ctx.font = (opts && opts.font) || "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillStyle = (opts && opts.color) || "rgba(255,255,255,0.9)";
+
+    meta.data.forEach((bar, i) => {
+      const v = data[i];
+      if (v == null || Number.isNaN(v)) return;
+
+      const p = bar.tooltipPosition();
+      const txt = `${Number(v).toFixed(1)}%`;
+
+      // clamp to chart area (avoid off-screen labels)
+      const areaRight = chart.chartArea.right;
+      const w = ctx.measureText(txt).width;
+      let x = p.x + 8;
+      if (x + w > areaRight - 2) x = areaRight - w - 2;
+
+      ctx.fillText(txt, x, p.y + 4);
+    });
+
+    ctx.restore();
+  }
+};
+
 (function () {
   "use strict";
 
@@ -125,6 +158,7 @@
 
     barChart = new Chart(canvasBar.getContext("2d"), {
       type: "bar",
+      plugins: [barValueLabels],
       data: {
         labels,
         datasets: [{
@@ -160,7 +194,8 @@
         },
 
         plugins: {
-          ...commonOptions().plugins,
+          
+          barValueLabels: {},...commonOptions().plugins,
           tooltip: {
             ...commonOptions().plugins.tooltip,
             callbacks: {
@@ -236,8 +271,8 @@
             grid: { color: "rgba(255,255,255,0.05)" },
           },
           y: {
-            min: -10,
-            max: 110,          // include sempre 0 e 100
+            min: isFocus ? -10 : 0,
+            max: isFocus ? 110 : 65,          // no-focus: zoom 0–65
             grace: 0,
             title: { display: true, text: "Winrate (%)", color: COL_TEXT_MUTED },
             ticks: {

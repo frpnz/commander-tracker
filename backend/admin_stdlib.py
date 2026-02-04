@@ -252,6 +252,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/admin/games":
             return self._get_games()
 
+        if path == "/admin/games/import_json":
+            return self._get_import_json(query)
+
         # Admin UI helpers (JSON)
         if path == "/admin/api/bracket_suggestions":
             return self._get_api_bracket_suggestions(query)
@@ -282,6 +285,9 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/admin/games/import":
             return self._post_game_import(form)
+
+        if path == "/admin/games/import_json":
+            return self._post_game_import_json(form)
 
         if path.startswith("/admin/games/") and path.endswith("/update"):
             parts = path.strip("/").split("/")
@@ -320,6 +326,111 @@ class Handler(BaseHTTPRequestHandler):
     # ---------------------------
     # Pages
     # ---------------------------
+
+    def _get_import_json(self, query: dict[str, list[str]]):
+        updated = (query.get("updated", [""])[0] or "").strip()
+        msg = (query.get("msg", [""])[0] or "").strip()
+
+        notice = ""
+        if updated:
+            notice = f'<div class="notice ok">✅ Import completato. <span class="muted">{esc(msg)}</span></div>'
+        elif msg:
+            notice = f'<div class="notice err">⚠️ {esc(msg)}</div>'
+
+        body = f"""
+        <h1>Importa JSON</h1>
+        {notice}
+        <p class="muted">Incolla il JSON generato da <b>Nuova partita</b> sul sito. Formato atteso:</p>
+        <pre style="background:#f7f7f7; padding:10px; border-radius:8px; overflow:auto; font-size:12px;">
+{{"version":"game.v1","played_at":"YYYY-MM-DD HH:MM:SS","winner_player":"...","notes":null,"entries":[{{"player":"...","commander":"...","bracket":4}}]}}
+        </pre>
+
+        <form method="post" action="/admin/games/import_json">
+          <label>Payload JSON</label>
+          <textarea name="payload" rows="14" style="width:100%; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:12px;" required placeholder='{{...}}'></textarea>
+
+          <div class="btn-row" style="margin-top:12px;">
+            <button class="primary" type="submit">Importa</button>
+            <a class="btn" href="/admin/games">Annulla</a>
+          </div>
+        </form>
+        """
+        return self._send_html(page("Importa JSON", body))
+
+    def _post_game_import_json(self, form: dict[str, str]):
+        raw = (form.get("payload", "") or "").strip()
+        if not raw:
+            return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Payload mancante"))
+
+        try:
+            payload = json.loads(raw)
+        except Exception:
+            return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("JSON non valido"))
+
+        try:
+            if payload.get("version") != "game.v1":
+                return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Versione payload non supportata"))
+
+            played_at = (payload.get("played_at") or "").strip()
+            winner_player = (payload.get("winner_player") or "").strip()
+            notes = payload.get("notes", None)
+            entries = payload.get("entries") or []
+
+            if not played_at or not winner_player:
+                return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("played_at e winner_player sono obbligatori"))
+
+            if not isinstance(entries, list) or len(entries) < 2:
+                return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("entries deve essere una lista (min 2)"))
+
+            # Normalize + validate entries
+            seen_players: set[str] = set()
+            norm_entries: list[tuple[str, str, int | None]] = []
+            for e in entries:
+                if not isinstance(e, dict):
+                    return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("entries contiene un elemento non valido"))
+                player = (e.get("player") or "").strip()
+                commander = (e.get("commander") or "").strip()
+                bracket = e.get("bracket", None)
+
+                if not player or not commander:
+                    return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Ogni entry richiede player e commander"))
+
+                if player in seen_players:
+                    return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Player duplicato nelle entries: " + player))
+                seen_players.add(player)
+
+                if bracket is None or bracket == "":
+                    b = None
+                else:
+                    try:
+                        b = int(bracket)
+                    except Exception:
+                        return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Bracket non valido per " + player))
+                    if b < 1 or b > 5:
+                        return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Bracket fuori range (1..5) per " + player))
+
+                norm_entries.append((player, commander, b))
+
+            if winner_player not in seen_players:
+                return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("winner_player deve essere uno dei player nelle entries"))
+
+            with db() as conn:
+                cur = conn.cursor()
+                cur.execute(
+                    "INSERT INTO game (played_at, notes, winner_player) VALUES (?, ?, ?)",
+                    (played_at, notes, winner_player),
+                )
+                game_id = cur.lastrowid
+
+                cur.executemany(
+                    "INSERT INTO gameentry (game_id, player, commander, bracket) VALUES (?, ?, ?, ?)",
+                    [(game_id, p, c, b) for (p, c, b) in norm_entries],
+                )
+                conn.commit()
+
+            return self._redirect("/admin/games/%d?updated=1&msg=%s" % (game_id, urllib.parse.quote("Import JSON")))
+        except Exception as e:
+            return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Errore import: " + str(e)))
 
     def _get_api_bracket_suggestions(self, query: dict[str, list[str]]):
         """Return suggested brackets for a specific (player, commander) pair.
@@ -459,6 +570,13 @@ class Handler(BaseHTTPRequestHandler):
                 <button class="primary" type="submit">Importa e modifica</button>
               </div>
             </form>
+
+            <hr style="border:0; border-top:1px solid #eee; margin:16px 0;">
+
+            <h3>Importa JSON (dal sito)</h3>
+            <p class="muted">Incolla qui il contenuto del file <code>game_*.json</code> generato dal sito (Nuova partita). Verrà creata una nuova partita con quella data/ora.</p>
+            <p><a href="/admin/games/import_json">Apri la pagina di import JSON</a></p>
+
           </div>
 
           <div class="card" style="flex:2;">
