@@ -479,3 +479,6 @@ body.home .card{
     background-repeat:no-repeat;
   }
 }
+@media (max-width: 640px){
+  .chart-wrap canvas{height:300px;}
+}

@@ -13,16 +13,94 @@
 
   let chart = null;
   let stats = null;
+// --- COLOR MANAGER (deterministico, coerente tra pagine) ---
+// Palette: colori ad alta distinzione (Tol/Okabe-Ito) + varianti light/dark deterministiche.
+const PLAYER_PALETTE = [
+  '#332288', '#88CCEE', '#44AA99', '#117733', '#999933',
+  '#DDCC77', '#CC6677', '#882255', '#AA4499', '#E69F00',
+  '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7'
+];
 
-  function getPlayerColor(name) {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    const h = Math.abs(hash) % 360;
-    return { stroke: `hsl(${h}, 70%, 60%)`, fill: `hsla(${h}, 70%, 60%, 0.25)` };
+function hash32(str) {
+  // DJB2 32-bit
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) + h) + str.charCodeAt(i);
+    h = h >>> 0;
   }
+  return h >>> 0;
+}
+
+function hexToRgb(hex) {
+  const s = hex.replace('#', '').trim();
+  if (s.length !== 6) return null;
+  const r = parseInt(s.slice(0, 2), 16);
+  const g = parseInt(s.slice(2, 4), 16);
+  const b = parseInt(s.slice(4, 6), 16);
+  if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) return null;
+  return { r, g, b };
+}
+
+function adjustRgb(rgb, amount) {
+  // amount in [-1, +1]; >0 => lighten, <0 => darken
+  const clamp = (x) => Math.max(0, Math.min(255, Math.round(x)));
+  let { r, g, b } = rgb;
+  if (amount >= 0) {
+    r = r + (255 - r) * amount;
+    g = g + (255 - g) * amount;
+    b = b + (255 - b) * amount;
+  } else {
+    const k = 1 + amount; // e.g. -0.18 => 0.82
+    r = r * k;
+    g = g * k;
+    b = b * k;
+  }
+  return { r: clamp(r), g: clamp(g), b: clamp(b) };
+}
+
+function getPlayerColor(name) {
+  if (!name) return '#666666';
+  const h = hash32(String(name).trim().toLowerCase());
+  const base = PLAYER_PALETTE[h % PLAYER_PALETTE.length];
+  const variant = (h >>> 8) % 3; // 0 base, 1 light, 2 dark
+  const rgb = hexToRgb(base) || { r: 102, g: 102, b: 102 };
+  const amt = variant === 1 ? 0.18 : (variant === 2 ? -0.18 : 0.0);
+  const adj = adjustRgb(rgb, amt);
+  return `#${adj.r.toString(16).padStart(2,'0')}${adj.g.toString(16).padStart(2,'0')}${adj.b.toString(16).padStart(2,'0')}`.toUpperCase();
+}
+
+function withAlpha(color, alpha) {
+  if (!color) return color;
+  // Hex -> rgba
+  if (color.startsWith('#') && color.length === 7) {
+    const rgb = hexToRgb(color);
+    if (!rgb) return color;
+    return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+  }
+  // rgb(...) -> rgba(...)
+  if (color.startsWith('rgb(')) {
+    return color.replace(/^rgb\((.*)\)$/, `rgba($1, ${alpha})`);
+  }
+  // hsl(...) -> hsla(...)
+  if (color.startsWith('hsl(')) {
+    return color.replace(/^hsl\((.*)\)$/, `hsla($1, ${alpha})`);
+  }
+  // hsla(...) -> replace alpha
+  if (color.startsWith('hsla(')) {
+    return color.replace(/hsla\((.*),\s*([0-9.]+)\)$/, `hsla($1, ${alpha})`);
+  }
+  return color;
+}
+
+
 
   function clamp(x, lo, hi) {
     return x < lo ? lo : x > hi ? hi : x;
+  }
+
+
+  function isMobile() {
+    return window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
   }
 
   function computeAxisLimit(points) {
@@ -160,8 +238,8 @@
         return {
           label: p.player,
           data: [{ x: p.mdi, y: p.oewr_z, r, oewr: p.oewr }],
-          backgroundColor: col.fill,
-          borderColor: col.stroke,
+          backgroundColor: withAlpha(col, 0.25),
+          borderColor: col,
           borderWidth: 2,
           hoverRadius: r + 3,
         };
@@ -200,8 +278,9 @@
         },
         plugins: {
           legend: {
-            position: "right",
-            labels: { color: "#e9ecf7", boxWidth: 12, usePointStyle: true },
+            position: isMobile() ? "bottom" : "right",
+            align: "center",
+            labels: { color: "#e9ecf7", boxWidth: isMobile() ? 10 : 12, usePointStyle: true, font: { size: isMobile() ? 11 : 12 } },
           },
           tooltip: {
             callbacks: {
@@ -219,6 +298,18 @@
         },
       },
     });
+
+// Aggiorna posizione legenda su resize (mobile/desktop)
+window.addEventListener("resize", () => {
+  if (!chart) return;
+  const pos = isMobile() ? "bottom" : "right";
+  if (chart.options?.plugins?.legend) {
+    chart.options.plugins.legend.position = pos;
+    chart.options.plugins.legend.labels.boxWidth = isMobile() ? 10 : 12;
+    chart.options.plugins.legend.labels.font = { size: isMobile() ? 11 : 12 };
+    chart.update("none");
+  }
+});
   }
 
   async function init() {

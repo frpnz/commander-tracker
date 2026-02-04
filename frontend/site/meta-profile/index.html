@@ -12,7 +12,7 @@
       <div class="logo" aria-label="Commander Tracker"></div>
       <div>
         <div class="title">Commander Stats</div>
-        <div class="subtitle" id="subtitle">Meta Profile · MDI &amp; OEWR (posizionamento &amp; performance vs attesa)</div>
+        <div class="subtitle" id="subtitle">Meta Profile · MDI &amp; OEWR_Z (posizionamento &amp; performance vs attesa)</div>
       </div>
     </div>
     <div class="meta" id="meta"></div>
@@ -24,18 +24,17 @@
       <!-- Riquadro 1 -->
       <section class="card">
         <div class="card-head">
-          <h2>Profilo Meta per player (MDI × OEWR)</h2>
+          <h2>Profilo Meta per player (MDI × OEWR_Z)</h2>
           <div class="head-tools"></div>
         </div>
         <div class="chart-wrap">
           <canvas id="mdiMpiPlayers" aria-label="MDI vs OEWR per player" role="img"></canvas>
         </div>
-        <div class="footnote">
-          X: <strong>MDI</strong> = media di (bracket player − media bracket altri al tavolo, player escluso).<br/>
-          Y: <strong>OEWR</strong> = (win reale) − (win attesa), con win attesa calcolata via softmax del bracket al tavolo.<br/>
-          La bolla è proporzionale alle partite giocate; la freccia parte dall'origine.
+                  <div class="footnote">
+          Ogni player è una <strong>freccia</strong> dall’origine: direzione = “posizionamento nel tavolo” (MDI) e “performance vs attesa” (OEWR_Z).<br/>
+          La <strong>bolla</strong> in punta cresce con il numero di partite giocate. Per i dettagli vedi la pagina <a href="../metrics/">Metrics</a>.
         </div>
-      </section>
+</section>
     </section>
 
     <footer class="footer">

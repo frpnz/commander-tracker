@@ -4,67 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Metrics Guide</title>
-
-  <!-- Stesso CSS del progetto -->
   <link rel="stylesheet" href="../assets/style.css?v=20260203" />
-
   <style>
-    /* Piccoli aggiustamenti locali, senza cambiare il tema */
     .guide { max-width: 980px; margin: 0 auto; }
-    .guide h1 { margin-bottom: 6px; }
     .muted { opacity: .85; }
-    .pill {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      line-height: 20px;
-      border: 1px solid rgba(255,255,255,.15);
-      margin-right: 6px;
-      margin-bottom: 6px;
-      white-space: nowrap;
-    }
-    .pill.red { background: rgba(220, 60, 60, .18); }
-    .pill.blue { background: rgba(60, 120, 220, .18); }
-    .pill.gray { background: rgba(160, 160, 160, .18); }
-
-    .card {
+    .card-lite {
       border: 1px solid rgba(255,255,255,.12);
       border-radius: 14px;
       padding: 14px 14px;
       margin: 12px 0;
       background: rgba(255,255,255,.03);
     }
-
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 820px) { .grid2 { grid-template-columns: 1fr; } }
-
-    .kpi {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 6px;
-      margin-top: 10px;
-    }
-    .kpi b { display: inline-block; min-width: 120px; }
-
-    details {
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: rgba(0,0,0,.08);
-      margin: 10px 0;
-    }
-    details > summary {
-      cursor: pointer;
-      list-style: none;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    details > summary::-webkit-details-marker { display:none; }
-    .summary-right { font-weight: 600; opacity: .8; }
     .callout {
       border-left: 4px solid rgba(255,255,255,.18);
       padding: 10px 12px;
@@ -74,6 +26,18 @@
     }
     .bullets { margin: 8px 0 0 18px; }
     .bullets li { margin: 4px 0; }
+    .tag {
+      display:inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      line-height: 20px;
+      border: 1px solid rgba(255,255,255,.15);
+      margin-right: 6px;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      background: rgba(0,0,0,.10);
+    }
   </style>
 </head>
 
@@ -83,127 +47,95 @@
       <div class="logo" aria-label="Commander Tracker"></div>
       <div>
         <div class="title">Commander Stats</div>
-        <div class="subtitle">Guida metriche e lettura dati</div>
+        <div class="subtitle">Guida alla lettura di grafici e metriche</div>
       </div>
     </div>
     <nav class="nav" id="nav"></nav>
   </header>
 
-  <!-- Se hai già una topbar/nav comune, puoi copiarla uguale alle altre pagine.
-       Qui tengo una struttura minimale, ma compatibile col CSS esistente. -->
-  <div class="page">
+  <main class="container">
     <div class="guide">
-      <header class="card">
-        <h1>Guida alle metriche</h1>
+
+      <section class="card-lite">
+        <h1 style="margin:0 0 6px 0;">Metrics</h1>
         <div class="muted">
-          Qui trovi cosa misura ogni scheda e come leggere grafici e colori.
-        </div>
-
-        <div style="margin-top:10px;">
-          <span class="pill gray">Grigio = in pari col tavolo</span>
-          <span class="pill blue">Blu = sotto livello</span>
-          <span class="pill red">Rosso = sopra livello</span>
+          Questa pagina spiega come leggere le schede principali: <b>Stats</b> e <b>Meta Profile</b>.
+          Niente formule: solo significato pratico.
         </div>
 
         <div class="callout">
-          <b>Razionale:</b> le schede provano a rispondere a domande diverse.
-        </div>
-      </header>
-
-      <!-- FILONI -->
-      <section class="card">
-        <h2>Le 3 schede</h2>
-        <div class="grid2">
-          <div class="card" style="margin:0;">
-            <h3>Stats</h3>
-            <div class="muted">Chi vince di più in assoluto, rispetto alle partite giocate.</div>
-            <div class="kpi">
-              <div><b>Domanda:</b> “Chi ha il winrate più alto?”</div>
-              <div><b>Nota:</b> non considera il livello del tavolo.</div>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;">
-            <h3>Stats (Weighted)</h3>
-            <div class="muted">Chi vince di più tenendo conto del livello del tavolo (contesto).</div>
-            <div class="kpi">
-              <div><b>Domanda:</b> “Chi vince in contesti più difficili?”</div>
-              <div><b>Nota:</b> premia vittorie “in salita”, penalizza vittorie “in discesa”.</div>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;">
-            <div class="muted">Come avvengono le vittorie nel meta (sopra/sotto il livello medio del tavolo).</div>
-            <div class="kpi">
-              <div><b>Domanda:</b> “Quando vinco, sto sopra o sotto?”</div>
-              <div><b>Nota:</b> considera solo le vittorie.</div>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;">
-            <h3>Meta Profile</h3>
-            <div class="muted">Come i player si posizionano nel meta, indipendentemente dal vincere.</div>
-            <div class="kpi">
-              <div><b>Domanda:</b> “Sbilancio il tavolo?”</div>
-            </div>
-          </div>
+          <b>Idea generale:</b> “Stats” dice <i>cosa succede</i> (winrate), “Meta Profile” dice <i>come</i> ci arrivi
+          rispetto al livello del tavolo.
         </div>
       </section>
 
-      <!-- DETTAGLIO METRICHE -->
-      <section class="card">
-        <h2>Metriche spiegate</h2>
-
-        <details open>
-          <summary>
-            Winrate (Stats)
-            <span class="summary-right">quanto vinci</span>
-          </summary>
-          <div class="muted">Percentuale di partite vinte sul totale delle partite giocate.</div>
-          <ul class="bullets">
-            <li><b>Alto</b> = vinci spesso.</li>
-            <li><b>Basso</b> = vinci raramente.</li>
-            <li><b>Attenzione:</b> con poche partite, può oscillare molto.</li>
-          </ul>
-        </details>
-
-
-
-        <!-- regressione per commander -->
-
-        <details>
-          <summary>
-            Tabelle heatmap (es. commander)
-            <span class="summary-right">lettura rapida</span>
-          </summary>
-          <div class="muted">
-            Le celle colorate servono per vedere a colpo d’occhio “sotto / in pari / sopra”. Controlla sempre anche quante partite o vittorie ci sono.
-          </div>
-          <ul class="bullets">
-            <li><b>Blu</b> = tende a stare sotto al tavolo.</li>
-            <li><b>Rosso</b> = tende a stare sopra al tavolo.</li>
-            <li><b>Games/Wins</b> = quanto è solido il dato.</li>
-          </ul>
-        </details>
+      <section class="card-lite">
+        <h2 style="margin:0 0 6px 0;">Scheda Stats</h2>
+        <div class="muted">
+          È il pannello “classico”: partite, vittorie e winrate. Serve per capire chi sta convertendo meglio in assoluto.
+        </div>
+        <ul class="bullets">
+          <li><b>Winrate per player</b>: confronto diretto tra giocatori.</li>
+          <li><b>Winrate vs Partite</b>: ti fa capire se un winrate è supportato da volume o è “volatile”.</li>
+          <li><b>Tabelle</b>: puoi ordinare per A→Z, partite, vittorie e winrate.</li>
+        </ul>
       </section>
 
-      <!-- TLDR -->
-      <section class="card">
-        <h2>TL;DR</h2>
-        <div class="callout">
+      <section class="card-lite">
+        <h2 style="margin:0 0 6px 0;">Scheda Meta Profile</h2>
+        <div class="muted">
+          Qui ogni player è una <b>freccia</b> che parte da (0,0). La punta della freccia è la sua “posizione” nel meta.
+        </div>
+
+        <div class="grid2" style="margin-top:10px;">
+          <div class="card-lite" style="margin:0;">
+            <h3 style="margin:0 0 6px 0;">Come leggere una freccia</h3>
+            <ul class="bullets">
+              <li><b>Direzione</b>: ti dice se stai giocando sopra/sotto al tavolo e se stai over/under-performando.</li>
+              <li><b>Lunghezza</b>: più è lunga, più il profilo è “marcato” (sei più lontano dallo zero).</li>
+              <li><b>Bolla in punta</b>: più è grande, più partite ci sono dietro (profilo più “affidabile”).</li>
+            </ul>
+          </div>
+
+          <div class="card-lite" style="margin:0;">
+            <h3 style="margin:0 0 6px 0;">Cosa misurano gli assi</h3>
+            <ul class="bullets">
+              <li><b>Asse X (MDI)</b>: quanto, in media, il tuo bracket è <i>sopra</i> o <i>sotto</i> quello del tavolo.</li>
+              <li><b>Asse Y (OEWR-Z)</b>: se stai vincendo <i>più</i> o <i>meno</i> di quanto ci si aspetterebbe dato il power relativo.</li>
+            </ul>
+            <div class="muted" style="margin-top:8px;">
+              In pratica: X parla di “contesto”, Y parla di “conversione”.
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <span class="tag"><b>DOMINANT</b> (alto-destra)</span>
+          <span class="tag"><b>OUTPLAYING</b> (alto-sinistra)</span>
+          <span class="tag"><b>INEFFICIENT</b> (basso-destra)</span>
+          <span class="tag"><b>STRUGGLING</b> (basso-sinistra)</span>
+        </div>
+
+        <div class="callout" style="margin-top:10px;">
+          <b>Significato delle etichette:</b>
           <ul class="bullets">
-            <li><b>Stats</b> → chi vince di più (grezzo).</li>
-            <li><b>Stats (Weighted)</b> → chi vince di più “in contesti difficili”.</li>
-            <li><b>Meta Profile</b> → stile nel meta (posizionamento + pressione).</li>
+            <li><b>DOMINANT</b>: sei sopra al tavolo <i>e</i> stai convertendo oltre l’atteso.</li>
+            <li><b>OUTPLAYING</b>: sei sotto al tavolo ma stai comunque convertendo oltre l’atteso (skill/linee buone).</li>
+            <li><b>INEFFICIENT</b>: sei sopra al tavolo ma stai convertendo meno dell’atteso (vantaggio non capitalizzato).</li>
+            <li><b>STRUGGLING</b>: sei sotto al tavolo e anche sotto l’atteso (casual/test o difficoltà nel meta).</li>
           </ul>
+        </div>
+
+        <div class="muted" style="margin-top:10px;">
+          Nota: il grafico racconta tendenze. Con poche partite, una o due win/loss possono spostare molto la freccia.
         </div>
       </section>
 
-      <footer class="muted" style="padding: 18px 4px 30px;">
-        Suggerimento: interpreta sempre i valori insieme a <b>quante partite</b> (o vittorie) li supportano.
+      <footer class="footer">
+        <span>Static site per GitHub Pages · dati da SQLite</span>
       </footer>
     </div>
-  </div>
+  </main>
 
   <script src="../assets/nav.js?v=20260203"></script>
 </body>
