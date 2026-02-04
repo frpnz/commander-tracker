@@ -679,23 +679,6 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
         "games": games_detail,
         "by_player": by_player,
         "by_player_commander": by_player_commander,
-        "by_player_weighted": by_player_weighted,
-        "by_player_commander_weighted": by_player_commander_weighted,
-        "weighted": {
-            "method": "delta_winner_minus_avg_table_excl_winner",
-            "k": K,
-            "w_min": W_MIN,
-            "w_max": W_MAX,
-        },
-        "meta_wins": {
-            "method": "wbd_delta_winner_minus_avg_table_excl_winner",
-            "saturation": {"min": -1.0, "max": 1.0},
-            "min_wins_default": 3,
-        },
-        "meta_wins_by_player": meta_wins_by_player,
-        "meta_wins_by_bracket": meta_wins_by_bracket,
-        "meta_wins_commander_winrate": meta_wins_commander_winrate,
-        "meta_wins_by_player_commander": meta_wins_by_player_commander,
         "meta_profile": {
             "method": "delta_player_minus_avg_table_excl_player",
             "oewr_method": "softmax_expected_win_residual",

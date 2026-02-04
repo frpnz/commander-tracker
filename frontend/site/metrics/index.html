@@ -112,7 +112,7 @@
 
       <!-- FILONI -->
       <section class="card">
-        <h2>Le 4 schede</h2>
+        <h2>Le 3 schede</h2>
         <div class="grid2">
           <div class="card" style="margin:0;">
             <h3>Stats</h3>
@@ -133,7 +133,6 @@
           </div>
 
           <div class="card" style="margin:0;">
-            <h3>Meta Wins</h3>
             <div class="muted">Come avvengono le vittorie nel meta (sopra/sotto il livello medio del tavolo).</div>
             <div class="kpi">
               <div><b>Domanda:</b> “Quando vinco, sto sopra o sotto?”</div>
@@ -168,183 +167,9 @@
           </ul>
         </details>
 
-        <details>
-          <summary>
-            Winrate Pesato (Stats Weighted)
-            <span class="summary-right">quanto vinci “in contesto”</span>
-          </summary>
-          <div class="muted">
-            È un winrate che tiene conto del livello del tavolo: vincere con un deck sotto al livello medio pesa di più; vincere con un deck sopra pesa di meno.
-          </div>
-          <ul class="bullets">
-            <li><b>Alto</b> = vinci spesso anche in contesti più difficili.</li>
-            <li><b>Basso</b> = vinci soprattutto quando sei in vantaggio di livello, oppure vinci poco.</li>
-          </ul>
-        </details>
 
-        <details>
-          <summary>
-            WBD (Meta Wins)
-            <span class="summary-right">come vinci</span>
-          </summary>
-          <div class="muted">
-            Misura se, nelle vittorie, il tuo deck era sopra o sotto il livello medio del tavolo.
-          </div>
-          <ul class="bullets">
-            <li><b>WBD &lt; 0</b> (blu) → vinci “in salita” (sotto livello).</li>
-            <li><b>WBD ≈ 0</b> (grigio) → vinci “in pari”.</li>
-            <li><b>WBD &gt; 0</b> (rosso) → vinci “in discesa” (sopra livello).</li>
-          </ul>
-          <div class="callout">
-            <b>Importante:</b> WBD non dice “chi vince di più”, ma <b>in che contesto</b> avvengono le vittorie.
-          </div>
-        </details>
-
-        <details>
-          <summary>
-            MDI (Meta Profile)
-            <span class="summary-right">dove ti posizioni</span>
-          </summary>
-          <div class="muted">
-            In media, in tutte le partite, quanto il tuo deck è sopra o sotto il livello medio del tavolo.
-          </div>
-          <ul class="bullets">
-            <li><b>MDI &lt; 0</b> (blu) → tendenzialmente giochi sotto livello.</li>
-            <li><b>MDI ≈ 0</b> (grigio) → ti adatti al tavolo.</li>
-            <li><b>MDI &gt; 0</b> (rosso) → tendenzialmente giochi sopra livello.</li>
-          </ul>
-        </details>
-
-        <details>
-          <summary>
-            MPI (Meta Profile)
-            <span class="summary-right">quanto forzi il tavolo</span>
-          </summary>
-          <div class="muted">
-            Misura quanto spesso e quanto tanto ti discosti dal livello del tavolo (sia sopra che sotto). È sempre ≥ 0.
-          </div>
-          <ul class="bullets">
-            <li><b>MPI basso</b> → quasi sempre “in pari”.</li>
-            <li><b>MPI alto</b> → spesso molto sopra o molto sotto (stile più “polarizzante”).</li>
-          </ul>
-        </details>
-      </section>
-
-      <!-- LETTURA GRAFICI -->
-      <section class="card">
-        <h2>Come leggere i grafici</h2>
-
-        <!-- regressione per bracket (aggregata) -->
-        <details>
-          <summary>
-            Correlazione Bracket → Win Rate (Meta Wins)
-            <span class="summary-right">effetto del livello</span>
-          </summary>
-
-          <div class="muted">
-            Questo grafico mostra come varia il <b>win rate medio</b> al crescere del bracket (1–5),
-            considerando il meta nel suo insieme, non i singoli player.
-          </div>
-
-          <ul class="bullets">
-            <li><b>Asse X</b> → bracket (livello del tavolo).</li>
-            <li><b>Asse Y</b> → win rate medio in quel bracket.</li>
-            <li><b>Ogni punto</b> rappresenta un bracket aggregato.</li>
-            <li><b>Dimensione del punto</b> → numero di partite giocate in quel bracket.</li>
-          </ul>
-
-          <div class="callout">
-            <b>Linea di regressione:</b> indica il trend generale.
-            <ul class="bullets">
-              <li><b>Pendenza positiva</b> → salendo di bracket, il win rate tende ad aumentare.</li>
-              <li><b>Pendenza negativa</b> → salendo di bracket, il win rate tende a diminuire.</li>
-              <li><b>Pendenza ~ 0</b> → il bracket incide poco sul win rate medio.</li>
-            </ul>
-          </div>
-
-          <div class="callout">
-            <b>Nota di lettura:</b> la correlazione è <b>indicativa</b> (pochi punti, uno per bracket).
-            Usa questo grafico per capire il <b>trend del meta</b>, non per valutare singoli player.
-          </div>
-        </details>
 
         <!-- regressione per commander -->
-        <details>
-          <summary>
-            Correlazione Bracket → Win Rate (per Commander)
-            <span class="summary-right">robustezza statistica</span>
-          </summary>
-
-          <div class="muted">
-            Questo grafico mostra la relazione tra <b>bracket del commander</b> e <b>win rate</b>,
-            considerando ogni commander come un punto indipendente (con almeno 3 partite giocate).
-          </div>
-
-          <ul class="bullets">
-            <li><b>Asse X</b> → bracket del commander (1–5, fisso).</li>
-            <li><b>Asse Y</b> → win rate del commander.</li>
-            <li><b>Ogni punto</b> rappresenta un commander.</li>
-            <li><b>Dimensione del punto</b> → numero di partite giocate con quel commander.</li>
-          </ul>
-
-          <div class="callout">
-            <b>Linea di regressione:</b> indica il trend medio sul meta dei commander.
-            <ul class="bullets">
-              <li><b>Pendenza positiva</b> → i commander di bracket più alto tendono ad avere win rate più alto.</li>
-              <li><b>Pendenza negativa</b> → i commander di bracket più alto tendono ad avere win rate più basso.</li>
-              <li><b>Pendenza ~ 0</b> → il bracket incide poco sul win rate dei commander.</li>
-            </ul>
-          </div>
-
-          <div class="callout">
-            <b>Perché è più robusto:</b>
-            <ul class="bullets">
-              <li>molti più punti rispetto al grafico aggregato per bracket;</li>
-              <li>ogni punto è supportato da più partite (≥ 3);</li>
-              <li>riduce l’effetto di outlier occasionali.</li>
-            </ul>
-          </div>
-
-          <div class="callout">
-            <b>Nota di lettura:</b> questo grafico descrive una <b>tendenza del meta</b>,
-            non la forza del singolo commander. I punti su bracket uguali possono sovrapporsi:
-            la dispersione verticale è il segnale più importante.
-          </div>
-        </details>
-
-        <!-- (già presente) -->
-        <details>
-          <summary>
-            Scatter MDI vs MPI (Meta Profile)
-            <span class="summary-right">stile del player</span>
-          </summary>
-          <div class="muted">
-            Ogni punto è un player. A sinistra = sotto livello, a destra = sopra livello. Più in alto = più “pressione” sul tavolo.
-          </div>
-          <ul class="bullets">
-            <li><b>Centro-basso</b> → adattivo/equilibrato.</li>
-            <li><b>Centro-alto</b> → swingy/imprevedibile.</li>
-            <li><b>Destra-alto</b> → spesso sopra livello e polarizzante.</li>
-            <li><b>Sinistra-alto</b> → spesso sotto livello e polarizzante.</li>
-          </ul>
-          <div class="callout">
-            <b>Tip:</b> punti piccoli (poche partite) vanno letti con più cautela.
-          </div>
-        </details>
-
-        <details>
-          <summary>
-            Barre divergenti (es. WBD per player)
-            <span class="summary-right">sopra vs sotto</span>
-          </summary>
-          <div class="muted">
-            La linea al centro è lo “zero”. Barre a sinistra (blu) = sotto livello; a destra (rosso) = sopra livello.
-          </div>
-          <ul class="bullets">
-            <li>Lunghezza barra = quanto è grande lo scostamento.</li>
-            <li>Colore = direzione (sotto/sopra).</li>
-          </ul>
-        </details>
 
         <details>
           <summary>
@@ -369,7 +194,6 @@
           <ul class="bullets">
             <li><b>Stats</b> → chi vince di più (grezzo).</li>
             <li><b>Stats (Weighted)</b> → chi vince di più “in contesti difficili”.</li>
-            <li><b>Meta Wins</b> → come avvengono le vittorie (sopra/sotto livello).</li>
             <li><b>Meta Profile</b> → stile nel meta (posizionamento + pressione).</li>
           </ul>
         </div>

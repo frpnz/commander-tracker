@@ -15,9 +15,7 @@
       { key: "home", path: "", label: "Home" },
       { key: "archive", path: "archive/", label: "Archivio" },
       { key: "stats", path: "stats/", label: "Stats" },
-      { key: "stats-weighted", path: "stats-weighted/", label: "Stats Weighted" },
-      { key: "meta-wins", path: "meta-wins/", label: "Meta Wins" },
-      { key: "meta-profile", path: "meta-profile/", label: "Meta Profile" },
+                  { key: "meta-profile", path: "meta-profile/", label: "Meta Profile" },
       { key: "metrics", path: "metrics/", label: "Metrics" }
     ];
 

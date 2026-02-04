@@ -10,7 +10,6 @@ let winrateBubbleChart = null;
 
 // Configuration
 const DEFAULT_TOP_N = 3;
-const STATS_MODE = (typeof window !== "undefined" && window.STATS_MODE) ? window.STATS_MODE : "normal";
 
 // --- PARAMETRI UTENTE ---
 const BUBBLE_RADIUS = 11; // Raggio fisso delle bolle
@@ -63,10 +62,6 @@ function withAlpha(color, alpha) {
   document.head.appendChild(style);
 })();
 
-function viewData(raw) {
-  if (String(STATS_MODE || "").toLowerCase() !== "weighted") return raw;
-  return { ...raw, by_player: raw.by_player_weighted || raw.by_player, by_player_commander: raw.by_player_commander_weighted || raw.by_player_commander };
-}
 
 function generateHtmlLegend(chart, containerId) {
   const container = document.getElementById(containerId);
@@ -178,7 +173,7 @@ function renderBubbleChart(data, isPlayerView, maxGames) {
 }
 
 function buildTables(rawData) {
-  const data = viewData(rawData);
+  const data = rawData;
   const player = $("#fPlayer").value;
   const topN = parseInt($("#fTopN")?.value || DEFAULT_TOP_N, 10);
 
