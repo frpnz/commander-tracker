@@ -28,18 +28,6 @@
             <option value="">Tutti</option>
           </select>
         </label>
-<label id="topNWrap" class="is-hidden">
-          Top N commander
-          <select id="fTopN">
-            <option value="3" selected>3</option>
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="15">15</option>
-            <option value="20">20</option>
-            <option value="25">25</option>
-            <option value="30">30</option>
-          </select>
-        </label>
       </div>
       <div class="hint" id="hint"></div>
     </section>
@@ -67,104 +55,7 @@
       </section>
     </section>
 
-    <section class="grid">
-      <section class="card">
-        <div class="card-head">
-          <h2>Player</h2>
-          <div class="head-tools">
-            <label class="sortlabel">
-              <span>Ordina</span>
-              <select id="sPlayer" class="sortselect">
-                <option value="alpha">A→Z</option>
-                <option value="games_desc">Partite ↓</option>
-                <option value="wins_desc">Vittorie ↓</option>
-                <option value="wr_desc">Win rate ↓</option>
-              </select>
-            </label>
-            <div class="pill" id="countPlayer"></div>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table id="tPlayer">
-            <thead>
-              <tr>
-                <th>Player</th>
-                <th class="num">Vittorie</th>
-                <th class="num">Partite</th>
-                <th class="num">Win rate</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-head">
-          <h2>Player + Commander</h2>
-          <div class="head-tools">
-            <label class="sortlabel">
-              <span>Ordina</span>
-              <select id="sPair" class="sortselect">
-                <option value="alpha" selected>A→Z</option>
-                <option value="games_desc">Partite ↓</option>
-                <option value="wins_desc">Vittorie ↓</option>
-                <option value="wr_desc">Win rate ↓</option>
-              </select>
-            </label>
-            <div class="pill" id="countPair"></div>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table id="tPair">
-            <thead>
-              <tr>
-                <th>Player</th>
-                <th>Commander</th><th>Bracket</th>
-                <th class="num">Vittorie</th>
-                <th class="num">Partite</th>
-                <th class="num">Win rate</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-head">
-          <h2>Brackets</h2>
-          <div class="head-tools">
-            <label class="sortlabel">
-              <span>Ordina</span>
-              <select id="sBracket" class="sortselect">
-                <option value="games_desc" selected>Partite ↓</option>
-                <option value="alpha">A→Z</option>
-                <option value="wins_desc">Vittorie ↓</option>
-                <option value="wr_desc">Win rate ↓</option>
-              </select>
-            </label>
-            <div class="pill" id="countBracket"></div>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table id="tBracket">
-            <thead>
-              <tr>
-                <th>Bracket</th>
-                <th class="num">Vittorie</th>
-                <th class="num">Partite</th>
-                <th class="num">Win rate</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="footnote">
-          Nota: per i bracket, “partite” = numero di volte in cui un deck di quel bracket è stato giocato (entry-level).
-        </div>
-      </section>
-    </section>
+    <!-- Tabelle rimosse: manteniamo solo i grafici -->
 
     <footer class="footer">
       <span>Static site per GitHub Pages · dati da SQLite</span>
@@ -172,6 +63,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="../assets/player-colors.js?v=20260204"></script>
   <script src="../assets/stats.js?v=20260203"></script>
 
   <script src="../assets/nav.js?v=20260203"></script>
