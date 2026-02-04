@@ -60,7 +60,7 @@
         <h1 style="margin:0 0 6px 0;">Metrics</h1>
         <div class="muted">
           Questa pagina spiega come leggere le schede principali: <b>Stats</b> e <b>Meta Profile</b>.
-          Niente formule: solo significato pratico.
+          Prima il significato pratico; più sotto trovi anche un <b>approfondimento</b> con un po' di matematica.
         </div>
 
         <div class="callout">
@@ -77,7 +77,7 @@
         <ul class="bullets">
           <li><b>Winrate per player</b>: confronto diretto tra giocatori.</li>
           <li><b>Winrate vs Partite</b>: ti fa capire se un winrate è supportato da volume o è “volatile”.</li>
-          <li><b>Tabelle</b>: puoi ordinare per A→Z, partite, vittorie e winrate.</li>
+          <li><b>Tooltip</b>: passando il mouse sulle barre vedi <i>partite totali</i> e <i>vittorie</i> oltre al winrate.</li>
         </ul>
       </section>
 
@@ -129,6 +129,64 @@
         <div class="muted" style="margin-top:10px;">
           Nota: il grafico racconta tendenze. Con poche partite, una o due win/loss possono spostare molto la freccia.
         </div>
+
+      </section>
+
+      <section class="card-lite">
+        <h2 style="margin:0 0 6px 0;">Approfondimento (opzionale)</h2>
+        <div class="muted">
+          Qui sotto trovi una descrizione più tecnica di come vengono calcolate le due coordinate del grafico. È pensata
+          per chi vuole “aprire il cofano”, ma puoi ignorarla senza perdere nulla nella lettura del Meta Profile.
+        </div>
+
+        <details style="margin-top:10px;">
+          <summary style="cursor:pointer;"><b>Mostra formule e dettagli</b></summary>
+          <div class="card-lite" style="margin:10px 0 0 0;">
+            <h3 style="margin:0 0 6px 0;">MDI (asse X): sopra / sotto al tavolo</h3>
+            <div class="muted">
+              Per ogni partita e per ogni player si guarda la differenza tra il suo <i>bracket</i> e la media del tavolo
+              (calcolata sugli altri giocatori).
+            </div>
+            <div style="margin-top:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 13px;">
+              d = bracket_player − avg(bracket_altri)
+            </div>
+            <div class="muted" style="margin-top:8px;">
+              Il valore finale è la media di <b>d</b> sulle partite del player:
+              negativo ⇒ in media giochi sotto al tavolo; positivo ⇒ in media giochi sopra.
+            </div>
+          </div>
+
+          <div class="card-lite" style="margin:10px 0 0 0;">
+            <h3 style="margin:0 0 6px 0;">Expected win: “quanto era probabile vincere”</h3>
+            <div class="muted">
+              Per stimare l'atteso, ogni partita assegna a ciascun player una probabilità di vittoria in base ai bracket.
+              Usiamo una <i>softmax</i> (più bracket ⇒ più probabilità, ma mai 100%).
+            </div>
+            <div style="margin-top:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 13px;">
+              p_i = exp(k·b_i) / Σ_j exp(k·b_j)   (k = 0.8)
+            </div>
+          </div>
+
+          <div class="card-lite" style="margin:10px 0 0 0;">
+            <h3 style="margin:0 0 6px 0;">OEWR-Z (asse Y): over/under-performance normalizzata</h3>
+            <div class="muted">
+              In ogni partita confrontiamo risultato reale e risultato atteso.
+              Se vinci quando eri sfavorito, il tuo “residuo” è positivo; se perdi da favorito, è negativo.
+            </div>
+            <div style="margin-top:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 13px;">
+              residual = actual − expected
+            </div>
+            <div class="muted" style="margin-top:8px;">
+              La versione <b>Z</b> rende comparabili player con volumi diversi (e riduce l'effetto delle “poche partite”).
+            </div>
+            <div style="margin-top:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 13px;">
+              OEWR_Z = (Σ residual) / sqrt( Σ expected·(1−expected) )
+            </div>
+            <div class="muted" style="margin-top:8px;">
+              Regola pratica: valori intorno a 0 = in linea con l'atteso; circa +2/-2 = differenza evidente (ma non “verità assoluta”).
+            </div>
+          </div>
+        </details>
       </section>
 
       <footer class="footer">

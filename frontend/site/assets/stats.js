@@ -24,6 +24,7 @@
 
   const COL_TEXT_MUTED = "#aab3d3";
   const COL_TEXT_MAIN = "#e9ecf7";
+  const MAX_Y_PLOTS = 60
 
   function pcGet(name) {
     return (window.PlayerColors && window.PlayerColors.get) ? window.PlayerColors.get(name) : "#9CA3AF";
@@ -121,7 +122,8 @@
         scales: {
           x: {
             min: 0,
-            max: 100,
+            max: MAX_Y_PLOTS,
+            grace: 0, // niente extra spazio sopra
             ticks: { color: COL_TEXT_MUTED, callback: (v) => `${v}%` },
             grid: { color: "rgba(255,255,255,0.05)" },
           },
@@ -189,7 +191,8 @@
           },
           y: {
             min: 0,
-            max: 100,
+            max: MAX_Y_PLOTS,
+            grace: 0, // niente extra spazio sopra
             title: { display: true, text: "Winrate (%)", color: COL_TEXT_MUTED },
             ticks: { color: COL_TEXT_MUTED, callback: (v) => `${v}%` },
             grid: { color: "rgba(255,255,255,0.05)" },
