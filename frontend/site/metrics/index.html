@@ -1,4 +1,5 @@
 <!doctype html>
+
 <html lang="it">
 <head>
   <meta charset="utf-8" />
@@ -56,145 +57,175 @@
   <main class="container">
     <div class="guide">
 
-      <section class="card-lite">
-        <h1 style="margin:0 0 6px 0;">Metrics</h1>
-        <div class="muted">
-          Questa pagina spiega come leggere le schede principali: <b>Stats</b> e <b>Meta Profile</b>.
-          Prima il significato pratico; più sotto trovi anche un <b>approfondimento</b> con un po' di matematica.
-        </div>
-
-        <div class="callout">
-          <b>Idea generale:</b> “Stats” dice <i>cosa succede</i> (winrate), “Meta Profile” dice <i>come</i> ci arrivi
-          rispetto al livello del tavolo.
-        </div>
-      </section>
-
-      <section class="card-lite">
-        <h2 style="margin:0 0 6px 0;">Scheda Stats</h2>
-        <div class="muted">
-          È il pannello “classico”: partite, vittorie e winrate. Serve per capire chi sta convertendo meglio in assoluto.
-        </div>
-        <ul class="bullets">
-          <li><b>Winrate per player</b>: confronto diretto tra giocatori.</li>
-          <li><b>Winrate vs Partite</b>: ti fa capire se un winrate è supportato da volume o è “volatile”.</li>
-          <li><b>Tooltip</b>: passando il mouse sulle barre vedi <i>partite totali</i> e <i>vittorie</i> oltre al winrate.</li>
-        </ul>
-      </section>
-
-      <section class="card-lite">
-        <h2 style="margin:0 0 6px 0;">Scheda Meta Profile</h2>
-        <div class="muted">
-          Qui ogni player è una <b>freccia</b> che parte da (0,0). La punta della freccia è la sua “posizione” nel meta.
-        </div>
-
-        <div class="grid2" style="margin-top:10px;">
-          <div class="card-lite" style="margin:0;">
-            <h3 style="margin:0 0 6px 0;">Come leggere una freccia</h3>
-            <ul class="bullets">
-              <li><b>Direzione</b>: ti dice se stai giocando sopra/sotto al tavolo e se stai over/under-performando.</li>
-              <li><b>Lunghezza</b>: più è lunga, più il profilo è “marcato” (sei più lontano dallo zero).</li>
-              <li><b>Bolla in punta</b>: più è grande, più partite ci sono dietro (profilo più “affidabile”).</li>
-            </ul>
-          </div>
-
-          <div class="card-lite" style="margin:0;">
-            <h3 style="margin:0 0 6px 0;">Cosa misurano gli assi</h3>
-            <ul class="bullets">
-              <li><b>Asse X (MDI)</b>: quanto, in media, il tuo bracket è <i>sopra</i> o <i>sotto</i> quello del tavolo.</li>
-              <li><b>Asse Y (OEWR-Z)</b>: se stai vincendo <i>più</i> o <i>meno</i> di quanto ci si aspetterebbe dato il power relativo.</li>
-            </ul>
-            <div class="muted" style="margin-top:8px;">
-              In pratica: X parla di “contesto”, Y parla di “conversione”.
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-top:12px;">
-          <span class="tag"><b>DOMINANT</b> (alto-destra)</span>
-          <span class="tag"><b>OUTPLAYING</b> (alto-sinistra)</span>
-          <span class="tag"><b>INEFFICIENT</b> (basso-destra)</span>
-          <span class="tag"><b>STRUGGLING</b> (basso-sinistra)</span>
-        </div>
-
-        <div class="callout" style="margin-top:10px;">
-          <b>Significato delle etichette:</b>
-          <ul class="bullets">
-            <li><b>DOMINANT</b>: sei sopra al tavolo <i>e</i> stai convertendo oltre l’atteso.</li>
-            <li><b>OUTPLAYING</b>: sei sotto al tavolo ma stai comunque convertendo oltre l’atteso (skill/linee buone).</li>
-            <li><b>INEFFICIENT</b>: sei sopra al tavolo ma stai convertendo meno dell’atteso (vantaggio non capitalizzato).</li>
-            <li><b>STRUGGLING</b>: sei sotto al tavolo e anche sotto l’atteso (casual/test o difficoltà nel meta).</li>
-          </ul>
-        </div>
-
-        <div class="muted" style="margin-top:10px;">
-          Nota: il grafico racconta tendenze. Con poche partite, una o due win/loss possono spostare molto la freccia.
-        </div>
-
-      </section>
-
-      <section class="card-lite">
-        <h2 style="margin:0 0 6px 0;">Approfondimento (opzionale)</h2>
-        <div class="muted">
-          Qui sotto trovi una descrizione più tecnica di come vengono calcolate le due coordinate del grafico. È pensata
-          per chi vuole “aprire il cofano”, ma puoi ignorarla senza perdere nulla nella lettura del Meta Profile.
-        </div>
-
-        <details style="margin-top:10px;">
-          <summary style="cursor:pointer;"><b>Mostra formule e dettagli</b></summary>
-          <div class="card-lite" style="margin:10px 0 0 0;">
-            <h3 style="margin:0 0 6px 0;">MDI (asse X): sopra / sotto al tavolo</h3>
-            <div class="muted">
-              Per ogni partita e per ogni player si guarda la differenza tra il suo <i>bracket</i> e la media del tavolo
-              (calcolata sugli altri giocatori).
-            </div>
-            <div style="margin-top:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 13px;">
-              d = bracket_player − avg(bracket_altri)
-            </div>
-            <div class="muted" style="margin-top:8px;">
-              Il valore finale è la media di <b>d</b> sulle partite del player:
-              negativo ⇒ in media giochi sotto al tavolo; positivo ⇒ in media giochi sopra.
-            </div>
-          </div>
-
-          <div class="card-lite" style="margin:10px 0 0 0;">
-            <h3 style="margin:0 0 6px 0;">Expected win: “quanto era probabile vincere”</h3>
-            <div class="muted">
-              Per stimare l'atteso, ogni partita assegna a ciascun player una probabilità di vittoria in base ai bracket.
-              Usiamo una <i>softmax</i> (più bracket ⇒ più probabilità, ma mai 100%).
-            </div>
-            <div style="margin-top:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 13px;">
-              p_i = exp(k·b_i) / Σ_j exp(k·b_j)   (k = 0.8)
-            </div>
-          </div>
-
-          <div class="card-lite" style="margin:10px 0 0 0;">
-            <h3 style="margin:0 0 6px 0;">OEWR-Z (asse Y): over/under-performance normalizzata</h3>
-            <div class="muted">
-              In ogni partita confrontiamo risultato reale e risultato atteso.
-              Se vinci quando eri sfavorito, il tuo “residuo” è positivo; se perdi da favorito, è negativo.
-            </div>
-            <div style="margin-top:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 13px;">
-              residual = actual − expected
-            </div>
-            <div class="muted" style="margin-top:8px;">
-              La versione <b>Z</b> rende comparabili player con volumi diversi (e riduce l'effetto delle “poche partite”).
-            </div>
-            <div style="margin-top:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 13px;">
-              OEWR_Z = (Σ residual) / sqrt( Σ expected·(1−expected) )
-            </div>
-            <div class="muted" style="margin-top:8px;">
-              Regola pratica: valori intorno a 0 = in linea con l'atteso; circa +2/-2 = differenza evidente (ma non “verità assoluta”).
-            </div>
-          </div>
-        </details>
-      </section>
-
-      <footer class="footer">
-        <span>Static site per GitHub Pages · dati da SQLite</span>
-      </footer>
+  <section class="card-lite">
+    <h1 style="margin:0 0 6px 0;">Metrics</h1>
+    <div class="muted">
+      Questa pagina spiega come leggere le schede principali: <b>Stats</b> e <b>Meta Profile</b>.
+      Prima trovi una spiegazione pratica e intuitiva; più sotto c’è anche un <b>approfondimento</b>
+      per chi vuole capire come sono costruite le metriche.
     </div>
+
+    <div class="callout">
+      <b>Idea generale:</b> “Stats” dice <i>cosa succede</i> (vittorie e winrate),
+      “Meta Profile” dice <i>perché</i> succede, in relazione al livello dei tavoli giocati.
+    </div>
+  </section>
+
+  <section class="card-lite">
+    <h2 style="margin:0 0 6px 0;">Scheda Stats</h2>
+    <div class="muted">
+      È il pannello più diretto: quante partite giochi, quante ne vinci e con che frequenza.
+      Serve per capire <b>chi converte meglio in assoluto</b>, senza tenere conto del contesto.
+    </div>
+    <ul class="bullets">
+      <li><b>Winrate per player</b>: confronto diretto tra giocatori.</li>
+      <li><b>Winrate vs Partite</b>: aiuta a distinguere tra risultati solidi e numeri ancora volatili.</li>
+      <li><b>Tooltip</b>: passando il mouse vedi partite totali e vittorie oltre al winrate.</li>
+    </ul>
+  </section>
+
+  <section class="card-lite">
+    <h2 style="margin:0 0 6px 0;">Scheda Meta Profile</h2>
+    <div class="muted">
+      Qui ogni player è rappresentato da una <b>freccia</b> che parte dal centro (0,0).
+      Il centro rappresenta un player <i>neutro</i>: gioca al proprio livello e ottiene
+      risultati coerenti con quanto il tavolo renderebbe probabile.
+    </div>
+
+    <div class="grid2" style="margin-top:10px;">
+      <div class="card-lite" style="margin:0;">
+        <h3 style="margin:0 0 6px 0;">Come leggere una freccia</h3>
+        <ul class="bullets">
+          <li><b>Direzione</b>: indica <i>in che modo</i> ti discosti dal neutro:
+            se giochi in tavoli più forti o più deboli del tuo livello e se vinci
+            più o meno di quanto quel contesto renderebbe probabile.</li>
+          <li><b>Lunghezza</b>: più è lunga, più il profilo è marcato
+            (sei più lontano dal comportamento “neutro”).</li>
+          <li><b>Bolla in punta</b>: rappresenta il numero di partite:
+            bolle grandi = profilo più affidabile.</li>
+        </ul>
+      </div>
+
+      <div class="card-lite" style="margin:0;">
+        <h3 style="margin:0 0 6px 0;">Cosa misurano gli assi</h3>
+        <ul class="bullets">
+          <li><b>Asse X (MDI – contesto)</b>: quanto, in media, il tuo bracket è
+            <i>sopra</i> o <i>sotto</i> quello del tavolo.</li>
+          <li><b>Asse Y (OEWR-Z – risultati)</b>: indica se stai vincendo
+            <i>più o meno spesso</i> di quanto sarebbe probabilmente previsto,
+            considerando il livello dei tavoli in cui giochi.</li>
+        </ul>
+        <div class="muted" style="margin-top:8px;">
+          In breve: <b>X descrive il contesto</b>, <b>Y misura quanto i risultati reali
+          si discostano dalle probabilità stimate per quel contesto</b>.
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <span class="tag"><b>DOMINANT</b> (alto-destra)</span>
+      <span class="tag"><b>OUTPLAYING</b> (alto-sinistra)</span>
+      <span class="tag"><b>INEFFICIENT</b> (basso-destra)</span>
+      <span class="tag"><b>STRUGGLING</b> (basso-sinistra)</span>
+    </div>
+
+    <div class="callout" style="margin-top:10px;">
+      <b>Significato delle etichette:</b>
+      <ul class="bullets">
+        <li><b>DOMINANT</b>: giochi in tavoli mediamente più deboli del tuo livello
+          e vinci più spesso di quanto il modello renderebbe probabile.</li>
+        <li><b>OUTPLAYING</b>: giochi in tavoli mediamente più forti,
+          ma vinci comunque più spesso di quanto il contesto suggerirebbe.</li>
+        <li><b>INEFFICIENT</b>: giochi in tavoli più deboli,
+          ma vinci meno spesso di quanto sarebbe probabilmente previsto.</li>
+        <li><b>STRUGGLING</b>: giochi in tavoli più forti e vinci meno spesso
+          di quanto il modello suggerirebbe.</li>
+      </ul>
+    </div>
+
+    <div class="muted" style="margin-top:6px;">
+      Importante: il Meta Profile non confronta i player in assoluto,
+      ma confronta <i>risultati reali</i> e <i>probabilità di vittoria stimate</i>
+      nel contesto dei tavoli giocati.
+    </div>
+
+    <div class="muted" style="margin-top:10px;">
+      Nota: il grafico racconta tendenze. Con poche partite, una o due vittorie o sconfitte
+      possono spostare sensibilmente la freccia.
+    </div>
+
+  </section>
+
+  <section class="card-lite">
+    <h2 style="margin:0 0 6px 0;">Approfondimento (opzionale)</h2>
+    <div class="muted">
+      Questa sezione descrive in modo più tecnico come vengono calcolate le due coordinate
+      del Meta Profile. È pensata per chi vuole capire il modello sottostante,
+      ma non è necessaria per interpretare il grafico.
+    </div>
+
+    <details style="margin-top:10px;">
+      <summary style="cursor:pointer;"><b>Mostra formule e dettagli</b></summary>
+      <div class="card-lite" style="margin:10px 0 0 0;">
+        <h3 style="margin:0 0 6px 0;">MDI (asse X): contesto del tavolo</h3>
+        <div class="muted">
+          Per ogni partita si calcola la differenza tra il bracket del player
+          e la media dei bracket degli altri giocatori al tavolo.
+        </div>
+        <div style="margin-top:8px; font-family: ui-monospace, monospace; font-size: 13px;">
+          d = bracket_player − avg(bracket_altri)
+        </div>
+        <div class="muted" style="margin-top:8px;">
+          Il valore finale è la media di <b>d</b> sulle partite del player:
+          negativo ⇒ giochi sotto al tavolo; positivo ⇒ giochi sopra.
+        </div>
+      </div>
+
+      <div class="card-lite" style="margin:10px 0 0 0;">
+        <h3 style="margin:0 0 6px 0;">Expected win: probabilità di vittoria stimata</h3>
+        <div class="muted">
+          Per ogni partita, a ciascun player viene assegnata una probabilità di vittoria
+          in base ai bracket del tavolo. Questa probabilità è calcolata con una <i>softmax</i>:
+          più bracket implica più probabilità, ma mai il 100%.
+        </div>
+        <div style="margin-top:8px; font-family: ui-monospace, monospace; font-size: 13px;">
+          p_i = exp(k·b_i) / Σ_j exp(k·b_j)   (k = 0.8)
+        </div>
+      </div>
+
+      <div class="card-lite" style="margin:10px 0 0 0;">
+        <h3 style="margin:0 0 6px 0;">OEWR-Z (asse Y): scostamento dall’atteso</h3>
+        <div class="muted">
+          In ogni partita si confronta il risultato reale con la probabilità di vittoria stimata.
+          Vincere quando si era sfavoriti produce uno scostamento positivo;
+          perdere quando si era favoriti produce uno scostamento negativo.
+        </div>
+        <div style="margin-top:8px; font-family: ui-monospace, monospace; font-size: 13px;">
+          residual = actual − expected
+        </div>
+        <div class="muted" style="margin-top:8px;">
+          La versione <b>Z</b> normalizza questi scostamenti tenendo conto del numero di partite
+          e della variabilità attesa, rendendo confrontabili player con volumi diversi.
+        </div>
+        <div style="margin-top:8px; font-family: ui-monospace, monospace; font-size: 13px;">
+          OEWR_Z = (Σ residual) / sqrt( Σ expected·(1−expected) )
+        </div>
+        <div class="muted" style="margin-top:8px;">
+          Regola pratica: valori intorno a 0 indicano risultati in linea con il modello;
+          valori intorno a ±2 indicano scostamenti evidenti, ma non conclusivi.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <footer class="footer">
+    <span>Static site per GitHub Pages · dati da SQLite</span>
+  </footer>
+</div>
+
   </main>
 
   <script src="../assets/nav.js?v=20260203"></script>
+
 </body>
 </html>
