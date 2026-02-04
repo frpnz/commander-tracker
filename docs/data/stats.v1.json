@@ -8,7 +8,7 @@
     {
       "games": 29,
       "player": "Fra",
-      "wins": 11
+      "wins": 10
     },
     {
       "games": 26,
@@ -33,7 +33,7 @@
     {
       "games": 1,
       "player": "Ivan",
-      "wins": 0
+      "wins": 1
     }
   ],
   "by_player_commander": [
@@ -133,7 +133,7 @@
       "commander": "Marwyn",
       "games": 3,
       "player": "Fra",
-      "wins": 2
+      "wins": 1
     },
     {
       "bracket": 5,
@@ -220,6 +220,13 @@
       "wins": 1
     },
     {
+      "bracket": 2,
+      "commander": "Tuono",
+      "games": 1,
+      "player": "Ivan",
+      "wins": 1
+    },
+    {
       "bracket": 4,
       "commander": "Lotho",
       "games": 1,
@@ -252,13 +259,6 @@
       "commander": "Tezzeret",
       "games": 1,
       "player": "Fra",
-      "wins": 0
-    },
-    {
-      "bracket": 2,
-      "commander": "Tuono",
-      "games": 1,
-      "player": "Ivan",
       "wins": 0
     },
     {
@@ -363,7 +363,7 @@
       "id": 44,
       "notes": null,
       "played_at": "2026-02-04 18:15:17",
-      "winner_player": "Fra"
+      "winner_player": "Ivan"
     },
     {
       "entries": [
@@ -1405,9 +1405,9 @@
       "games_used": 29,
       "mdi": 0.31609195402298856,
       "mpi": 0.6724137931034482,
-      "oewr": 0.05260333614706974,
+      "oewr": 0.01812057752638008,
       "oewr_used": 29,
-      "oewr_z": 0.6433229369765472,
+      "oewr_z": 0.22160919834799153,
       "player": "Fra"
     },
     {
@@ -1455,9 +1455,9 @@
       "games_used": 1,
       "mdi": -3.0,
       "mpi": 3.0,
-      "oewr": -0.0433908137377795,
+      "oewr": 0.9566091862622205,
       "oewr_used": 1,
-      "oewr_z": -0.21297646969725606,
+      "oewr_z": 4.6953543807984515,
       "player": "Ivan"
     }
   ],
@@ -1556,9 +1556,9 @@
       "games_used": 3,
       "mdi": 0.5,
       "mpi": 0.5,
-      "oewr": 0.17389846895629657,
+      "oewr": -0.15943486437703674,
       "oewr_used": 3,
-      "oewr_z": 0.602591086196763,
+      "oewr_z": -0.5524719606745767,
       "player": "Fra"
     },
     {
@@ -1710,9 +1710,9 @@
       "games_used": 1,
       "mdi": -3.0,
       "mpi": 3.0,
-      "oewr": -0.0433908137377795,
+      "oewr": 0.9566091862622205,
       "oewr_used": 1,
-      "oewr_z": -0.21297646969725606,
+      "oewr_z": 4.6953543807984515,
       "player": "Ivan"
     },
     {
