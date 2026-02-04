@@ -149,16 +149,6 @@
           },
           y: { ticks: { color: COL_TEXT_MUTED }, grid: { display: false } },
         },
-        onClick: (evt, elements, chart) => {
-          if (!elements?.length) return;
-          const idx = elements[0].index;
-          const player = chart?.data?.labels?.[idx];
-          if (!player || !elPlayer) return;
-          elPlayer.value = player;
-          // Reuse existing wiring: the change handler triggers update() and the bubble focus.
-          elPlayer.dispatchEvent(new Event("change"));
-        },
-
         plugins: {
           ...commonOptions().plugins,
           tooltip: {

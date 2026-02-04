@@ -32,45 +32,6 @@
     return window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
   }
 
-  function getBracketRange(stats) {
-    const br = stats && stats.filters && Array.isArray(stats.filters.brackets) ? stats.filters.brackets : null;
-    if (!br || br.length < 2) return null;
-    const nums = br.map((x) => Number(x)).filter((x) => Number.isFinite(x));
-    if (nums.length < 2) return null;
-    const minB = Math.min(...nums);
-    const maxB = Math.max(...nums);
-    const rng = maxB - minB;
-    return (Number.isFinite(rng) && rng > 0) ? { minB, maxB, rng } : null;
-  }
-
-  function normalizeMdi(mdiRaw, bracketInfo) {
-    if (typeof mdiRaw !== "number" || !Number.isFinite(mdiRaw)) return null;
-    if (!bracketInfo || !Number.isFinite(bracketInfo.rng) || bracketInfo.rng <= 0) return mdiRaw; // fallback: no normalization
-    return mdiRaw / bracketInfo.rng;
-  }
-
-  function computeAxisLimitY(points) {
-    let m = 0;
-    for (const p of points) {
-      if (typeof p.oewr_z === "number") m = Math.max(m, Math.abs(p.oewr_z));
-    }
-    if (!isFinite(m) || m <= 0) m = 1;
-    m *= 1.12; // padding
-    m = Math.max(0.75, Math.min(3.0, m)); // sane clamp
-    return m;
-  }
-
-  function computeAxisLimitXNormalized(bracketInfo) {
-    // Normalized MDI lives roughly in [-1, +1] (exact if bracket range is complete).
-    // Add a little padding and keep it within reasonable bounds.
-    let m = 1.0;
-    // If no bracketInfo, we fall back to raw MDI and let Y logic drive; keep previous behavior later.
-    m *= 1.08;
-    m = Math.max(0.75, Math.min(1.5, m));
-    return m;
-  }
-
-
   function computeAxisLimit(points) {
     let m = 0;
     for (const p of points) {
@@ -192,23 +153,20 @@
     },
   };
 
-  function render(points, bracketInfo) {
+  function render(points) {
     if (!canvas) return;
     if (chart) chart.destroy();
 
-    const axisY = computeAxisLimitY(points);
-
-    // MDI is shown normalized on X when bracket range is available (hybrid: tooltip keeps raw MDI).
-    const axisX = bracketInfo ? computeAxisLimitXNormalized(bracketInfo) : computeAxisLimit(points);
+    const axis = computeAxisLimit(points);
     const datasets = (points || [])
-      .filter((p) => typeof p.mdi === "number" && typeof p.oewr_z === "number" && normalizeMdi(p.mdi, bracketInfo) !== null)
+      .filter((p) => typeof p.mdi === "number" && typeof p.oewr_z === "number")
       .map((p) => {
         const col = pcGet(p.player);
         const games = Number(p.games_total || 0);
         const r = Math.max(5, Math.sqrt(Math.max(1, games)) * 2);
         return {
           label: p.player,
-          data: [{ x: normalizeMdi(p.mdi, bracketInfo), y: p.oewr_z, r, oewr: p.oewr, mdi_raw: p.mdi }],
+          data: [{ x: p.mdi, y: p.oewr_z, r, oewr: p.oewr }],
           backgroundColor: pcAlpha(col, 0.25),
           borderColor: col,
           borderWidth: 2,
@@ -225,19 +183,19 @@
         maintainAspectRatio: false,
         scales: {
           x: {
-            min: -axisX,
-             max: axisX,
+            min: -axis,
+            max: axis,
             title: {
               display: true,
-              text: "MDI (normalizzato)  ← sotto tavolo | sopra tavolo →",
+              text: "MDI (power relativo)  ← sotto tavolo | sopra tavolo →",
               color: "#aab3d3",
             },
             ticks: { color: "#aab3d3" },
             grid: { color: "rgba(255,255,255,0.08)" },
           },
           y: {
-            min: -axisY,
-             max: axisY,
+            min: -axis,
+            max: axis,
             title: {
               display: true,
               text: "OEWR_Z (z-score vs attesa)  ← sotto attesa | sopra attesa →",
@@ -256,18 +214,13 @@
           tooltip: {
             callbacks: {
               label: (ctx) => {
-                const x = ctx.raw.x;           // normalized (when bracketInfo is available)
+                const x = ctx.raw.x;
                 const y = ctx.raw.y;
                 const mag = Math.sqrt(x * x + y * y);
-
-                const mdiRaw = ctx.raw.mdi_raw;
-                const mdiRawTxt = (typeof mdiRaw === "number" && Number.isFinite(mdiRaw)) ? mdiRaw.toFixed(2) : "n/a";
-
                 const oewr = ctx.raw.oewr;
                 const oewrPP = (oewr === null || oewr === undefined) ? null : (100.0 * oewr);
                 const oewrTxt = (oewrPP === null) ? "n/a" : `${oewrPP.toFixed(1)}pp`;
-
-                return `${ctx.dataset.label}: MDI_norm ${x.toFixed(2)} (raw ${mdiRawTxt}), OEWR_Z ${y.toFixed(2)}, OEWR ${oewrTxt}, |v| ${mag.toFixed(2)}`;
+                return `${ctx.dataset.label}: MDI ${x.toFixed(2)}, OEWR_Z ${y.toFixed(2)}, OEWR ${oewrTxt}, |v| ${mag.toFixed(2)}`;
               },
             },
           },
@@ -296,9 +249,8 @@ window.addEventListener("resize", () => {
       if (elMeta) elMeta.textContent = `Generato il: ${stats.generated_utc}`;
 
       const points = stats.meta_profile_by_player || [];
-      const bracketInfo = getBracketRange(stats);
-      render(points, bracketInfo);
-} catch (e) {
+      render(points);
+    } catch (e) {
       console.error("Errore caricamento profilo:", e);
     }
   }

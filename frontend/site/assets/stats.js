@@ -51,6 +51,26 @@
       .filter((p) => p.name);
   }
 
+  function computeCommandersForPlayer(playerName) {
+    const rows = Array.isArray(stats?.by_player_commander) ? stats.by_player_commander : [];
+    const filtered = rows.filter((r) => r && r.player === playerName);
+    const byCommander = new Map();
+    for (const r of filtered) {
+      const commander = String(r.commander || "").trim();
+      if (!commander) continue;
+      const games = asNum(r.games, 0);
+      const wins = asNum(r.wins, 0);
+      const cur = byCommander.get(commander) || { commander, games: 0, wins: 0 };
+      cur.games += games;
+      cur.wins += wins;
+      byCommander.set(commander, cur);
+    }
+    return Array.from(byCommander.values()).map((c) => ({
+      ...c,
+      winRate: c.games > 0 ? (100 * c.wins) / c.games : 0,
+    }));
+  }
+
   function fillPlayerSelect(players) {
     if (!elPlayer) return;
     const names = Array.from(new Set(players.map((p) => p.name))).sort((a, b) => a.localeCompare(b));
@@ -129,6 +149,16 @@
           },
           y: { ticks: { color: COL_TEXT_MUTED }, grid: { display: false } },
         },
+        onClick: (evt, elements, chart) => {
+          if (!elements?.length) return;
+          const idx = elements[0].index;
+          const player = chart?.data?.labels?.[idx];
+          if (!player || !elPlayer) return;
+          elPlayer.value = player;
+          // Reuse existing wiring: the change handler triggers update() and the bubble focus.
+          elPlayer.dispatchEvent(new Event("change"));
+        },
+
         plugins: {
           ...commonOptions().plugins,
           tooltip: {
@@ -154,29 +184,45 @@
     if (!canvasBubble) return;
     if (bubbleChart) bubbleChart.destroy();
 
-    const rows = [...players].filter((p) => p.games > 0);
-    const maxGames = Math.max(1, ...rows.map((p) => p.games));
+    const isFocus = !!highlightName;
+    const rows = isFocus
+      ? computeCommandersForPlayer(highlightName).filter((c) => c.games > 0)
+      : [...players].filter((p) => p.games > 0);
 
-    const points = rows.map((p) => ({
-      x: p.games,
-      y: p.winRate,
+    const maxGames = Math.max(1, ...rows.map((r) => r.games));
+
+    const points = rows.map((r) => ({
+      x: r.games,
+      y: r.winRate,
       r: 11,
-      _p: p,
+      _row: r,
+      _mode: isFocus ? "commander" : "player",
+      _player: highlightName || null,
     }));
 
     bubbleChart = new Chart(canvasBubble.getContext("2d"), {
       type: "bubble",
       data: {
         datasets: [{
-          label: "Players",
+          label: isFocus ? "Commanders" : "Players",
           data: points,
           backgroundColor: points.map((pt) => {
-            const base = pcGet(pt._p.name);
+            if (pt._mode === "commander") {
+              const base = pcGet(pt._player);
+              return pcAlpha(base, 0.32);
+            }
+            const base = pcGet(pt._row.name);
             if (!highlightName) return pcAlpha(base, 0.30);
-            return pcAlpha(base, pt._p.name === highlightName ? 0.45 : 0.12);
+            return pcAlpha(base, pt._row.name === highlightName ? 0.45 : 0.12);
           }),
-          borderColor: points.map((pt) => pcGet(pt._p.name)),
-          borderWidth: points.map((pt) => (highlightName && pt._p.name === highlightName) ? 2 : 1),
+          borderColor: points.map((pt) => {
+            if (pt._mode === "commander") return pcGet(pt._player);
+            return pcGet(pt._row.name);
+          }),
+          borderWidth: points.map((pt) => {
+            if (pt._mode === "commander") return 1;
+            return (highlightName && pt._row.name === highlightName) ? 2 : 1;
+          }),
         }],
       },
       options: {
@@ -190,11 +236,17 @@
             grid: { color: "rgba(255,255,255,0.05)" },
           },
           y: {
-            min: 0,
-            max: MAX_Y_PLOTS,
-            grace: 0, // niente extra spazio sopra
+            min: -10,
+            max: 110,          // include sempre 0 e 100
+            grace: 0,
             title: { display: true, text: "Winrate (%)", color: COL_TEXT_MUTED },
-            ticks: { color: COL_TEXT_MUTED, callback: (v) => `${v}%` },
+            ticks: {
+              color: COL_TEXT_MUTED,
+              // Nasconde eventuali tick "artificiali" (es. negativi) se Chart.js li produce
+              callback: (v) => (v < 0 || v > 100) ? "" : `${v}%`,
+              // opzionale (consigliato): rende la scala leggibile e stabile
+              stepSize: 10,
+            },
             grid: { color: "rgba(255,255,255,0.05)" },
           },
         },
@@ -203,10 +255,15 @@
           tooltip: {
             ...commonOptions().plugins.tooltip,
             callbacks: {
-              title: (items) => items?.[0]?.raw?._p?.name || "",
+              title: (items) => {
+                const raw = items?.[0]?.raw;
+                if (!raw) return "";
+                if (raw._mode === "commander") return raw._row?.commander || "";
+                return raw._row?.name || "";
+              },
               label: (ctx) => {
-                const p = ctx.raw._p;
-                return `Winrate: ${p.winRate.toFixed(1)}% · Vittorie: ${p.wins} · Partite: ${p.games}`;
+                const r = ctx.raw._row;
+                return `Winrate: ${r.winRate.toFixed(1)}% · Vittorie: ${r.wins} · Partite: ${r.games}`;
               },
             },
           },

@@ -3,7 +3,7 @@
 
   --home-bg-url: url("../assets/home.png");
   --home-bg-url-mobile: url("../assets/home-mobile.png");
-
+  --logo-mask: url("../assets/logo-ruins.svg");
   --bg:#0b1020;
   --text:#e9ecf7;
   --muted:#aab3d3;
@@ -54,6 +54,8 @@ body::before{
 }
 
 .brand{display:flex; gap:12px; align-items:center}
+
+/*
 .logo{
   width:44px;height:44px;border-radius:14px;
   background-image: var(--logo-url);
@@ -63,6 +65,33 @@ body::before{
   border:1px solid var(--border);
   box-shadow: var(--shadow);
 }
+*/
+
+.logo{
+  width:44px;height:44px;border-radius:14px;
+  border:1px solid var(--border);
+  box-shadow: var(--shadow);
+
+  /* sfondo badge come prima */
+  background: linear-gradient(135deg, rgba(110,231,255,.18), rgba(184,255,110,.14));
+  color: var(--text);
+
+  position: relative;
+  overflow: hidden;
+}
+
+.logo::before{
+  content:"";
+  position:absolute;
+  inset: 3px;
+  display:block;
+  background: currentColor;
+
+  -webkit-mask: var(--logo-mask) no-repeat center / contain;
+  mask: var(--logo-mask) no-repeat center / contain;
+}
+
+
 
 .title{font-weight:750; letter-spacing:.2px}
 .subtitle{color:var(--muted); font-size:13px; margin-top:2px}
