@@ -333,27 +333,59 @@ class Handler(BaseHTTPRequestHandler):
 
         notice = ""
         if updated:
-            notice = f'<div class="notice ok">✅ Import completato. <span class="muted">{esc(msg)}</span></div>'
+            notice = f'<div class="flash ok">✅ Import completato. <span class="muted">{esc(msg)}</span></div>'
         elif msg:
-            notice = f'<div class="notice err">⚠️ {esc(msg)}</div>'
+            notice = f'<div class="flash err">⚠️ {esc(msg)}</div>'
 
+        # NOTA: Qui usiamo le doppie graffe {{ }} per il CSS e il JS
+        # in modo che Python non le scambi per variabili.
         body = f"""
         <h1>Importa JSON</h1>
         {notice}
-        <p class="muted">Incolla il JSON generato da <b>Nuova partita</b> sul sito. Formato atteso:</p>
-        <pre style="background:#f7f7f7; padding:10px; border-radius:8px; overflow:auto; font-size:12px;">
-{{"version":"game.v1","played_at":"YYYY-MM-DD HH:MM:SS","winner_player":"...","notes":null,"entries":[{{"player":"...","commander":"...","bracket":4}}]}}
-        </pre>
+        <p class="muted">Carica il file <code>.json</code> o incolla il contenuto qui sotto.</p>
+
+        <div class="card" style="margin-bottom: 20px; border: 2px dashed #ccc; padding: 20px; text-align: center;">
+            <label style="margin-top:0;"><b>Seleziona un file .json</b></label>
+            <input type="file" id="json_file_input" accept=".json" style="margin-top:10px;">
+            <p id="file_status" class="muted" style="margin-top:10px; font-weight: bold;"></p>
+        </div>
 
         <form method="post" action="/admin/games/import_json">
           <label>Payload JSON</label>
-          <textarea name="payload" rows="14" style="width:100%; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:12px;" required placeholder='{{...}}'></textarea>
+          <textarea id="json_payload" name="payload" rows="14" style="width:100%; font-family: ui-monospace, monospace; font-size:12px;" required placeholder='{{...}}'></textarea>
 
           <div class="btn-row" style="margin-top:12px;">
             <button class="primary" type="submit">Importa</button>
-            <a class="btn" href="/admin/games">Annulla</a>
+            <a class="btn" href="/admin/games" style="text-decoration:none; padding: 8px 12px; border:1px solid #ccc; border-radius:10px; color:#111; background:#f6f6f6;">Annulla</a>
           </div>
         </form>
+
+        <script>
+        document.getElementById('json_file_input').addEventListener('change', function(e) {{
+            const file = e.target.files[0];
+            const status = document.getElementById('file_status');
+            const textarea = document.getElementById('json_payload');
+
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {{
+                try {{
+                    const content = e.target.result;
+                    // Validazione minima per l'utente
+                    JSON.parse(content); 
+                    textarea.value = content;
+                    status.style.color = "green";
+                    status.textContent = "✅ File '" + file.name + "' pronto per l'invio";
+                }} catch (err) {{
+                    status.style.color = "red";
+                    status.textContent = "❌ Errore: Il file non è un JSON valido";
+                    textarea.value = "";
+                }}
+            }};
+            reader.readAsText(file);
+        }});
+        </script>
         """
         return self._send_html(page("Importa JSON", body))
 
