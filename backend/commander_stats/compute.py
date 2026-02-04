@@ -471,9 +471,9 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
             SUM(CASE WHEN g.winner_player = ge.player THEN 1 ELSE 0 END) AS wins
         FROM gameentry ge
         JOIN game g ON g.id = ge.game_id
-        WHERE ge.bracket IS NOT NULL AND ge.bracket != ''
+        WHERE ge.bracket IS NOT NULL
         GROUP BY ge.bracket
-        ORDER BY CAST(ge.bracket AS INTEGER) ASC
+        ORDER BY ge.bracket ASC
         """
     )
     _bb = _rows_to_dicts(cur.fetchall())
@@ -509,10 +509,10 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
         FROM gameentry ge
         JOIN game g ON g.id = ge.game_id
         WHERE ge.commander IS NOT NULL AND ge.commander != ''
-          AND ge.bracket IS NOT NULL AND ge.bracket != ''
+          AND ge.bracket IS NOT NULL
         GROUP BY ge.commander, ge.bracket
         HAVING COUNT(*) >= 3
-        ORDER BY CAST(ge.bracket AS INTEGER) ASC, ge.commander ASC
+        ORDER BY ge.bracket ASC, ge.commander ASC
         """
     )
     _cb = _rows_to_dicts(cur.fetchall())

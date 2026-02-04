@@ -32,6 +32,63 @@
     return window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
   }
 
+
+  function supportsFullscreen() {
+    return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  }
+  function isFullscreen() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+  async function enterFullscreen(el) {
+    if (el.requestFullscreen) return el.requestFullscreen();
+    if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+  }
+  async function exitFullscreen() {
+    if (document.exitFullscreen) return document.exitFullscreen();
+    if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+  }
+
+  function setupFullscreenButton(cardEl, chartInstance) {
+    if (!cardEl || !chartInstance) return;
+    const tools = cardEl.querySelector(".head-tools");
+    if (!tools) return;
+
+    const btn = document.createElement("button");
+    btn.className = "btn-ico";
+    btn.type = "button";
+    btn.title = "Fullscreen";
+    btn.setAttribute("aria-label", "Fullscreen chart");
+    btn.textContent = "⤢";
+    tools.appendChild(btn);
+
+    const sync = () => {
+      const fs = isFullscreen();
+      if (fs) cardEl.classList.add("chart-fs");
+      else cardEl.classList.remove("chart-fs");
+      setTimeout(() => chartInstance.resize(), 50);
+    };
+
+    btn.addEventListener("click", async () => {
+      if (supportsFullscreen()) {
+        if (!isFullscreen()) await enterFullscreen(cardEl);
+        else await exitFullscreen();
+      } else {
+        cardEl.classList.toggle("chart-fs");
+        setTimeout(() => chartInstance.resize(), 50);
+      }
+    });
+
+    document.addEventListener("fullscreenchange", sync);
+    document.addEventListener("webkitfullscreenchange", sync);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && cardEl.classList.contains("chart-fs") && !isFullscreen()) {
+        cardEl.classList.remove("chart-fs");
+        setTimeout(() => chartInstance.resize(), 50);
+      }
+    });
+  }
+
   function getBracketRange(stats) {
     const br = stats && stats.filters && Array.isArray(stats.filters.brackets) ? stats.filters.brackets : null;
     if (!br || br.length < 2) return null;
@@ -223,35 +280,45 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: isMobile() ? 4 : 10 },
         scales: {
           x: {
             min: -axisX,
              max: axisX,
             title: {
-              display: true,
+              display: !isMobile(),
               text: "MDI (normalizzato)  ← sotto tavolo | sopra tavolo →",
               color: "#aab3d3",
             },
-            ticks: { color: "#aab3d3" },
+            ticks: { color: "#aab3d3", maxTicksLimit: isMobile() ? 5 : 7 },
             grid: { color: "rgba(255,255,255,0.08)" },
           },
           y: {
             min: -axisY,
              max: axisY,
             title: {
-              display: true,
+              display: !isMobile(),
               text: "OEWR_Z (z-score vs attesa)  ← sotto attesa | sopra attesa →",
               color: "#aab3d3",
             },
-            ticks: { color: "#aab3d3" },
+            ticks: { color: "#aab3d3", maxTicksLimit: isMobile() ? 5 : 7 },
             grid: { color: "rgba(255,255,255,0.08)" },
           },
         },
         plugins: {
           legend: {
+            display: true,
             position: isMobile() ? "bottom" : "right",
-            align: "center",
-            labels: { color: "#e9ecf7", boxWidth: isMobile() ? 10 : 12, usePointStyle: true, font: { size: isMobile() ? 11 : 12 } },
+            align: "start",
+            maxHeight: isMobile() ? 72 : undefined,
+            labels: {
+              color: "#e9ecf7",
+              boxWidth: isMobile() ? 10 : 12,
+              boxHeight: isMobile() ? 10 : 12,
+              padding: isMobile() ? 8 : 10,
+              usePointStyle: true,
+              font: { size: isMobile() ? 10 : 12, weight: "600" },
+            },
           },
           tooltip: {
             callbacks: {
@@ -274,6 +341,9 @@
         },
       },
     });
+
+    setupFullscreenButton(document.getElementById("meta-profile-card"), chart);
+
 
 // Aggiorna posizione legenda su resize (mobile/desktop)
 window.addEventListener("resize", () => {

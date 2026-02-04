@@ -174,7 +174,13 @@ function renderRecentGames(data, state) {
 
     const right = document.createElement("div");
     right.className = "recent-winner";
-    right.innerHTML = `<span class="badge">Winner</span> ${g.winner_player || ""}`;
+    // Avoid injecting untrusted data via innerHTML (XSS hardening)
+    right.textContent = "";
+    const badge = document.createElement("span");
+    badge.className = "badge";
+    badge.textContent = "Winner";
+    right.appendChild(badge);
+    right.append(" " + (g.winner_player || ""));
 
     head.appendChild(left);
     head.appendChild(right);
