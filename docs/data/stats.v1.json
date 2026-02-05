@@ -6,12 +6,12 @@
       "wins": 11
     },
     {
-      "games": 29,
+      "games": 28,
       "player": "Fra",
       "wins": 10
     },
     {
-      "games": 27,
+      "games": 26,
       "player": "Matti",
       "wins": 10
     },
@@ -29,11 +29,6 @@
       "games": 15,
       "player": "Teo",
       "wins": 2
-    },
-    {
-      "games": 1,
-      "player": "Ivan",
-      "wins": 1
     }
   ],
   "by_player_commander": [
@@ -88,13 +83,6 @@
     },
     {
       "bracket": 5,
-      "commander": "Vivi",
-      "games": 6,
-      "player": "Matti",
-      "wins": 3
-    },
-    {
-      "bracket": 5,
       "commander": "Halana",
       "games": 6,
       "player": "Giamma",
@@ -102,10 +90,10 @@
     },
     {
       "bracket": 5,
-      "commander": "Magda",
+      "commander": "Vivi",
       "games": 5,
-      "player": "Fra",
-      "wins": 2
+      "player": "Matti",
+      "wins": 3
     },
     {
       "bracket": 4,
@@ -113,6 +101,13 @@
       "games": 5,
       "player": "Giamma",
       "wins": 1
+    },
+    {
+      "bracket": 5,
+      "commander": "Magda",
+      "games": 4,
+      "player": "Fra",
+      "wins": 2
     },
     {
       "bracket": 2,
@@ -220,13 +215,6 @@
       "wins": 1
     },
     {
-      "bracket": 5,
-      "commander": "Bestia",
-      "games": 1,
-      "player": "Ivan",
-      "wins": 1
-    },
-    {
       "bracket": 4,
       "commander": "Lotho",
       "games": 1,
@@ -284,8 +272,8 @@
     }
   ],
   "counts": {
-    "entries": 143,
-    "games": 40
+    "entries": 140,
+    "games": 39
   },
   "filters": {
     "brackets": [
@@ -298,7 +286,6 @@
       "Abigale",
       "Arabella",
       "Baba",
-      "Bestia",
       "Braids",
       "Brion",
       "Chandra",
@@ -335,36 +322,12 @@
       "Da",
       "Fra",
       "Giamma",
-      "Ivan",
       "Matti",
       "Stanca",
       "Teo"
     ]
   },
   "games": [
-    {
-      "entries": [
-        {
-          "bracket": 5,
-          "commander": "Vivi",
-          "player": "Matti"
-        },
-        {
-          "bracket": 5,
-          "commander": "Magda",
-          "player": "Fra"
-        },
-        {
-          "bracket": 5,
-          "commander": "Bestia",
-          "player": "Ivan"
-        }
-      ],
-      "id": 44,
-      "notes": null,
-      "played_at": "2026-02-05 01:06:06",
-      "winner_player": "Ivan"
-    },
     {
       "entries": [
         {
@@ -1378,7 +1341,7 @@
       "winner_player": "Fra"
     }
   ],
-  "generated_utc": "2026-02-05T01:06:06Z",
+  "generated_utc": "2026-02-02T16:47:24Z",
   "meta_profile": {
     "method": "delta_player_minus_avg_table_excl_player",
     "min_games_default": 3,
@@ -1401,23 +1364,23 @@
       "player": "Da"
     },
     {
-      "games_total": 29,
-      "games_used": 29,
-      "mdi": 0.26436781609195403,
-      "mpi": 0.6206896551724137,
-      "oewr": 0.023119586484924116,
-      "oewr_used": 29,
-      "oewr_z": 0.2834346382422085,
+      "games_total": 28,
+      "games_used": 28,
+      "mdi": 0.27380952380952384,
+      "mpi": 0.6428571428571427,
+      "oewr": 0.03585004790700474,
+      "oewr_used": 28,
+      "oewr_z": 0.43303420692516553,
       "player": "Fra"
     },
     {
-      "games_total": 27,
-      "games_used": 27,
-      "mdi": 0.27469135802469136,
-      "mpi": 0.7623456790123455,
-      "oewr": 0.0845659830928469,
-      "oewr_used": 27,
-      "oewr_z": 1.0010211559420912,
+      "games_total": 26,
+      "games_used": 26,
+      "mdi": 0.28525641025641024,
+      "mpi": 0.7916666666666665,
+      "oewr": 0.10063903372462307,
+      "oewr_used": 26,
+      "oewr_z": 1.1724717943305951,
       "player": "Matti"
     },
     {
@@ -1449,16 +1412,6 @@
       "oewr_used": 15,
       "oewr_z": -0.11303291321082935,
       "player": "Teo"
-    },
-    {
-      "games_total": 1,
-      "games_used": 1,
-      "mdi": 0.0,
-      "mpi": 0.0,
-      "oewr": 0.6666666666666667,
-      "oewr_used": 1,
-      "oewr_z": 1.4142135623730951,
-      "player": "Ivan"
     }
   ],
   "meta_profile_by_player_commander": [
@@ -1530,13 +1483,13 @@
     },
     {
       "commander": "Magda",
-      "games_total": 5,
-      "games_used": 5,
-      "mdi": 0.25,
-      "mpi": 0.25,
-      "oewr": 0.03925799642069755,
-      "oewr_used": 5,
-      "oewr_z": 0.18480649536048604,
+      "games_total": 4,
+      "games_used": 4,
+      "mdi": 0.3125,
+      "mpi": 0.3125,
+      "oewr": 0.13240582885920527,
+      "oewr_used": 4,
+      "oewr_z": 0.5564465386482313,
       "player": "Fra"
     },
     {
@@ -1705,17 +1658,6 @@
       "player": "Giamma"
     },
     {
-      "commander": "Bestia",
-      "games_total": 1,
-      "games_used": 1,
-      "mdi": 0.0,
-      "mpi": 0.0,
-      "oewr": 0.6666666666666667,
-      "oewr_used": 1,
-      "oewr_z": 1.4142135623730951,
-      "player": "Ivan"
-    },
-    {
       "commander": "Sephiroth",
       "games_total": 13,
       "games_used": 13,
@@ -1728,13 +1670,13 @@
     },
     {
       "commander": "Vivi",
-      "games_total": 6,
-      "games_used": 6,
-      "mdi": 0.3055555555555555,
-      "mpi": 0.3055555555555555,
-      "oewr": 0.18914038284154566,
-      "oewr_used": 6,
-      "oewr_z": 1.0052633684789696,
+      "games_total": 5,
+      "games_used": 5,
+      "mdi": 0.3666666666666666,
+      "mpi": 0.3666666666666666,
+      "oewr": 0.2936351260765214,
+      "oewr_used": 5,
+      "oewr_z": 1.4312980740210544,
       "player": "Matti"
     },
     {
