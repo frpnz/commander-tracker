@@ -29,6 +29,11 @@
       "games": 15,
       "player": "Teo",
       "wins": 2
+    },
+    {
+      "games": 1,
+      "player": "Ivan",
+      "wins": 1
     }
   ],
   "by_player_commander": [
@@ -83,17 +88,17 @@
     },
     {
       "bracket": 5,
+      "commander": "Vivi",
+      "games": 6,
+      "player": "Matti",
+      "wins": 3
+    },
+    {
+      "bracket": 5,
       "commander": "Halana",
       "games": 6,
       "player": "Giamma",
       "wins": 1
-    },
-    {
-      "bracket": 5,
-      "commander": "Vivi",
-      "games": 5,
-      "player": "Matti",
-      "wins": 3
     },
     {
       "bracket": 5,
@@ -215,6 +220,13 @@
       "wins": 1
     },
     {
+      "bracket": 5,
+      "commander": "Bestia",
+      "games": 1,
+      "player": "Ivan",
+      "wins": 1
+    },
+    {
       "bracket": 4,
       "commander": "Lotho",
       "games": 1,
@@ -257,13 +269,6 @@
       "wins": 0
     },
     {
-      "bracket": 4,
-      "commander": "Vivi",
-      "games": 1,
-      "player": "Matti",
-      "wins": 0
-    },
-    {
       "bracket": 2,
       "commander": "Finn",
       "games": 1,
@@ -279,7 +284,7 @@
     }
   ],
   "counts": {
-    "entries": 142,
+    "entries": 143,
     "games": 40
   },
   "filters": {
@@ -293,6 +298,7 @@
       "Abigale",
       "Arabella",
       "Baba",
+      "Bestia",
       "Braids",
       "Brion",
       "Chandra",
@@ -329,6 +335,7 @@
       "Da",
       "Fra",
       "Giamma",
+      "Ivan",
       "Matti",
       "Stanca",
       "Teo"
@@ -338,7 +345,7 @@
     {
       "entries": [
         {
-          "bracket": 4,
+          "bracket": 5,
           "commander": "Vivi",
           "player": "Matti"
         },
@@ -346,6 +353,11 @@
           "bracket": 5,
           "commander": "Magda",
           "player": "Fra"
+        },
+        {
+          "bracket": 5,
+          "commander": "Bestia",
+          "player": "Ivan"
         }
       ],
       "id": 44,
@@ -1391,21 +1403,21 @@
     {
       "games_total": 29,
       "games_used": 29,
-      "mdi": 0.2988505747126437,
-      "mpi": 0.6551724137931033,
-      "oewr": 0.03585004790700474,
-      "oewr_used": 28,
-      "oewr_z": 0.43303420692516553,
+      "mdi": 0.26436781609195403,
+      "mpi": 0.6206896551724137,
+      "oewr": 0.023119586484924116,
+      "oewr_used": 29,
+      "oewr_z": 0.2834346382422085,
       "player": "Fra"
     },
     {
       "games_total": 27,
       "games_used": 27,
-      "mdi": 0.23765432098765432,
-      "mpi": 0.7993827160493825,
-      "oewr": 0.10063903372462307,
-      "oewr_used": 26,
-      "oewr_z": 1.1724717943305951,
+      "mdi": 0.27469135802469136,
+      "mpi": 0.7623456790123455,
+      "oewr": 0.0845659830928469,
+      "oewr_used": 27,
+      "oewr_z": 1.0010211559420912,
       "player": "Matti"
     },
     {
@@ -1437,6 +1449,16 @@
       "oewr_used": 15,
       "oewr_z": -0.11303291321082935,
       "player": "Teo"
+    },
+    {
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": 0.0,
+      "mpi": 0.0,
+      "oewr": 0.6666666666666667,
+      "oewr_used": 1,
+      "oewr_z": 1.4142135623730951,
+      "player": "Ivan"
     }
   ],
   "meta_profile_by_player_commander": [
@@ -1510,11 +1532,11 @@
       "commander": "Magda",
       "games_total": 5,
       "games_used": 5,
-      "mdi": 0.45,
-      "mpi": 0.45,
-      "oewr": 0.13240582885920527,
-      "oewr_used": 4,
-      "oewr_z": 0.5564465386482313,
+      "mdi": 0.25,
+      "mpi": 0.25,
+      "oewr": 0.03925799642069755,
+      "oewr_used": 5,
+      "oewr_z": 0.18480649536048604,
       "player": "Fra"
     },
     {
@@ -1683,6 +1705,17 @@
       "player": "Giamma"
     },
     {
+      "commander": "Bestia",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": 0.0,
+      "mpi": 0.0,
+      "oewr": 0.6666666666666667,
+      "oewr_used": 1,
+      "oewr_z": 1.4142135623730951,
+      "player": "Ivan"
+    },
+    {
       "commander": "Sephiroth",
       "games_total": 13,
       "games_used": 13,
@@ -1697,11 +1730,11 @@
       "commander": "Vivi",
       "games_total": 6,
       "games_used": 6,
-      "mdi": 0.13888888888888884,
-      "mpi": 0.47222222222222215,
-      "oewr": 0.2936351260765214,
-      "oewr_used": 5,
-      "oewr_z": 1.4312980740210544,
+      "mdi": 0.3055555555555555,
+      "mpi": 0.3055555555555555,
+      "oewr": 0.18914038284154566,
+      "oewr_used": 6,
+      "oewr_z": 1.0052633684789696,
       "player": "Matti"
     },
     {
