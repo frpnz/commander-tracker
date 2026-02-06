@@ -218,6 +218,15 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
     # differences influence expected win probability.
     OEWR_K = 0.80
 
+    # --- Commander calibration (CPR-Z + posterior bracket) ---
+    # We treat each commander as a "hypothesis" about bracket strength.
+    # CPR-Z aggregates per-appearance residuals (actual - expected) under
+    # current brackets; B_post searches for a bracket shift that makes the
+    # commander unbiased (mean residual ~ 0).
+    calib_by_commander: Dict[str, Dict[str, Any]] = {}
+    calib_occurrences: Dict[str, List[Tuple[str, float, Dict[str, float]]]] = {}
+    calib_brackets_seen: Dict[str, List[int]] = {}
+
     for g in games.values():
         winner = g.get("winner")
         entries = g.get("entries") or []
@@ -382,6 +391,43 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
                     curmc["oewr_used"] += 1
                     curmc["oewr_sum"] += residual
                     curmc["oewr_var_sum"] += float(exp_p) * (1.0 - float(exp_p))
+
+                    # Commander calibration aggregation (per commander, not per player).
+                    # Track how this commander performs vs expected given the table brackets.
+                    curc = calib_by_commander.get(c)
+                    if curc is None:
+                        curc = {
+                            "commander": c,
+                            "games": 0,
+                            "wins": 0,
+                            "residual_sum": 0.0,
+                            "var_sum": 0.0,
+                        }
+                        calib_by_commander[c] = curc
+                    curc["games"] += 1
+                    curc["wins"] += int(actual)
+
+                    curc["residual_sum"] += residual
+                    curc["var_sum"] += float(exp_p) * (1.0 - float(exp_p))
+
+                    # Track brackets seen for this commander (should usually be constant).
+                    bseen = calib_brackets_seen.get(c)
+                    if bseen is None:
+                        bseen = []
+                        calib_brackets_seen[c] = bseen
+                    try:
+                        bint = int(float(bp))
+                        if 1 <= bint <= 5:
+                            bseen.append(bint)
+                    except Exception:
+                        pass
+
+                    # Store per-appearance occurrence for posterior bracket search.
+                    occ = calib_occurrences.get(c)
+                    if occ is None:
+                        occ = []
+                        calib_occurrences[c] = occ
+                    occ.append((p, float(actual), dict(br_by_player)))
 
         for e in entries:
             p = e.get("player") or ""
@@ -670,22 +716,128 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
         )
     )
 
+    
+    # --- Commander bracket calibration output ---
+    def _mode_int(vals: List[int]) -> int | None:
+        if not vals:
+            return None
+        counts: Dict[int, int] = {}
+        for v in vals:
+            counts[v] = counts.get(v, 0) + 1
+        # highest count then smallest value
+        return sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+
+    commander_calibration = []
+    # Posterior bracket search grid (quarter brackets)
+    BPOST_STEP = 0.25
+    BPOST_MIN = 1.0
+    BPOST_MAX = 5.0
+
+    def _expected_probs_with_override(br_map: Dict[str, float], override_player: str, override_b: float) -> Dict[str, float] | None:
+        # Stable softmax; returns None if denom is 0
+        bvals = []
+        for p, b in br_map.items():
+            bvals.append(float(override_b) if p == override_player else float(b))
+        bmax = max(bvals) if bvals else 0.0
+        exps: Dict[str, float] = {}
+        denom = 0.0
+        for p, b in br_map.items():
+            bb = float(override_b) if p == override_player else float(b)
+            ev = math.exp(OEWR_K * (bb - float(bmax)))
+            exps[p] = ev
+            denom += ev
+        if denom <= 0.0:
+            return None
+        return {p: (ev / denom) for p, ev in exps.items()}
+
+    for c, curc in calib_by_commander.items():
+        games_c = int(curc.get("games") or 0)
+        wins_c = int(curc.get("wins") or 0)
+        var_sum_c = float(curc.get("var_sum") or 0.0)
+        cpr_z = (float(curc.get("residual_sum") or 0.0) / math.sqrt(var_sum_c)) if var_sum_c > 0.0 else None
+
+        prior_mode = _mode_int(calib_brackets_seen.get(c) or [])
+        bracket_prior = prior_mode
+
+        # Posterior bracket search (quarter steps)
+        b_post = None
+        occ = calib_occurrences.get(c) or []
+        if occ:
+            best_abs = None
+            best_b = None
+            # iterate candidate B values
+            steps = int(round((BPOST_MAX - BPOST_MIN) / BPOST_STEP))
+            for si in range(steps + 1):
+                cand_b = BPOST_MIN + si * BPOST_STEP
+                # Compute mean residual for this commander if its bracket were cand_b
+                r_sum = 0.0
+                n = 0
+                for (p_c, actual_c, br_map) in occ:
+                    probs = _expected_probs_with_override(br_map, p_c, cand_b)
+                    if probs is None:
+                        continue
+                    exp_p = probs.get(p_c)
+                    if exp_p is None:
+                        continue
+                    r_sum += float(actual_c) - float(exp_p)
+                    n += 1
+                if n <= 0:
+                    continue
+                mean_r = r_sum / float(n)
+                abs_m = abs(mean_r)
+                if best_abs is None or abs_m < best_abs - 1e-12:
+                    best_abs = abs_m
+                    best_b = cand_b
+                elif best_abs is not None and abs(abs_m - best_abs) <= 1e-12:
+                    # tie-break: closer to prior bracket, then smaller
+                    if bracket_prior is not None:
+                        if abs(cand_b - float(bracket_prior)) < abs(best_b - float(bracket_prior)) - 1e-12:
+                            best_b = cand_b
+                        elif abs(abs(cand_b - float(bracket_prior)) - abs(best_b - float(bracket_prior))) <= 1e-12:
+                            if cand_b < best_b:
+                                best_b = cand_b
+                    else:
+                        if cand_b < best_b:
+                            best_b = cand_b
+            if best_b is not None:
+                b_post = float(best_b)
+
+        commander_calibration.append(
+            {
+                "commander": c,
+                "bracket_prior": bracket_prior,
+                "b_post": b_post,
+                "games": games_c,
+                "wins": wins_c,
+                "cpr_z": cpr_z,
+            }
+        )
+    commander_calibration.sort(
+        key=lambda r: (
+            1 if r.get("cpr_z") is None else 0,
+            -abs(float(r.get("cpr_z") or 0.0)),
+            -int(r.get("games") or 0),
+            str(r.get("commander") or ""),
+        )
+    )
+
     return {
-        "version": "v1",
-        "generated_utc": generated_utc,
-        "counts": {"games": n_games, "entries": n_entries},
-        "filters": {"players": players, "commanders": commanders, "brackets": brackets},
-        # Full games list (new in v1 output, backward compatible)
-        "games": games_detail,
-        "by_player": by_player,
-        "by_player_commander": by_player_commander,
-        "meta_profile": {
-            "method": "delta_player_minus_avg_table_excl_player",
-            "oewr_method": "softmax_expected_win_residual",
-            "oewr_k": OEWR_K,
-            "saturation_mdi": {"min": -1.0, "max": 1.0},
-            "min_games_default": 3,
-        },
-        "meta_profile_by_player": meta_profile_by_player,
-        "meta_profile_by_player_commander": meta_profile_by_player_commander,
-    }
+            "version": "v1",
+            "generated_utc": generated_utc,
+            "counts": {"games": n_games, "entries": n_entries},
+            "filters": {"players": players, "commanders": commanders, "brackets": brackets},
+            # Full games list (new in v1 output, backward compatible)
+            "games": games_detail,
+            "by_player": by_player,
+            "by_player_commander": by_player_commander,
+            "commander_calibration": commander_calibration,
+            "meta_profile": {
+                "method": "delta_player_minus_avg_table_excl_player",
+                "oewr_method": "softmax_expected_win_residual",
+                "oewr_k": OEWR_K,
+                "saturation_mdi": {"min": -1.0, "max": 1.0},
+                "min_games_default": 3,
+            },
+            "meta_profile_by_player": meta_profile_by_player,
+            "meta_profile_by_player_commander": meta_profile_by_player_commander,
+        }

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Calibrazione Bracket</title>
+  <link rel="stylesheet" href="../assets/style.css?v=20260204"/>
+  <style>
+    /* Minimal page-specific tweaks: keep consistent with global layout */
+    .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
+    .control { display:flex; flex-direction:column; gap:6px; }
+    .control label { font-size:12px; opacity:.9; }
+    .control select { background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); color: inherit; padding: 8px 10px; border-radius: 10px; }
+
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding: 10px 10px; border-bottom:1px solid rgba(255,255,255,.08); text-align:left; }
+    th { font-size:12px; letter-spacing:.02em; opacity:.9; }
+    td.num { text-align:right; font-variant-numeric: tabular-nums; }
+    .delta { font-weight:700; display:inline-block; min-width: 1.2em; text-align:center; }
+    .mobile-only { display:none; }
+    .desktop-only { display:table-cell; }
+
+    @media (max-width: 640px) {
+      /* Compact: show only Commander + one compact summary cell */
+      .desktop-only { display:none; }
+      .mobile-only { display:table-cell; }
+      th, td { padding: 10px 8px; }
+      td.compact { white-space: nowrap; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-label="Commander Tracker"></div>
+      <div>
+        <div class="title">Calibrazione Bracket</div>
+        <div class="subtitle">A priori vs a posteriori (per commander)</div>
+      </div>
+    </div>
+    <div class="meta" id="meta"></div>
+    <nav class="nav" id="nav"></nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="card-head" style="display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <div>
+          <h2 style="margin:0;">Tabella calibrazione</h2>
+          <div class="muted" style="margin-top:6px;">
+            Mostra il bracket assegnato (<b>B prior</b>) e quello stimato dai risultati (<b>B posterior</b>, step 0.25).
+            Le icone indicano la direzione: <span class="delta">▲</span> sottovalutato, <span class="delta">▼</span> sovrastimato, <span class="delta">=</span> coerente.
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="control">
+            <label for="minGames">Min partite</label>
+            <select id="minGames">
+              <option value="1">1</option>
+              <option value="3" selected>3</option>
+              <option value="5">5</option>
+              <option value="7">7</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="playerPick">Player</label>
+            <select id="playerPick">
+              <option value="">Tutti</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div style="overflow:auto; margin-top: 12px;">
+        <table id="calTable">
+          <thead>
+            <tr>
+              <th>Commander</th>
+              <th class="num desktop-only">B prior</th>
+              <th class="num desktop-only">B posterior</th>
+              <th class="num desktop-only">Delta</th>
+              <th class="num desktop-only">Partite</th>
+              <th class="num desktop-only">Vittorie</th>
+              <th class="mobile-only">Sintesi</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="hint muted" style="margin-top:10px;">
+        Filtra per <b>Min partite</b> per aumentare l’affidabilità. Selezionando un <b>player</b>, la tabella mostra solo i commander giocati da quel player.
+        Per i dettagli su scostamento e stima del bracket a posteriori, vedi <a href="../metrics/">Metrics</a>.
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Static site · dati da SQLite</span>
+    </footer>
+  </main>
+
+  <script src="../assets/nav.js?v=20260204"></script>
+  <script src="../assets/bracket-calibration.js?v=20260204"></script>
+</body>
+</html>

@@ -226,14 +226,42 @@ const barValueLabels = {
 
     const maxGames = Math.max(1, ...rows.map((r) => r.games));
 
-    const points = rows.map((r) => ({
-      x: r.games,
-      y: r.winRate,
-      r: 11,
-      _row: r,
-      _mode: isFocus ? "commander" : "player",
-      _player: highlightName || null,
-    }));
+    
+// Build points. In focus-mode (player -> commanders), multiple commanders can share the same (games, winRate)
+// and end up perfectly overlapping. Apply a tiny deterministic "jitter" to separate overlaps so tooltips work reliably.
+const basePoints = rows.map((r) => ({
+  x: r.games,
+  y: r.winRate,
+  r: 11,
+  _row: r,
+  _mode: isFocus ? "commander" : "player",
+  _player: highlightName || null,
+  _rawX: r.games,
+  _rawY: r.winRate,
+}));
+
+if (isFocus) {
+  const groups = new Map();
+  for (const pt of basePoints) {
+    const key = `${pt.x}|${pt.y}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(pt);
+  }
+  for (const pts of groups.values()) {
+    if (pts.length <= 1) continue;
+    const m = pts.length;
+    // offsets in data units (small but enough to separate hover targets)
+    const dx = 0.25;   // quarter-game: visually tiny, but distinct hit-box
+    const dy = 0.6;    // 0.6% winrate
+    for (let i = 0; i < m; i++) {
+      const ang = (2 * Math.PI * i) / m;
+      pts[i].x = pts[i]._rawX + dx * Math.cos(ang);
+      pts[i].y = pts[i]._rawY + dy * Math.sin(ang);
+    }
+  }
+}
+
+const points = basePoints;
 
     bubbleChart = new Chart(canvasBubble.getContext("2d"), {
       type: "bubble",

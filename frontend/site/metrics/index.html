@@ -71,6 +71,61 @@
     </div>
   </section>
 
+
+  <section class="card-lite">
+    <h2 style="margin:0 0 6px 0;">Calibrazione Bracket (Commander)</h2>
+    <div class="muted">
+      Questa scheda serve a verificare se il <b>bracket assegnato</b> ad un commander (a priori) è coerente con i risultati reali (a posteriori).
+      L’idea è semplice: se un commander vince <i>più spesso del previsto</i> dato il bracket che gli avete dato, è probabilmente <b>sottovalutato</b>;
+      se vince <i>meno spesso del previsto</i>, è probabilmente <b>sovrastimato</b>.
+    </div>
+
+    <div class="grid2" style="margin-top:10px;">
+      <div class="card-lite" style="margin:0;">
+        <h3 style="margin:0 0 6px 0; font-size:16px;">Come leggere la tabella</h3>
+        <ul class="bullets">
+          <li><b>B prior</b>: bracket deciso prima di giocare (1–5).</li>
+          <li><b>B posterior</b>: bracket stimato dai risultati (step 0.25). È un suggerimento “operativo”.</li>
+          <li><b>Partite / Vittorie</b>: volume del campione.</li>
+          <li>Il <b>colore della riga</b> indica lo scostamento <b>B posterior − B prior</b>: <span class="badge">blu</span> = sovrastimato, <span class="badge">rosso</span> = sottovalutato. Il colore è più intenso quando il segnale è più forte.</li>
+        </ul>
+      </div>
+      <div class="card-lite" style="margin:0;">
+        <h3 style="margin:0 0 6px 0; font-size:16px;">Filtro “Min partite”</h3>
+        <div class="muted">
+          Il filtro <b>Min partite</b> serve a non prendere decisioni su campioni troppo piccoli.
+          Se un commander ha poche partite, è normale che il suo valore “balli” molto.
+        </div>
+      </div>
+    </div>
+
+    <details style="margin-top:10px;">
+      <summary style="cursor:pointer; font-weight:600;">Approfondimento (computazione)</summary>
+      <div class="muted" style="margin-top:10px;">
+        <p style="margin-top:0;">
+          Per ogni partita stimiamo una probabilità di vittoria “attesa” per ciascun player in base ai bracket del tavolo (con una softmax).
+          Poi confrontiamo l’esito reale con l’atteso:
+        </p>
+        <ul class="bullets">
+          <li><b>Residuo per partita</b>: “hai vinto?” − “quanto era atteso che vincessi”.</li>
+          <li><b>Scostamento (CPR‑Z)</b>: sommiamo i residui per un commander e li normalizziamo per la variabilità attesa. Questo produce un valore centrato in 0:
+            <ul class="bullets">
+              <li><b>&gt; 0</b>: il commander vince più del previsto (sottovalutato).</li>
+              <li><b>&lt; 0</b>: il commander vince meno del previsto (sovrastimato).</li>
+            </ul>
+            Valori con modulo grande indicano un segnale più credibile (meno spiegabile col caso).
+          </li>
+          <li><b>Stima del B posterior</b>: cerchiamo un valore di bracket (da 1.00 a 5.00, step 0.25) che rende lo scostamento medio del commander il più vicino possibile a zero.
+            In pratica: “quale bracket renderebbe questo commander ‘giusto’ rispetto ai risultati osservati?”</li>
+        </ul>
+        <p>
+          Nota: il B posterior è un <i>suggerimento</i> specifico per il vostro meta e dipende dai tavoli giocati.
+        </p>
+      </div>
+    </details>
+  </section>
+
+
   <section class="card-lite">
     <h2 style="margin:0 0 6px 0;">Scheda Stats</h2>
     <div class="muted">

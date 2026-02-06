@@ -304,6 +304,50 @@
     },
     "version": {
       "const": "v1"
+    },
+    "commander_calibration": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "commander": {
+            "type": "string"
+          },
+          "bracket_prior": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "b_post": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "games": {
+            "type": "integer"
+          },
+          "wins": {
+            "type": "integer"
+          },
+          "cpr_z": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "commander",
+          "bracket_prior",
+          "b_post",
+          "games",
+          "wins",
+          "cpr_z"
+        ]
+      }
     }
   },
   "required": [
@@ -315,7 +359,8 @@
     "by_player_commander",
     "meta_profile",
     "meta_profile_by_player",
-    "meta_profile_by_player_commander"
+    "meta_profile_by_player_commander",
+    "commander_calibration"
   ],
   "title": "Commander Tracker Stats v1",
   "type": "object"

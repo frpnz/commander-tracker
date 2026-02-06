@@ -16,6 +16,7 @@
       { key: "archive", path: "archive/", label: "Archivio" },
       { key: "stats", path: "stats/", label: "Stats" },
                   { key: "meta-profile", path: "meta-profile/", label: "Meta Profile" },
+      { key: "bracket-calibration", path: "bracket-calibration/", label: "Calibrazione" },
       { key: "new-game", path: "new-game/", label: "Nuova partita" },
       { key: "metrics", path: "metrics/", label: "Metrics" }
     ];
