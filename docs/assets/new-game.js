@@ -19,6 +19,37 @@
   // Base suggestions loaded from stats.v1.json (players/commanders)
   let basePlayers = [];
 
+  let baseCommanders = [];
+  // Local suggestions (persisted in browser)
+  const LS_PLAYERS = "ct_suggest_players";
+  const LS_COMMANDERS = "ct_suggest_commanders";
+
+  function readLS(key){
+    try{
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.filter((x)=>typeof x==="string") : [];
+    }catch(_e){ return []; }
+  }
+  function writeLS(key, arr){
+    try{
+      window.localStorage.setItem(key, JSON.stringify(arr.slice(0, 500)));
+    }catch(_e){}
+  }
+  function mergeUniqueSorted(a){
+    const set = new Set();
+    for (const v of a){
+      const s = (v || "").trim();
+      if (!s) continue;
+      set.add(s);
+    }
+    return Array.from(set).sort((x,y)=>x.localeCompare(y,"it"));
+  }
+  let localPlayers = readLS(LS_PLAYERS);
+  let localCommanders = readLS(LS_COMMANDERS);
+
+
   const DEFAULT_ROWS = 4;
 
   function pad2(n){ return String(n).padStart(2, "0"); }
@@ -78,6 +109,9 @@
     del.addEventListener("click", () => {
       wrap.remove();
       syncWinnerSuggestions();
+      syncCommanderSuggestions();
+      rememberFromEntries();
+    syncCommanderSuggestions();
     });
 
     // On narrow screens grid3 will wrap; keep delete button after row
@@ -100,8 +134,15 @@
 
     // update winner suggestions as you type
     wrap.addEventListener("input", (e) => {
-      if (e.target && e.target.classList && e.target.classList.contains("player")) {
-        syncWinnerSuggestions();
+      if (e.target && e.target.classList) {
+        if (e.target.classList.contains("player")) {
+          syncWinnerSuggestions();
+          rememberFromEntries();
+        }
+        if (e.target.classList.contains("commander")) {
+          syncCommanderSuggestions();
+          rememberFromEntries();
+        }
       }
     });
 
@@ -115,11 +156,43 @@
       .map((el) => (el.value || "").trim())
       .filter((v) => v.length > 0);
 
-    const set = new Set([...(basePlayers || []), ...entryPlayers]);
+    const set = new Set([...(basePlayers || []), ...(localPlayers || []), ...entryPlayers]);
     const merged = Array.from(set).sort((a,b) => a.localeCompare(b, "it"));
 
     playersList.innerHTML = merged.map((p) => `<option value="${escapeHtml(p)}"></option>`).join("");
   }
+
+  function syncCommanderSuggestions(){
+    const entryCommanders = Array.from(entriesEl.querySelectorAll("input.commander"))
+      .map((el) => (el.value || "").trim())
+      .filter((v) => v.length > 0);
+
+    const merged = mergeUniqueSorted([...(baseCommanders || []), ...(localCommanders || []), ...entryCommanders]);
+    commandersList.innerHTML = merged.map((c) => `<option value="${escapeHtml(c)}"></option>`).join("");
+  }
+
+  function rememberFromEntries(){
+    const entryPlayers = Array.from(entriesEl.querySelectorAll("input.player"))
+      .map((el)=> (el.value || "").trim())
+      .filter(Boolean);
+    const entryCommanders = Array.from(entriesEl.querySelectorAll("input.commander"))
+      .map((el)=> (el.value || "").trim())
+      .filter(Boolean);
+
+    const mergedP = mergeUniqueSorted([...(localPlayers||[]), ...entryPlayers]);
+    const mergedC = mergeUniqueSorted([...(localCommanders||[]), ...entryCommanders]);
+
+    // Only write if changed (avoid churn)
+    if (mergedP.join("\n") !== (localPlayers||[]).join("\n")){
+      localPlayers = mergedP;
+      writeLS(LS_PLAYERS, localPlayers);
+    }
+    if (mergedC.join("\n") !== (localCommanders||[]).join("\n")){
+      localCommanders = mergedC;
+      writeLS(LS_COMMANDERS, localCommanders);
+    }
+  }
+
 
   function addRow(){
     const w = makeRow(Date.now());
@@ -220,6 +293,7 @@
 
   function onSubmit(e){
     e.preventDefault();
+    rememberFromEntries();
     try{
       const payload = collect();
       const text = JSON.stringify(payload, null, 2);
@@ -268,11 +342,14 @@
       const commanders = Array.isArray(filters.commanders) ? filters.commanders : [];
 
       basePlayers = players.slice();
-      // playersList is also used by the Winner input, so we merge base + current entries.
-      commandersList.innerHTML = commanders.map((c) => `<option value="${escapeHtml(c)}"></option>`).join("");
+      baseCommanders = commanders.slice();
+      // Datalists merge base + local + current entries
+      syncCommanderSuggestions();
       syncWinnerSuggestions();
     }catch(_e){
       // silent: user can still type freely
+      syncCommanderSuggestions();
+      syncWinnerSuggestions();
     }
   }
 
