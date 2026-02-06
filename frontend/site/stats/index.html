@@ -23,10 +23,15 @@
     <section class="card filters">
       <div class="filters-row">
         <label>
-          Player
+          Giocatore
           <select id="fPlayer">
-            <option value="">Tutti</option>
+            <option value="">Tutti i giocatori</option>
           </select>
+        </label>
+
+        <label>
+          Min partite
+          <input id="fMinGames" type="number" min="1" step="1" value="3" style="width:110px"/>
         </label>
       </div>
       <div class="hint" id="hint"></div>
@@ -35,22 +40,56 @@
     <section class="charts">
       <section class="card">
         <div class="card-head">
-          <h2 id="chartTitle">Winrate per player</h2>
+          <h2 id="chartTitle">Chi vince di più</h2>
         </div>
         <div class="chart-wrap">
           <canvas id="winrateBar" aria-label="Istogramma winrate per player" role="img"></canvas>
         </div>
+        <div class="muted" style="margin-top:8px; font-size:12px; opacity:.85;">Click su una barra per mettere a fuoco un giocatore e vedere i suoi commander.</div>
       </section>
 
       <section class="card" id="bubbleCard">
         <div class="card-head">
-          <h2>Winrate vs Partite</h2>
+          <h2>Efficacia vs volume</h2>
         </div>
         <div class="chart-wrap">
           <canvas id="winrateBubble" aria-label="Bubble plot winrate vs partite" role="img"></canvas>
         </div>
+        <div class="muted" style="margin-top:8px; font-size:12px; opacity:.85;">A parità di winrate, più a destra = più partite (segnale più affidabile).</div>
       </section>
     </section>
+
+    
+      <section class="card" id="heatCard">
+        <div class="card-head">
+          <h2>Come rende ogni giocatore con i suoi commander</h2>
+        </div>
+        <p class="muted">
+          Confronto del winrate dei commander rispetto alla media del giocatore selezionato.
+        </p>
+        <div class="muted" style="margin-top:-6px; font-size:12px; opacity:.85;">
+          Seleziona un giocatore per vedere i suoi commander, oppure lascia “Tutti i giocatori” per una vista globale.
+          Il colore indica la performance rispetto al winrate medio del giocatore (o alla media globale).
+        </div>
+        <div class="table-wrap" style="margin-top:12px;">
+          <table class="table" aria-label="Heatmap player commander">
+            <thead>
+              <tr>
+                <th>Commander</th>
+                <th class="right">Partite</th>
+                <th class="right">Winrate</th>
+              </tr>
+            </thead>
+            <tbody id="pcHeatBody">
+              <tr><td colspan="3" class="muted">Seleziona un giocatore o lascia “Tutti i giocatori” per la vista globale.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="muted" style="margin-top:10px; font-size:12px; opacity:.85;">
+          Tip: imposta “Min partite” per ridurre rumore da campioni piccoli. Su mobile la lista è pensata per scorrere in verticale.
+        </div>
+      </section>
+
 
     <!-- Tabelle rimosse: manteniamo solo i grafici -->
 
@@ -61,7 +100,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="../assets/player-colors.js?v=20260204"></script>
-  <script src="../assets/stats.js?v=20260203"></script>
+  <script src="../assets/stats.js?v=20260206"></script>
 
   <script src="../assets/nav.js?v=20260203"></script>
 </body>

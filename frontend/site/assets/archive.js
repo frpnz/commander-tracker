@@ -38,6 +38,23 @@ function fmtDate(s) {
   return String(s).replace("T", " ").replace("Z", " UTC");
 }
 
+
+function _dateKey(s) {
+  return (s || "").replace("T", " ").replace("Z", "").trim().slice(0, 10);
+}
+
+function getPeriodLabel(games) {
+  if (!Array.isArray(games) || games.length === 0) return "";
+  let min = null, max = null;
+  for (const g of games) {
+    const d = _dateKey(g && g.played_at);
+    if (!d) continue;
+    if (min === null || d < min) min = d;
+    if (max === null || d > max) max = d;
+  }
+  return (min && max) ? `${min} → ${max}` : "";
+}
+
 function uniqSorted(arr) {
   return Array.from(new Set(arr.filter((x) => x !== null && x !== undefined && String(x).trim() !== "").map(String)))
     .sort((a, b) => a.localeCompare(b, "it"));
@@ -247,7 +264,13 @@ async function main() {
   const games = (data.counts && data.counts.games !== undefined && data.counts.games !== null) ? data.counts.games : 0;
   const entries = (data.counts && data.counts.entries !== undefined && data.counts.entries !== null) ? data.counts.entries : 0;
   const gen = data.generated_utc ? data.generated_utc : "";
-  $("#meta").textContent = `${games} game · ${entries} entries${gen ? " · gen " + gen : ""}`;
+  const period = getPeriodLabel(data?.games);
+  const parts = [];
+  if (Number.isFinite(games)) parts.push(`${games} partite`);
+  if (Number.isFinite(entries)) parts.push(`${entries} entries`);
+  if (period) parts.push(`periodo ${period}`);
+  if (gen) parts.push(`gen ${gen}`);
+  $("#meta").textContent = parts.join(" · ");
 
   setOptions($("#fPlayer"), (data.filters && data.filters.players) ? data.filters.players : []);
   buildCommanderOptions(data, "");

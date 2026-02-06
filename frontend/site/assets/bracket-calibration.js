@@ -52,18 +52,40 @@ function fmtSigned(v) {
   const n = Number(v);
   if (!Number.isFinite(n)) return "—";
   const s = (n > 0) ? "+" : "";
-  return s + n.toFixed(2).replace(/\.00$/, "");
+  return s + n.toFixed(2);
 }
 
-// Discrete indicator on quarter-step data:
-// ▲ if Δ >= +0.25, ▼ if Δ <= -0.25, = otherwise
-function deltaIcon(delta) {
-  if (delta === null || delta === undefined) return "—";
+// Emoji + color class for delta.
+// Neutral if |Δ| < 0.25.
+function formatDelta(delta) {
+  if (delta === null || delta === undefined) {
+    return { html: "—", cls: "delta-neutral", title: "" };
+  }
   const d = Number(delta);
-  if (!Number.isFinite(d)) return "—";
-  if (d >= 0.25) return "▲";
-  if (d <= -0.25) return "▼";
-  return "=";
+  if (!Number.isFinite(d)) {
+    return { html: "—", cls: "delta-neutral", title: "" };
+  }
+
+  const abs = Math.abs(d);
+  if (abs < 0.25) {
+    return {
+      html: `⏺️ ${fmtSigned(d)}`,
+      cls: "delta-neutral",
+      title: "In linea con il bracket dichiarato"
+    };
+  }
+  if (d > 0) {
+    return {
+      html: `⬆️ ${fmtSigned(d)}`,
+      cls: "delta-up",
+      title: "Performance sopra il bracket dichiarato"
+    };
+  }
+  return {
+    html: `⬇️ ${fmtSigned(d)}`,
+    cls: "delta-down",
+    title: "Performance sotto il bracket dichiarato"
+  };
 }
 
   function buildPlayerToCommanders(stats) {
@@ -126,23 +148,21 @@ function deltaIcon(delta) {
       const isFocus = focusSet ? focusSet.has(commander) : true;
       if (focusSet && !isFocus) tr.classList.add("row-dim");
 
-      
-const icon = deltaIcon(deltaB);
-const deltaTitle = (deltaB === null || deltaB === undefined) ? "" : `Delta = ${fmtSigned(deltaB)}`;
 
-tr.innerHTML = `
-  <td>${escapeHtml(commander)}</td>
-  <td class="num desktop-only">${fmtB(bPrior)}</td>
-  <td class="num desktop-only"><b>${fmtB(bPost)}</b></td>
-  <td class="num desktop-only"><span class="delta" title="${escapeHtml(deltaTitle)}">${icon}</span></td>
-  <td class="num desktop-only">${games}</td>
-  <td class="num desktop-only">${wins}</td>
-  <td class="mobile-only compact">
-    <span class="delta">${icon}</span>
-    <span style="opacity:.9;">Delta ${escapeHtml(fmtSigned(deltaB))}</span>
-    <span style="opacity:.75;"> · B ${escapeHtml(fmtB(bPrior))}→${escapeHtml(fmtB(bPost))} · ${games}g ${wins}w</span>
-  </td>
-`;
+      const fd = formatDelta(deltaB);
+
+      tr.innerHTML = `
+        <td class="desktop-only"><span class="delta ${fd.cls}" title="${escapeHtml(fd.title)}">${fd.html}</span></td>
+        <td class="desktop-only">${escapeHtml(commander)}</td>
+        <td class="num desktop-only">${fmtB(bPrior)}</td>
+        <td class="num desktop-only"><b>${fmtB(bPost)}</b></td>
+        <td class="num desktop-only">${games}</td>
+        <td class="num desktop-only">${wins}</td>
+        <td class="mobile-only compact">
+          <span class="delta ${fd.cls}" title="${escapeHtml(fd.title)}">${fd.html}</span>
+          <span style="opacity:.75;"> · B ${escapeHtml(fmtB(bPrior))}→${escapeHtml(fmtB(bPost))} · ${games}g ${wins}w</span>
+        </td>
+      `;
 tbody.appendChild(tr);
     }
   }
@@ -158,8 +178,34 @@ tbody.appendChild(tr);
     const playerSel = document.getElementById("playerPick");
     let stats = null;
 
+function _dateKey(s){ return (s||"").slice(0,10); }
+function getPeriodLabel(games){
+  if(!Array.isArray(games) || games.length===0) return null;
+  let min=null, max=null;
+  for(const g of games){
+    const d=_dateKey(g?.played_at);
+    if(!d) continue;
+    if(min===null || d<min) min=d;
+    if(max===null || d>max) max=d;
+  }
+  return (min&&max)?`${min} → ${max}`:null;
+}
+
     const res = await fetch("../data/stats.v1.json", { cache: "no-cache" });
     stats = await res.json();
+
+
+    const elMeta = document.getElementById("meta");
+    if (elMeta) {
+      const games = stats?.counts?.games;
+      const period = getPeriodLabel(stats?.games);
+      const gen = stats?.generated_utc;
+      const parts = [];
+      if (period) parts.push(`Periodo: ${period}`);
+      if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
+      if (gen) parts.push(`Gen: ${gen}`);
+      elMeta.textContent = parts.join(" · ");
+    }
 
     const players = (stats?.filters?.players || []).slice().sort((a,b)=>String(a).localeCompare(String(b)));
     populatePlayerPick(players);

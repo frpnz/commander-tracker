@@ -13,6 +13,20 @@
 
   let chart = null;
   let stats = null;
+
+function _dateKey(s){ return (s||"").slice(0,10); }
+function getPeriodLabel(games){
+  if(!Array.isArray(games) || games.length===0) return null;
+  let min=null, max=null;
+  for(const g of games){
+    const d=_dateKey(g?.played_at);
+    if(!d) continue;
+    if(min===null || d<min) min=d;
+    if(max===null || d>max) max=d;
+  }
+  return (min&&max)?`${min} → ${max}`:null;
+}
+
   function pcGet(name) {
     return (window.PlayerColors && window.PlayerColors.get) ? window.PlayerColors.get(name) : "#9CA3AF";
   }
@@ -363,7 +377,19 @@ window.addEventListener("resize", () => {
       const res = await fetch("../data/stats.v1.json", { cache: "no-cache" });
       stats = await res.json();
 
-      if (elMeta) elMeta.textContent = `Generato il: ${stats.generated_utc}`;
+      
+if (elMeta) {
+  const games = stats?.counts?.games;
+  const entries = stats?.counts?.entries;
+  const period = getPeriodLabel(stats?.games);
+  const gen = stats?.generated_utc;
+  const parts = [];
+  if (period) parts.push(`Periodo: ${period}`);
+  if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
+  if (Number.isFinite(entries)) parts.push(`Entries: ${entries}`);
+  if (gen) parts.push(`Gen: ${String(gen).replace("T", " ").replace("Z", " UTC")}`);
+  elMeta.textContent = parts.join(" · ");
+}
 
       const points = stats.meta_profile_by_player || [];
       const bracketInfo = getBracketRange(stats);

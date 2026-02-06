@@ -50,8 +50,27 @@ const barValueLabels = {
   const elHint = $("#hint");
   const canvasBar = $("#winrateBar");
   const canvasBubble = $("#winrateBubble");
+  const elMinGames = $("#fMinGames");
+  const elHeatBody = $("#pcHeatBody");
 
   let stats = null;
+
+  function _dateKey(s) {
+    return (s || "").slice(0, 10);
+  }
+
+  function getPeriodLabel(games) {
+    if (!Array.isArray(games) || games.length === 0) return null;
+    let min = null, max = null;
+    for (const g of games) {
+      const d = _dateKey(g?.played_at);
+      if (!d) continue;
+      if (min === null || d < min) min = d;
+      if (max === null || d > max) max = d;
+    }
+    return (min && max) ? `${min} → ${max}` : null;
+  }
+
   let barChart = null;
   let bubbleChart = null;
 
@@ -103,11 +122,96 @@ const barValueLabels = {
       winRate: c.games > 0 ? (100 * c.wins) / c.games : 0,
     }));
   }
+  function getPlayerBaselineWinRate(playerName) {
+    const rows = Array.isArray(stats?.by_player) ? stats.by_player : [];
+
+    // Exact player baseline = wins/games from by_player (stable, no reliance on schema-specific fields)
+    if (playerName) {
+      const r = rows.find((x) => x && String(x.player) === String(playerName));
+      if (r) {
+        const g = asNum(r.games, 0);
+        const w = asNum(r.wins, 0);
+        if (g > 0) return (100 * w) / g;
+      }
+    }
+
+    // Global baseline weighted by games
+    let gsum = 0;
+    let wsum = 0;
+    for (const r of rows) {
+      const g = asNum(r.games, 0);
+      const w = asNum(r.wins, 0);
+      if (g > 0) { gsum += g; wsum += w; }
+    }
+    return gsum > 0 ? (100 * wsum) / gsum : 0;
+  }
+
+  function computeCommandersAll() {
+    const rows = Array.isArray(stats?.by_player_commander) ? stats.by_player_commander : [];
+    const byCommander = new Map();
+    for (const r of rows) {
+      if (!r) continue;
+      const commander = String(r.commander || "").trim();
+      if (!commander) continue;
+      const games = asNum(r.games, 0);
+      const wins = asNum(r.wins, 0);
+      const cur = byCommander.get(commander) || { commander, games: 0, wins: 0 };
+      cur.games += games;
+      cur.wins += wins;
+      byCommander.set(commander, cur);
+    }
+    return Array.from(byCommander.values()).map((c) => ({
+      ...c,
+      winRate: c.games > 0 ? (100 * c.wins) / c.games : 0,
+    }));
+  }
+
+  function renderPlayerCommanderHeatmap(playerName) {
+    if (!elHeatBody) return;
+
+    const minGames = elMinGames ? Math.max(1, parseInt(elMinGames.value || "1", 10)) : 1;
+
+    // If "Tutti i giocatori" is selected, show all commanders aggregated across all players.
+    const showingAllPlayers = !playerName;
+
+    const baseline = showingAllPlayers ? getPlayerBaselineWinRate("") : getPlayerBaselineWinRate(playerName);
+    const rows = (showingAllPlayers ? computeCommandersAll() : computeCommandersForPlayer(playerName))
+      .filter((r) => asNum(r.games, 0) >= minGames);
+
+    if (!rows.length) {
+      elHeatBody.innerHTML = `<tr><td colspan="3" class="muted">Nessun commander con almeno ${minGames} partite.</td></tr>`;
+      return;
+    }
+
+    // Sort by |delta| desc, then games desc
+    rows.sort((a, b) => {
+      const da = Math.abs(asNum(a.winRate, 0) - baseline);
+      const db = Math.abs(asNum(b.winRate, 0) - baseline);
+      if (db !== da) return db - da;
+      return asNum(b.games, 0) - asNum(a.games, 0);
+    });
+
+    const THRESH = 5; // percentage points vs baseline
+    elHeatBody.innerHTML = rows.map((r) => {
+      const wr = asNum(r.winRate, 0);
+      const delta = wr - baseline;
+      const cls = Math.abs(delta) < THRESH ? "heat-neutral" : (delta > 0 ? "heat-up" : "heat-down");
+      const emoji = Math.abs(delta) < THRESH ? "⏺️" : (delta > 0 ? "⬆️" : "⬇️");
+      const title = `Winrate: ${wr.toFixed(1)}% · Partite: ${asNum(r.games,0)} · Baseline ${showingAllPlayers ? 'Globale' : playerName}: ${baseline.toFixed(1)}% · Delta: ${(delta>=0?"+":"")}${delta.toFixed(1)}pp`;
+      return `
+        <tr>
+          <td>${escapeHtml(r.commander)}</td>
+          <td class="right">${asNum(r.games, 0)}</td>
+          <td class="right heatcell ${cls}" title="${escapeHtml(title)}">${emoji} ${wr.toFixed(1)}%</td>
+        </tr>`;
+    }).join("");
+  }
+
 
   function fillPlayerSelect(players) {
     if (!elPlayer) return;
     const names = Array.from(new Set(players.map((p) => p.name))).sort((a, b) => a.localeCompare(b));
-    elPlayer.innerHTML = '<option value="">Tutti</option>' + names.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+    elPlayer.innerHTML = '<option value="">Tutti i giocatori</option>' + names.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
   }
 
   function escapeHtml(s) {
@@ -341,12 +445,15 @@ const points = basePoints;
 
     if (elHint) {
       elHint.textContent = chosen
-        ? `Selezionato: ${chosen}`
-        : "";
+        ? `Stai visualizzando: ${chosen} (focus sui commander)`
+        : "Stai visualizzando: Tutti i giocatori";
     }
 
     renderBar(players, chosen || null);
     renderBubble(players, chosen || null);
+ 
+
+    renderPlayerCommanderHeatmap(chosen || "");
   }
 
   async function init() {
@@ -355,13 +462,26 @@ const points = basePoints;
       stats = await res.json();
 
       if (elMeta && stats?.generated_utc) {
-        elMeta.textContent = `Generato il: ${stats.generated_utc}`;
+        const games = stats?.counts?.games;
+        const entries = stats?.counts?.entries;
+        const period = getPeriodLabel(stats?.games);
+        const gen = stats?.generated_utc;
+        const parts = [];
+        if (period) parts.push(`Periodo: ${period}`);
+        if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
+        if (Number.isFinite(entries)) parts.push(`Entries: ${entries}`);
+        if (gen) parts.push(`Gen: ${gen}`);
+        elMeta.textContent = parts.join(" · ");
       }
 
       const players = computePlayers();
       fillPlayerSelect(players);
 
       if (elPlayer) elPlayer.addEventListener("change", update);
+      if (elMinGames) {
+        elMinGames.addEventListener("input", update);
+        elMinGames.addEventListener("change", update);
+      }
 
       update();
     } catch (e) {

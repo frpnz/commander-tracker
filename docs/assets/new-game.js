@@ -16,6 +16,8 @@
   // commander -> sorted unique bracket list (integers)
   const commanderBrackets = new Map();
 
+  // Base suggestions loaded from stats.v1.json (players/commanders)
+  let basePlayers = [];
 
   const DEFAULT_ROWS = 4;
 
@@ -74,7 +76,7 @@
     del.style.justifySelf = "end";
     del.style.marginTop = "22px";
     del.addEventListener("click", () => {
-      row.remove();
+      wrap.remove();
       syncWinnerSuggestions();
     });
 
@@ -107,13 +109,22 @@
   }
 
   function syncWinnerSuggestions(){
-    // Winner is free text but we can help: keep datalist updated with current player names too.
-    // (We reuse playersList; no-op.)
+    // Winner is free text but we can help: keep the datalist updated with
+    // (a) players seen in historical stats and (b) players currently typed in entries.
+    const entryPlayers = Array.from(entriesEl.querySelectorAll("input.player"))
+      .map((el) => (el.value || "").trim())
+      .filter((v) => v.length > 0);
+
+    const set = new Set([...(basePlayers || []), ...entryPlayers]);
+    const merged = Array.from(set).sort((a,b) => a.localeCompare(b, "it"));
+
+    playersList.innerHTML = merged.map((p) => `<option value="${escapeHtml(p)}"></option>`).join("");
   }
 
   function addRow(){
     const w = makeRow(Date.now());
     entriesEl.appendChild(w);
+    syncWinnerSuggestions();
     // initialize bracket options (blank until commander chosen)
     const commanderInput = w.querySelector('.commander');
     const bracketSelect = w.querySelector('.bracket');
@@ -256,8 +267,10 @@
       const players = Array.isArray(filters.players) ? filters.players : [];
       const commanders = Array.isArray(filters.commanders) ? filters.commanders : [];
 
-      playersList.innerHTML = players.map((p) => `<option value="${escapeHtml(p)}"></option>`).join("");
+      basePlayers = players.slice();
+      // playersList is also used by the Winner input, so we merge base + current entries.
       commandersList.innerHTML = commanders.map((c) => `<option value="${escapeHtml(c)}"></option>`).join("");
+      syncWinnerSuggestions();
     }catch(_e){
       // silent: user can still type freely
     }
@@ -292,7 +305,7 @@
     }
   }
 
-function escapeHtml(s){
+  function escapeHtml(s){
     return String(s)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")

@@ -16,7 +16,10 @@
     th, td { padding: 10px 10px; border-bottom:1px solid rgba(255,255,255,.08); text-align:left; }
     th { font-size:12px; letter-spacing:.02em; opacity:.9; }
     td.num { text-align:right; font-variant-numeric: tabular-nums; }
-    .delta { font-weight:700; display:inline-block; min-width: 1.2em; text-align:center; }
+    .delta { font-weight:700; display:inline-block; white-space:nowrap; font-variant-numeric: tabular-nums; }
+    .delta-up { color:#2563eb; }      /* blue */
+    .delta-down { color:#dc2626; }    /* red */
+    .delta-neutral { color:#6b7280; } /* gray */
     .mobile-only { display:none; }
     .desktop-only { display:table-cell; }
 
@@ -49,7 +52,9 @@
           <h2 style="margin:0;">Tabella calibrazione</h2>
           <div class="muted" style="margin-top:6px;">
             Mostra il bracket assegnato (<b>B prior</b>) e quello stimato dai risultati (<b>B posterior</b>, step 0.25).
-            Le icone indicano la direzione: <span class="delta">▲</span> sottovalutato, <span class="delta">▼</span> sovrastimato, <span class="delta">=</span> coerente.
+            La colonna <b>Delta</b> mostra lo scostamento <span class="muted">(B posterior − B prior)</span>:
+            <span class="delta delta-up">⬆️</span> sopra, <span class="delta delta-down">⬇️</span> sotto, <span class="delta delta-neutral">⏺️</span> in linea.
+            <br/><span class="muted">Se un commander ha poche partite, il B posterior può oscillare: usa “Min partite” prima di cambiare bracket.</span>
           </div>
         </div>
 
@@ -77,10 +82,10 @@
         <table id="calTable">
           <thead>
             <tr>
+              <th title="Differenza tra bracket dichiarato e bracket calibrato (B posterior − B prior)">Delta</th>
               <th>Commander</th>
               <th class="num desktop-only">B prior</th>
               <th class="num desktop-only">B posterior</th>
-              <th class="num desktop-only">Delta</th>
               <th class="num desktop-only">Partite</th>
               <th class="num desktop-only">Vittorie</th>
               <th class="mobile-only">Sintesi</th>
