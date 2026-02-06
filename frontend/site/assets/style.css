@@ -403,6 +403,15 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
   table{min-width:0; border-spacing:0 10px}
   thead{display:none}
 
+  /* --- Keep selected tables in single-row layout on mobile (horizontal scroll) --- */
+  .table-wrap-no-stack{overflow:auto; -webkit-overflow-scrolling:touch; padding:0 10px 12px}
+  table.no-stack{min-width:560px; border-spacing:0}
+  table.no-stack thead{display:table-header-group}
+  table.no-stack tbody tr{display:table-row; padding:0; border-radius:0; background:transparent; border:0}
+  table.no-stack tbody td{display:table-cell; padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.06)}
+  table.no-stack tbody td::before{content:none}
+  table.no-stack th, table.no-stack td{white-space:nowrap}
+
   tbody tr{
     display:block;
     padding:10px 12px;
@@ -426,6 +435,16 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
     font-weight:650;
   }
   tbody tr:hover td{background: transparent}
+
+  /* Final override: tables explicitly marked as "no-stack" keep a classic
+     single-row layout on mobile (use horizontal scroll in the wrapper). */
+  .table-wrap-no-stack{overflow:auto; -webkit-overflow-scrolling:touch;}
+  table.no-stack{border-spacing:0; min-width:560px;}
+  table.no-stack thead{display:table-header-group;}
+  table.no-stack tbody tr{display:table-row; padding:0; border-radius:0; background:transparent; border:0;}
+  table.no-stack tbody td{display:table-cell; padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.06);}
+  table.no-stack tbody td::before{content:none;}
+  table.no-stack th, table.no-stack td{white-space:nowrap;}
 
   .recent-table-wrap{overflow:visible}
   .recent-table{min-width:0; border-collapse:separate; border-spacing:0 10px}

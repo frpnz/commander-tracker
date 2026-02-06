@@ -55,7 +55,10 @@ function fmtSigned(v) {
   return s + n.toFixed(2);
 }
 
-// Emoji + color class for delta.
+// Symbol + color class for delta.
+// NOTE: we intentionally avoid emoji here because their color rendering
+// differs across platforms (desktop vs mobile). Using plain symbols keeps
+// a consistent appearance, while CSS controls the color.
 // Neutral if |Δ| < 0.25.
 function formatDelta(delta) {
   if (delta === null || delta === undefined) {
@@ -69,20 +72,20 @@ function formatDelta(delta) {
   const abs = Math.abs(d);
   if (abs < 0.25) {
     return {
-      html: `⏺️ ${fmtSigned(d)}`,
+      html: `● ${fmtSigned(d)}`,
       cls: "delta-neutral",
       title: "In linea con il bracket dichiarato"
     };
   }
   if (d > 0) {
     return {
-      html: `⬆️ ${fmtSigned(d)}`,
+      html: `▲ ${fmtSigned(d)}`,
       cls: "delta-up",
       title: "Performance sopra il bracket dichiarato"
     };
   }
   return {
-    html: `⬇️ ${fmtSigned(d)}`,
+    html: `▼ ${fmtSigned(d)}`,
     cls: "delta-down",
     title: "Performance sotto il bracket dichiarato"
   };
@@ -159,8 +162,13 @@ function formatDelta(delta) {
         <td class="num desktop-only">${games}</td>
         <td class="num desktop-only">${wins}</td>
         <td class="mobile-only compact">
-          <span class="delta ${fd.cls}" title="${escapeHtml(fd.title)}">${fd.html}</span>
-          <span style="opacity:.75;"> · B ${escapeHtml(fmtB(bPrior))}→${escapeHtml(fmtB(bPost))} · ${games}g ${wins}w</span>
+          <div style="display:flex; justify-content:space-between; gap:12px;">
+            <b style="overflow-wrap:anywhere;">${escapeHtml(commander)}</b>
+            <span class="delta ${fd.cls}" title="${escapeHtml(fd.title)}">${fd.html}</span>
+          </div>
+          <div style="opacity:.75; margin-top:4px;">
+            B ${escapeHtml(fmtB(bPrior))}→${escapeHtml(fmtB(bPost))} · ${games}g ${wins}w
+          </div>
         </td>
       `;
 tbody.appendChild(tr);
