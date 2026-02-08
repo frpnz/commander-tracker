@@ -55,10 +55,7 @@ function fmtSigned(v) {
   return s + n.toFixed(2);
 }
 
-// Symbol + color class for delta.
-// NOTE: we intentionally avoid emoji here because their color rendering
-// differs across platforms (desktop vs mobile). Using plain symbols keeps
-// a consistent appearance, while CSS controls the color.
+// Emoji + color class for delta.
 // Neutral if |Δ| < 0.25.
 function formatDelta(delta) {
   if (delta === null || delta === undefined) {
@@ -72,20 +69,20 @@ function formatDelta(delta) {
   const abs = Math.abs(d);
   if (abs < 0.25) {
     return {
-      html: `● ${fmtSigned(d)}`,
+      html: `⏺️ ${fmtSigned(d)}`,
       cls: "delta-neutral",
       title: "In linea con il bracket dichiarato"
     };
   }
   if (d > 0) {
     return {
-      html: `▲ ${fmtSigned(d)}`,
+      html: `⬆️ ${fmtSigned(d)}`,
       cls: "delta-up",
       title: "Performance sopra il bracket dichiarato"
     };
   }
   return {
-    html: `▼ ${fmtSigned(d)}`,
+    html: `⬇️ ${fmtSigned(d)}`,
     cls: "delta-down",
     title: "Performance sotto il bracket dichiarato"
   };
@@ -116,6 +113,69 @@ function formatDelta(delta) {
     }
   }
 
+  
+  // --- Uncertainty categorization (relative / percentile-based) ---
+  // We categorize posterior uncertainty using b_post_sd *relative* to other commanders.
+  // This avoids ending up with "Alta" for most rows when the posterior remains wide.
+  //
+  // We compute cutoffs once on the *full* calibration dataset (not just filtered rows)
+  // so categories don't "switch" when changing the "Min partite" filter.
+  //
+  // Cutoffs:
+  //   - p33 and p66 percentiles of b_post_sd across commanders with finite sd
+  //   - sd <= p33 -> "Bassa"
+  //   - p33 < sd <= p66 -> "Media"
+  //   - sd > p66 -> "Alta"
+
+  function quantileSorted(arr, q) {
+    if (!arr || arr.length === 0) return null;
+    const n = arr.length;
+    if (n === 1) return arr[0];
+    const pos = (n - 1) * q;
+    const lo = Math.floor(pos);
+    const hi = Math.ceil(pos);
+    if (lo === hi) return arr[lo];
+    const t = pos - lo;
+    return arr[lo] + (arr[hi] - arr[lo]) * t;
+  }
+
+  function computeUncertaintyCutoffs(rows) {
+    const sds = [];
+    for (const r of rows || []) {
+      const s = Number(r.b_post_sd);
+      if (Number.isFinite(s)) sds.push(s);
+    }
+    sds.sort((a, b) => a - b);
+    // If we don't have enough samples, return null so we can gracefully fall back.
+    if (sds.length < 6) return { p33: null, p66: null, n: sds.length };
+    return {
+      p33: quantileSorted(sds, 1 / 3),
+      p66: quantileSorted(sds, 2 / 3),
+      n: sds.length,
+    };
+  }
+
+  function uncertaintyCat(sd, cutoffs) {
+    const s = Number(sd);
+    if (!Number.isFinite(s)) return { label: "—", title: "" };
+
+    const p33 = cutoffs?.p33;
+    const p66 = cutoffs?.p66;
+
+    // Fallback (absolute-ish) if we cannot compute reliable percentiles.
+    if (!Number.isFinite(p33) || !Number.isFinite(p66) || p33 >= p66) {
+      // Soft fallback tuned for typical posteriors in this app.
+      if (s <= 0.55) return { label: "Bassa", title: `σ_post = ${s.toFixed(2)}` };
+      if (s <= 0.85) return { label: "Media", title: `σ_post = ${s.toFixed(2)}` };
+      return { label: "Alta", title: `σ_post = ${s.toFixed(2)}` };
+    }
+
+    const title = `σ_post = ${s.toFixed(2)} · p33=${p33.toFixed(2)} p66=${p66.toFixed(2)} (n=${cutoffs?.n || 0})`;
+    if (s <= p33) return { label: "Bassa", title };
+    if (s <= p66) return { label: "Media", title };
+    return { label: "Alta", title };
+  }
+
   function renderTable(stats, minGames, focusPlayer, playerToCmd) {
     const tbody = document.querySelector("#calTable tbody");
     if (!tbody) return;
@@ -127,55 +187,50 @@ function formatDelta(delta) {
     rows = rows.filter(r => Number(r.games || 0) >= minGames);
     if (focusSet) rows = rows.filter(r => focusSet.has(String(r.commander || "")));
 
-    // sort by absolute deviation strongest first, then games
+    // Sort: most played first, then commander name
     rows.sort((a,b) => {
-      const za = (a.cpr_z === null || a.cpr_z === undefined) ? null : Number(a.cpr_z);
-      const zb = (b.cpr_z === null || b.cpr_z === undefined) ? null : Number(b.cpr_z);
-      const aa = (za === null || Number.isNaN(za)) ? -1 : Math.abs(za);
-      const ab = (zb === null || Number.isNaN(zb)) ? -1 : Math.abs(zb);
-      if (ab !== aa) return ab - aa;
       const gb = Number(b.games || 0), ga = Number(a.games || 0);
       if (gb !== ga) return gb - ga;
       return String(a.commander || "").localeCompare(String(b.commander || ""));
     });
 
+    // Compute percentile cutoffs on the *full* calibration dataset (not filtered),
+    // so categories stay stable when changing the "Min partite" filter.
+    const cutoffs = computeUncertaintyCutoffs(stats?.commander_calibration || []);
+
     for (const r of rows) {
       const tr = document.createElement("tr");
-      const deltaB = (r.b_post === null || r.b_post === undefined || r.bracket_prior === null || r.bracket_prior === undefined) ? null : (Number(r.b_post) - Number(r.bracket_prior));
+
       const commander = r.commander || "";
       const bPrior = r.bracket_prior;
-      const bPost = r.b_post;
+
+      // Use MAP estimate for posterior (frontend-only switch).
+      // Fallback to mean if older exports don't have b_post_map.
+      const bPost = (r.b_post_map === null || r.b_post_map === undefined) ? r.b_post : r.b_post_map;
+
       const games = Number(r.games || 0);
       const wins = Number(r.wins || 0);
+
+      const u = uncertaintyCat(r.b_post_sd, cutoffs);
 
       const isFocus = focusSet ? focusSet.has(commander) : true;
       if (focusSet && !isFocus) tr.classList.add("row-dim");
 
-
-      const fd = formatDelta(deltaB);
-
       tr.innerHTML = `
-        <td class="desktop-only"><span class="delta ${fd.cls}" title="${escapeHtml(fd.title)}">${fd.html}</span></td>
-        <td class="desktop-only">${escapeHtml(commander)}</td>
-        <td class="num desktop-only">${fmtB(bPrior)}</td>
-        <td class="num desktop-only"><b>${fmtB(bPost)}</b></td>
-        <td class="num desktop-only">${games}</td>
-        <td class="num desktop-only">${wins}</td>
-        <td class="mobile-only compact">
-          <div style="display:flex; justify-content:space-between; gap:12px;">
-            <b style="overflow-wrap:anywhere;">${escapeHtml(commander)}</b>
-            <span class="delta ${fd.cls}" title="${escapeHtml(fd.title)}">${fd.html}</span>
-          </div>
-          <div style="opacity:.75; margin-top:4px;">
-            B ${escapeHtml(fmtB(bPrior))}→${escapeHtml(fmtB(bPost))} · ${games}g ${wins}w
-          </div>
-        </td>
+        <td>${escapeHtml(commander)}</td>
+        <td class="num">${fmtB(bPrior)}</td>
+        <td class="num"><b>${escapeHtml(fmtB(bPost))}</b></td>
+        <td title="${escapeHtml(u.title)}">${escapeHtml(u.label)}</td>
+        <td class="num">${games}</td>
+        <td class="num">${wins}</td>
       `;
-tbody.appendChild(tr);
+
+      tbody.appendChild(tr);
     }
   }
 
-  function escapeHtml(s) {
+
+function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
     }[c]));

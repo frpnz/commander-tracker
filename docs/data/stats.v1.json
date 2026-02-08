@@ -341,7 +341,9 @@
   ],
   "commander_calibration": [
     {
-      "b_post": 5.0,
+      "b_post": 3.7738971477055063,
+      "b_post_map": 4.0,
+      "b_post_sd": 0.7254366625188234,
       "bracket_prior": 3,
       "commander": "Raggadragga",
       "cpr_z": 3.037931021581745,
@@ -349,7 +351,9 @@
       "wins": 2
     },
     {
-      "b_post": 5.0,
+      "b_post": 3.4786938220811154,
+      "b_post_map": 3.5,
+      "b_post_sd": 0.8001780104976977,
       "bracket_prior": 3,
       "commander": "Edric",
       "cpr_z": 3.029616040505394,
@@ -357,7 +361,9 @@
       "wins": 1
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.13252679152935,
+      "b_post_map": 4.5,
+      "b_post_sd": 0.6468647936423614,
       "bracket_prior": 4,
       "commander": "Epstein",
       "cpr_z": 1.9169950163236442,
@@ -365,7 +371,9 @@
       "wins": 1
     },
     {
-      "b_post": 3.5,
+      "b_post": 4.085085134412158,
+      "b_post_map": 4.25,
+      "b_post_sd": 0.5512487510107302,
       "bracket_prior": 5,
       "commander": "Kaalia",
       "cpr_z": -1.7428283131238447,
@@ -373,7 +381,9 @@
       "wins": 2
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.530097101836827,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.4656640997250671,
       "bracket_prior": 5,
       "commander": "Zaxara l'esemplare",
       "cpr_z": 1.565033215020442,
@@ -381,7 +391,9 @@
       "wins": 1
     },
     {
-      "b_post": 2.75,
+      "b_post": 4.128444743755632,
+      "b_post_map": 4.25,
+      "b_post_sd": 0.5999122773078719,
       "bracket_prior": 5,
       "commander": "Tezzeret",
       "cpr_z": -1.4326209616220553,
@@ -389,7 +401,9 @@
       "wins": 1
     },
     {
-      "b_post": 5.0,
+      "b_post": 3.3378889585172447,
+      "b_post_map": 3.5,
+      "b_post_sd": 0.7903781251279167,
       "bracket_prior": 3,
       "commander": "Arabella",
       "cpr_z": 1.3480600282722237,
@@ -397,7 +411,9 @@
       "wins": 1
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.698970978855677,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.3391725071972355,
       "bracket_prior": 5,
       "commander": "Vivi",
       "cpr_z": 1.1747155211475067,
@@ -405,7 +421,9 @@
       "wins": 4
     },
     {
-      "b_post": 3.75,
+      "b_post": 2.392006881962733,
+      "b_post_map": 2.25,
+      "b_post_sd": 0.7473381656088128,
       "bracket_prior": 2,
       "commander": "Ivy",
       "cpr_z": 1.0935470724106937,
@@ -413,7 +431,9 @@
       "wins": 1
     },
     {
-      "b_post": 1.0,
+      "b_post": 4.246239658419618,
+      "b_post_map": 4.75,
+      "b_post_sd": 0.5958219176773886,
       "bracket_prior": 5,
       "commander": "Braids",
       "cpr_z": -1.0281979620001802,
@@ -421,7 +441,9 @@
       "wins": 0
     },
     {
-      "b_post": 1.0,
+      "b_post": 3.558061375893104,
+      "b_post_map": 3.75,
+      "b_post_sd": 0.7599724438457933,
       "bracket_prior": 4,
       "commander": "Raffine",
       "cpr_z": -1.026340895890704,
@@ -429,7 +451,9 @@
       "wins": 0
     },
     {
-      "b_post": 1.0,
+      "b_post": 3.6324907272479128,
+      "b_post_map": 3.75,
+      "b_post_sd": 0.7650315006256473,
       "bracket_prior": 4,
       "commander": "Lotho",
       "cpr_z": -0.9532223874378184,
@@ -437,7 +461,9 @@
       "wins": 0
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.544253991231017,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.44726737913599734,
       "bracket_prior": 5,
       "commander": "Karn",
       "cpr_z": 0.9479757002341583,
@@ -445,7 +471,9 @@
       "wins": 2
     },
     {
-      "b_post": 4.0,
+      "b_post": 4.342043138822869,
+      "b_post_map": 4.5,
+      "b_post_sd": 0.5082210381310648,
       "bracket_prior": 5,
       "commander": "Hearthhull",
       "cpr_z": -0.8845306819246485,
@@ -453,7 +481,9 @@
       "wins": 2
     },
     {
-      "b_post": 1.75,
+      "b_post": 2.568501375877236,
+      "b_post_map": 2.5,
+      "b_post_sd": 0.6729641967047554,
       "bracket_prior": 3,
       "commander": "Hylda",
       "cpr_z": -0.8670235304273631,
@@ -461,7 +491,9 @@
       "wins": 1
     },
     {
-      "b_post": 1.0,
+      "b_post": 2.7150466298650624,
+      "b_post_map": 2.75,
+      "b_post_sd": 0.7817027484543838,
       "bracket_prior": 3,
       "commander": "Volo",
       "cpr_z": -0.8231716785226116,
@@ -469,7 +501,9 @@
       "wins": 0
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.002579342971176,
+      "b_post_map": 4.25,
+      "b_post_sd": 0.681531669221622,
       "bracket_prior": 4,
       "commander": "Sidisi",
       "cpr_z": 0.8069854286862168,
@@ -477,7 +511,9 @@
       "wins": 1
     },
     {
-      "b_post": 1.0,
+      "b_post": 3.6255539848940437,
+      "b_post_map": 3.75,
+      "b_post_sd": 0.7557180718345997,
       "bracket_prior": 4,
       "commander": "The Scarab God",
       "cpr_z": -0.7910548079081564,
@@ -485,7 +521,9 @@
       "wins": 0
     },
     {
-      "b_post": 4.0,
+      "b_post": 3.2132216673756218,
+      "b_post_map": 3.25,
+      "b_post_sd": 0.7737259398979014,
       "bracket_prior": 3,
       "commander": "Galtha",
       "cpr_z": 0.7459316670352691,
@@ -493,7 +531,9 @@
       "wins": 1
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.025226410167391,
+      "b_post_map": 4.25,
+      "b_post_sd": 0.6648434175692716,
       "bracket_prior": 4,
       "commander": "Sigarda",
       "cpr_z": 0.7171670254804782,
@@ -501,7 +541,9 @@
       "wins": 1
     },
     {
-      "b_post": 1.0,
+      "b_post": 1.9972995357919354,
+      "b_post_map": 1.75,
+      "b_post_sd": 0.6713047597040585,
       "bracket_prior": 2,
       "commander": "Brion",
       "cpr_z": -0.6586030187820833,
@@ -509,7 +551,9 @@
       "wins": 0
     },
     {
-      "b_post": 4.75,
+      "b_post": 4.180423640009321,
+      "b_post_map": 4.25,
+      "b_post_sd": 0.56792542710282,
       "bracket_prior": 4,
       "commander": "Chandra",
       "cpr_z": 0.652654392693511,
@@ -517,7 +561,9 @@
       "wins": 3
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.557601035654275,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.4345298377158213,
       "bracket_prior": 5,
       "commander": "Magda",
       "cpr_z": 0.5564465386482313,
@@ -525,7 +571,9 @@
       "wins": 2
     },
     {
-      "b_post": 1.0,
+      "b_post": 2.8756801243778702,
+      "b_post_map": 2.75,
+      "b_post_sd": 0.820095649207608,
       "bracket_prior": 3,
       "commander": "Karona",
       "cpr_z": -0.5216497651192491,
@@ -533,7 +581,9 @@
       "wins": 0
     },
     {
-      "b_post": 1.0,
+      "b_post": 2.8798718766799434,
+      "b_post_map": 3.0,
+      "b_post_sd": 0.8175894664457063,
       "bracket_prior": 3,
       "commander": "Pantalaza",
       "cpr_z": -0.47073910536555935,
@@ -541,7 +591,9 @@
       "wins": 0
     },
     {
-      "b_post": 1.0,
+      "b_post": 2.8885059047074595,
+      "b_post_map": 3.0,
+      "b_post_sd": 0.819317180446202,
       "bracket_prior": 3,
       "commander": "Flubs",
       "cpr_z": -0.44791654510656176,
@@ -549,7 +601,9 @@
       "wins": 0
     },
     {
-      "b_post": 1.0,
+      "b_post": 2.894313514759931,
+      "b_post_map": 3.0,
+      "b_post_sd": 0.8205773816004243,
       "bracket_prior": 3,
       "commander": "Liesa",
       "cpr_z": -0.4333672298428908,
@@ -557,7 +611,9 @@
       "wins": 0
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.674056511523808,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.33670434929218584,
       "bracket_prior": 5,
       "commander": "Sephiroth",
       "cpr_z": 0.39406288555491925,
@@ -565,7 +621,9 @@
       "wins": 6
     },
     {
-      "b_post": 1.0,
+      "b_post": 2.9394451298318938,
+      "b_post_map": 3.0,
+      "b_post_sd": 0.8317506017610344,
       "bracket_prior": 3,
       "commander": "Elas",
       "cpr_z": -0.3260926806612307,
@@ -573,7 +631,9 @@
       "wins": 0
     },
     {
-      "b_post": 1.0,
+      "b_post": 2.123763744289964,
+      "b_post_map": 2.0,
+      "b_post_sd": 0.7257697983695022,
       "bracket_prior": 2,
       "commander": "Finn",
       "cpr_z": -0.3260926806612307,
@@ -581,7 +641,9 @@
       "wins": 0
     },
     {
-      "b_post": 1.0,
+      "b_post": 2.9465395569029913,
+      "b_post_map": 3.0,
+      "b_post_sd": 0.8332304883253546,
       "bracket_prior": 3,
       "commander": "Jan Jansen",
       "cpr_z": -0.3028070359719629,
@@ -589,7 +651,9 @@
       "wins": 0
     },
     {
-      "b_post": 1.0,
+      "b_post": 2.9483471378294657,
+      "b_post_map": 3.0,
+      "b_post_sd": 0.8336136542766434,
       "bracket_prior": 3,
       "commander": "Baba",
       "cpr_z": -0.29675558401724444,
@@ -597,7 +661,9 @@
       "wins": 0
     },
     {
-      "b_post": 4.5,
+      "b_post": 4.39837907840005,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.5211211268412018,
       "bracket_prior": 5,
       "commander": "Piedemoccio e Squee",
       "cpr_z": -0.2741446044697704,
@@ -605,7 +671,9 @@
       "wins": 1
     },
     {
-      "b_post": 3.5,
+      "b_post": 3.794452822461931,
+      "b_post_map": 4.0,
+      "b_post_sd": 0.6973281580117692,
       "bracket_prior": 4,
       "commander": "Purphorose",
       "cpr_z": -0.2587337891247851,
@@ -613,7 +681,9 @@
       "wins": 1
     },
     {
-      "b_post": 4.75,
+      "b_post": 4.47140725409511,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.4676043460671035,
       "bracket_prior": 5,
       "commander": "Halana",
       "cpr_z": -0.2388999692784787,
@@ -621,7 +691,9 @@
       "wins": 2
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.60627153610742,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.3842757188704924,
       "bracket_prior": 5,
       "commander": "Abigale",
       "cpr_z": 0.14168848553127236,
@@ -629,7 +701,9 @@
       "wins": 4
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.611907687989972,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.3712260603114343,
       "bracket_prior": 5,
       "commander": "K'rrik",
       "cpr_z": -0.02631695816117781,
@@ -637,7 +711,9 @@
       "wins": 5
     },
     {
-      "b_post": 4.0,
+      "b_post": 3.9057516411562028,
+      "b_post_map": 4.0,
+      "b_post_sd": 0.6386851610230437,
       "bracket_prior": 4,
       "commander": "Sisay",
       "cpr_z": 0.025665059739784928,
@@ -645,7 +721,9 @@
       "wins": 2
     },
     {
-      "b_post": 4.0,
+      "b_post": 3.8713120559419982,
+      "b_post_map": 4.0,
+      "b_post_sd": 0.6775865619953713,
       "bracket_prior": 4,
       "commander": "Kruphix",
       "cpr_z": 0.008743534502461903,
@@ -653,7 +731,9 @@
       "wins": 1
     },
     {
-      "b_post": 5.0,
+      "b_post": 4.430713697083657,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.5088505991856257,
       "bracket_prior": 5,
       "commander": "Marwyn",
       "cpr_z": 0.0,

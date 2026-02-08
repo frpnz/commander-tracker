@@ -34,10 +34,14 @@
             <label>Data e ora
               <input id="playedAt" name="playedAt" type="datetime-local" required/>
             <span class="muted" style="display:block; margin-top:6px; font-size:12px; opacity:.85;">Usa l’orario di fine partita (consigliato) per mantenere un ordine coerente.</span></label>
-
-            <label>Vincitore
-              <input id="winner" name="winner" list="playersList" placeholder="Scegli dalla lista o scrivi il nome" required/>
-            </label>
+            <div>
+              <div class="muted" style="font-size:12px;">Vincitore</div>
+              <div id="winnerBadge" class="badge" style="display:inline-flex; align-items:center; gap:8px; margin-top:6px;">
+                <span id="winnerName">—</span>
+                <button id="clearWinner" class="pill" type="button" style="padding:6px 10px;">Annulla</button>
+              </div>
+              <div class="muted" style="display:block; margin-top:8px; font-size:12px; opacity:.85;">Seleziona il vincitore nella lista "Giocatori inseriti".</div>
+            </div>
           </div>
 
           <label style="margin-top:12px;">Note (opzionale)
@@ -48,13 +52,45 @@
 
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
             <div>
-              <div class="card-title" style="font-size:14px;">Entries</div>
-              <div class="muted" style="font-size:12px;">Aggiungi i player/commanders della partita.</div>
+              <div class="card-title" style="font-size:14px;">Inserimento rapido</div>
+              <div class="muted" style="font-size:12px;">Una riga alla volta: compila e premi <b>Invio</b> per aggiungere.</div>
             </div>
-            <button id="addRow" class="pill" type="button">+ Aggiungi player</button>
+            <button id="addEntry" class="pill" type="button">Aggiungi</button>
           </div>
 
-          <div id="entries" style="margin-top:10px; display:grid; gap:10px;"></div>
+          <div class="grid3" style="margin-top:10px;">
+            <label>Player
+              <input id="inPlayer" list="playersList" placeholder="Nome player" autocomplete="off"/>
+            </label>
+            <label>Commander
+              <input id="inCommander" list="commandersList" placeholder="Nome commander" autocomplete="off"/>
+            </label>
+            <label>Bracket
+              <select id="inBracket">
+                <option value="">—</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="table-wrap" style="margin-top:12px;">
+            <table id="entriesTable" aria-label="Giocatori inseriti">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Commander</th>
+                  <th class="num">Bracket</th>
+                  <th class="num">Winner</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="entriesBody"></tbody>
+            </table>
+          </div>
 
           <div class="actions" style="margin-top:14px;">
             <button id="copyBtn" class="pill" type="button">Copia JSON</button>
@@ -75,6 +111,6 @@
   </main>
 
   <script src="../assets/nav.js?v=20260206"></script>
-  <script src="../assets/new-game.js?v=20260204"></script>
+  <script src="../assets/new-game.js?v=20260209"></script>
 </body>
 </html>

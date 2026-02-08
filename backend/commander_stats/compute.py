@@ -759,54 +759,87 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
         prior_mode = _mode_int(calib_brackets_seen.get(c) or [])
         bracket_prior = prior_mode
 
-        # Posterior bracket search (quarter steps)
+        # Posterior bracket estimation (quarter steps)
+        #
+        # Bayesian view (lightweight, deterministic): treat each appearance of a
+        # commander as a Bernoulli outcome for the pilot player (win / not-win),
+        # with success probability given by the same softmax model used for OEWR.
+        #
+        #   p(win | theta) = softmax_k(brackets with pilot overridden to theta)[pilot]
+        #
+        # Posterior on a fixed grid theta∈[1,5] with step 0.25:
+        #   log post(theta) ∝ log prior(theta) + Σ_i log Bernoulli(y_i; p_i(theta))
+        #
+        # We then report b_post as the posterior mean E[theta|D].
         b_post = None
+        b_post_sd = None
+        b_post_map = None
         occ = calib_occurrences.get(c) or []
         if occ:
-            best_abs = None
-            best_b = None
-            # iterate candidate B values
+            # Deterministic posterior on a fixed grid
             steps = int(round((BPOST_MAX - BPOST_MIN) / BPOST_STEP))
+
+            # Prior: weakly concentrate around the modal declared bracket if available,
+            # otherwise use a broad prior centered at 3.
+            prior_mu = float(bracket_prior) if bracket_prior is not None else 3.0
+            prior_sigma = 0.90  # broad, to let data dominate quickly
+
+            def _log_prior(theta: float) -> float:
+                # Truncated-normal-shaped prior (up to an additive constant)
+                z = (theta - prior_mu) / prior_sigma
+                return -0.5 * (z * z)
+
+            def _log_bernoulli(y: float, p: float) -> float:
+                # Clamp for numerical safety; keeps determinism
+                pp = min(max(float(p), 1e-12), 1.0 - 1e-12)
+                if float(y) >= 0.5:
+                    return math.log(pp)
+                return math.log(1.0 - pp)
+
+            cand_thetas: List[float] = []
+            log_posts: List[float] = []
             for si in range(steps + 1):
-                cand_b = BPOST_MIN + si * BPOST_STEP
-                # Compute mean residual for this commander if its bracket were cand_b
-                r_sum = 0.0
-                n = 0
+                theta = BPOST_MIN + si * BPOST_STEP
+                lp = _log_prior(theta)
+                # Likelihood: pilot win / not-win under softmax model
+                used = 0
                 for (p_c, actual_c, br_map) in occ:
-                    probs = _expected_probs_with_override(br_map, p_c, cand_b)
+                    probs = _expected_probs_with_override(br_map, p_c, theta)
                     if probs is None:
                         continue
-                    exp_p = probs.get(p_c)
-                    if exp_p is None:
+                    pwin = probs.get(p_c)
+                    if pwin is None:
                         continue
-                    r_sum += float(actual_c) - float(exp_p)
-                    n += 1
-                if n <= 0:
+                    lp += _log_bernoulli(float(actual_c), float(pwin))
+                    used += 1
+                if used <= 0:
                     continue
-                mean_r = r_sum / float(n)
-                abs_m = abs(mean_r)
-                if best_abs is None or abs_m < best_abs - 1e-12:
-                    best_abs = abs_m
-                    best_b = cand_b
-                elif best_abs is not None and abs(abs_m - best_abs) <= 1e-12:
-                    # tie-break: closer to prior bracket, then smaller
-                    if bracket_prior is not None:
-                        if abs(cand_b - float(bracket_prior)) < abs(best_b - float(bracket_prior)) - 1e-12:
-                            best_b = cand_b
-                        elif abs(abs(cand_b - float(bracket_prior)) - abs(best_b - float(bracket_prior))) <= 1e-12:
-                            if cand_b < best_b:
-                                best_b = cand_b
-                    else:
-                        if cand_b < best_b:
-                            best_b = cand_b
-            if best_b is not None:
-                b_post = float(best_b)
+                cand_thetas.append(float(theta))
+                log_posts.append(float(lp))
+
+            if cand_thetas:
+                # Normalize with log-sum-exp
+                m = max(log_posts)
+                exps = [math.exp(lp - m) for lp in log_posts]
+                z = sum(exps)
+                if z > 0.0:
+                    ws = [e / z for e in exps]
+                    # Posterior mean / sd
+                    mean = sum(w * t for (w, t) in zip(ws, cand_thetas))
+                    var = sum(w * (t - mean) ** 2 for (w, t) in zip(ws, cand_thetas))
+                    b_post = float(mean)
+                    b_post_sd = float(math.sqrt(var))
+                    # MAP (useful for debugging / UX if desired)
+                    imax = max(range(len(log_posts)), key=lambda i: log_posts[i])
+                    b_post_map = float(cand_thetas[imax])
 
         commander_calibration.append(
             {
                 "commander": c,
                 "bracket_prior": bracket_prior,
                 "b_post": b_post,
+                "b_post_sd": b_post_sd,
+                "b_post_map": b_post_map,
                 "games": games_c,
                 "wins": wins_c,
                 "cpr_z": cpr_z,

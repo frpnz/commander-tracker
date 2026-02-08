@@ -51,10 +51,11 @@
         <div>
           <h2 style="margin:0;">Tabella calibrazione</h2>
           <div class="muted" style="margin-top:6px;">
-            Mostra il bracket assegnato (<b>B prior</b>) e quello stimato dai risultati (<b>B posterior</b>, step 0.25).
-            La colonna <b>Delta</b> mostra lo scostamento <span class="muted">(B posterior − B prior)</span>:
-            <span class="delta delta-up">▲</span> sopra, <span class="delta delta-down">▼</span> sotto, <span class="delta delta-neutral">●</span> in linea.
-            <br/><span class="muted">Se un commander ha poche partite, il B posterior può oscillare: usa “Min partite” prima di cambiare bracket.</span>
+            Mostra il bracket assegnato (<b>B prior</b>) e quello stimato dai risultati (<b>B posterior</b>, MAP su step 0.25).
+            <br/>
+            <b>Incertezza</b> è una categoria (Bassa/Media/Alta) derivata da <span class="muted">σ<sub>post</sub></span> e calcolata <b>in modo relativo</b>:
+            viene confrontata con gli altri commander mostrati (percentili ~33% e ~66%).
+            <br/><span class="muted">Con poche partite l’incertezza resta alta: usa “Min partite” prima di cambiare bracket.</span>
           </div>
         </div>
 
@@ -82,13 +83,12 @@
         <table id="calTable">
           <thead>
             <tr>
-              <th title="Differenza tra bracket dichiarato e bracket calibrato (B posterior − B prior)">Delta</th>
               <th>Commander</th>
-              <th class="num desktop-only">B prior</th>
-              <th class="num desktop-only">B posterior</th>
-              <th class="num desktop-only">Partite</th>
-              <th class="num desktop-only">Vittorie</th>
-              <th class="mobile-only">Sintesi</th>
+              <th class="num">B prior</th>
+              <th class="num">B posterior</th>
+              <th>Incertezza</th>
+              <th class="num">Partite</th>
+              <th class="num">Vittorie</th>
             </tr>
           </thead>
           <tbody></tbody>

@@ -326,6 +326,18 @@
               "null"
             ]
           },
+    "b_post_sd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "b_post_map": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
           "games": {
             "type": "integer"
           },

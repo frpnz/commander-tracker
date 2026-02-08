@@ -188,8 +188,9 @@
     </div>
 
     <ul class="bullets">
-      <li><b>B prior</b>: bracket dichiarato (intero 1–5).</li>
-      <li><b>B posterior</b>: bracket “consigliato” dai risultati (step 0.25).</li>
+      <li><b>B prior</b>: bracket di riferimento (moda dei bracket dichiarati per quel commander; intero 1–5).</li>
+      <li><b>B posterior</b>: stima continua “consigliata” dai risultati (media a posteriori su griglia con step 0.25).</li>
+      <li><b>σ posterior</b> (se presente): incertezza della stima (deviazione standard a posteriori). Più è bassa, più la calibrazione è stabile.</li>
       <li><b>Min partite</b>: evita di prendere decisioni su campioni troppo piccoli.</li>
     </ul>
 
@@ -201,7 +202,7 @@
           <li>ha un <b>numero di partite</b> sufficiente, e</li>
           <li>lo scostamento <b>B posterior − B prior</b> è consistente (non guidato da 1–2 game “swing”).</li>
         </ul>
-        Il colore enfatizza lo scostamento, ma la decisione pratica passa sempre da <b>volume</b> e <b>contesto</b>.
+        Il colore enfatizza lo scostamento, ma la decisione pratica passa sempre da <b>volume</b>, <b>contesto</b> e (se disponibile) <b>σ posterior</b>.
       </div>
     </details>
   </section>
