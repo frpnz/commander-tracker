@@ -541,3 +541,34 @@ body.home .card{
 @media (max-width: 640px){
   .chart-wrap canvas{height:300px;}
 }
+
+/* --- Mobile scroll navbar everywhere --- */
+nav {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+nav a,
+.navlink {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+nav::-webkit-scrollbar {
+  display: none;
+}
+nav {
+  scrollbar-width: none;
+}
+
+/* --- Navbar scroll fade hint --- */
+nav {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 16px,
+    black calc(100% - 16px),
+    transparent 100%
+  );
+}
