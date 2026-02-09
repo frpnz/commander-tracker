@@ -197,13 +197,13 @@ const errorBars = {
   function computePlayers() {
     const rows = Array.isArray(stats?.by_player) ? stats.by_player : [];
     return rows
-      .map((r) => {
-        const games = asNum(r.games, 0);
-        const wins = asNum(r.wins, 0);
-        const wr = games > 0 ? (100 * wins) / games : 0;
-        return { name: r.player, games, wins, winRate: wr };
-      })
-      .filter((p) => p.name);
+        .map((r) => {
+          const games = asNum(r.games, 0);
+          const wins = asNum(r.wins, 0);
+          const wr = games > 0 ? (100 * wins) / games : 0;
+          return { name: r.player, games, wins, winRate: wr };
+        })
+        .filter((p) => p.name);
   }
 
   function computeCommandersForPlayer(playerName) {
@@ -269,8 +269,8 @@ const errorBars = {
     }));
   }
 
-  
-function renderPlayerCommanderWinrateChart(playerName) {
+
+  function renderPlayerCommanderWinrateChart(playerName) {
     const canvas = $("#pcWinChart");
     const hint = $("#pcWinChartHint");
     if (!canvas || !hint) return;
@@ -289,7 +289,7 @@ function renderPlayerCommanderWinrateChart(playerName) {
     const minGames = elMinGames ? Math.max(1, parseInt(elMinGames.value || "1", 10)) : 1;
 
     const rows = computeCommandersForPlayer(playerName)
-      .filter((r) => asNum(r.games, 0) >= minGames);
+        .filter((r) => asNum(r.games, 0) >= minGames);
 
     if (!rows.length) {
       if (window.__pcWinChart) {
@@ -419,11 +419,11 @@ function renderPlayerCommanderWinrateChart(playerName) {
 
   function escapeHtml(s) {
     return String(s)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
   }
 
   function commonOptions() {
@@ -489,7 +489,20 @@ function renderPlayerCommanderWinrateChart(playerName) {
             max: Math.min(MAX_Y_PLOTS, scaleMax),
             grace: 0, // niente extra spazio sopra
             position: "top",
-            ticks: { color: COL_TEXT_MUTED, callback: (v) => `${v}%` },
+            ticks: {
+              color: COL_TEXT_MUTED,
+              stepSize: 10,
+              callback: (v) => {
+                const n = typeof v === "string" ? Number(v) : v;
+                if (!Number.isFinite(n)) return "";
+
+                // elimina roba tipo 1.7763568394002505e-15 / -0
+                const snapped = Math.abs(n) < 1e-6 ? 0 : n;
+
+                // scegli tu: 0 decimali oppure 1
+                return `${snapped.toFixed(1)}%`;   // oppure toFixed(0)
+              },
+            },
             grid: { color: "rgba(255,255,255,0.05)" },
           },
           y: { ticks: { color: COL_TEXT_MUTED }, grid: { display: false } },
@@ -505,7 +518,7 @@ function renderPlayerCommanderWinrateChart(playerName) {
         },
 
         plugins: {
-          
+
           barValueLabels: {},...commonOptions().plugins,
           tooltip: {
             ...commonOptions().plugins.tooltip,
@@ -532,49 +545,49 @@ function renderPlayerCommanderWinrateChart(playerName) {
 
     const isFocus = !!highlightName;
     const rows = isFocus
-      ? computeCommandersForPlayer(highlightName).filter((c) => c.games > 0)
-      : [...players].filter((p) => p.games > 0);
+        ? computeCommandersForPlayer(highlightName).filter((c) => c.games > 0)
+        : [...players].filter((p) => p.games > 0);
 
     const maxGames = Math.max(1, ...rows.map((r) => r.games));
     const yMax = Math.max(0, ...rows.map((r) => Number(r.winRate) || 0));
     const yScaleMax = yMax > 0 ? Math.min(100, yMax + 0.10 * yMax) : 10;
 
-    
+
 // Build points. In focus-mode (player -> commanders), multiple commanders can share the same (games, winRate)
 // and end up perfectly overlapping. Apply a tiny deterministic "jitter" to separate overlaps so tooltips work reliably.
-const basePoints = rows.map((r) => ({
-  x: r.games,
-  y: r.winRate,
-  r: 11,
-  _row: r,
-  _mode: isFocus ? "commander" : "player",
-  _player: highlightName || null,
-  _rawX: r.games,
-  _rawY: r.winRate,
-}));
+    const basePoints = rows.map((r) => ({
+      x: r.games,
+      y: r.winRate,
+      r: 11,
+      _row: r,
+      _mode: isFocus ? "commander" : "player",
+      _player: highlightName || null,
+      _rawX: r.games,
+      _rawY: r.winRate,
+    }));
 
-if (isFocus) {
-  const groups = new Map();
-  for (const pt of basePoints) {
-    const key = `${pt.x}|${pt.y}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(pt);
-  }
-  for (const pts of groups.values()) {
-    if (pts.length <= 1) continue;
-    const m = pts.length;
-    // offsets in data units (small but enough to separate hover targets)
-    const dx = 0.25;   // quarter-game: visually tiny, but distinct hit-box
-    const dy = 0.6;    // 0.6% winrate
-    for (let i = 0; i < m; i++) {
-      const ang = (2 * Math.PI * i) / m;
-      pts[i].x = pts[i]._rawX + dx * Math.cos(ang);
-      pts[i].y = pts[i]._rawY + dy * Math.sin(ang);
+    if (isFocus) {
+      const groups = new Map();
+      for (const pt of basePoints) {
+        const key = `${pt.x}|${pt.y}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(pt);
+      }
+      for (const pts of groups.values()) {
+        if (pts.length <= 1) continue;
+        const m = pts.length;
+        // offsets in data units (small but enough to separate hover targets)
+        const dx = 0.25;   // quarter-game: visually tiny, but distinct hit-box
+        const dy = 0.6;    // 0.6% winrate
+        for (let i = 0; i < m; i++) {
+          const ang = (2 * Math.PI * i) / m;
+          pts[i].x = pts[i]._rawX + dx * Math.cos(ang);
+          pts[i].y = pts[i]._rawY + dy * Math.sin(ang);
+        }
+      }
     }
-  }
-}
 
-const points = basePoints;
+    const points = basePoints;
 
     bubbleChart = new Chart(canvasBubble.getContext("2d"), {
       type: "bubble",
@@ -623,7 +636,7 @@ const points = basePoints;
               callback: (v) => {
                 const n = typeof v === "string" ? Number(v) : v;
                 if (!Number.isFinite(n) || n < 0 || n > 100) return "";
-                return `${Math.round(n*10)/10}%`; // 
+                return `${Math.round(n*10)/10}%`; //
               },
               // opzionale (consigliato): rende la scala leggibile e stabile
               stepSize: 10,
@@ -659,13 +672,13 @@ const points = basePoints;
 
     if (elHint) {
       elHint.textContent = chosen
-        ? `Stai visualizzando: ${chosen} (focus sui commander)`
-        : "Stai visualizzando: Tutti i giocatori";
+          ? `Stai visualizzando: ${chosen} (focus sui commander)`
+          : "Stai visualizzando: Tutti i giocatori";
     }
 
     renderBar(players, chosen || null);
     renderBubble(players, chosen || null);
- 
+
 
     renderPlayerCommanderWinrateChart(chosen || "");
   }
