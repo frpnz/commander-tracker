@@ -216,13 +216,16 @@ function formatDelta(delta) {
       const isFocus = focusSet ? focusSet.has(commander) : true;
       if (focusSet && !isFocus) tr.classList.add("row-dim");
 
+      const rowTip = `Partite: ${games} · Vittorie: ${wins}`;
+
       tr.innerHTML = `
-        <td>${escapeHtml(commander)}</td>
+        <td class="commander-cell">
+          <span class="commander-name">${escapeHtml(commander)}</span>
+          <button type="button" class="info-btn" aria-label="Dettagli partite e vittorie" data-tip="${escapeHtml(rowTip)}">ℹ️</button>
+        </td>
         <td class="num">${fmtB(bPrior)}</td>
         <td class="num"><b>${escapeHtml(fmtB(bPost))}</b></td>
         <td title="${escapeHtml(u.title)}">${escapeHtml(u.label)}</td>
-        <td class="num">${games}</td>
-        <td class="num">${wins}</td>
       `;
 
       tbody.appendChild(tr);
@@ -236,10 +239,94 @@ function escapeHtml(s) {
     }[c]));
   }
 
-  async function init() {
+  
+  // Touch-friendly popover for row details (games/wins). Uses event delegation.
+  function setupInfoPopovers() {
+    const tbody = document.querySelector("#calTable tbody");
+    if (!tbody) return;
+
+    let pop = null;
+    let lastBtn = null;
+
+    function close() {
+      if (pop) pop.remove();
+      pop = null;
+      if (lastBtn) lastBtn.setAttribute("aria-expanded", "false");
+      lastBtn = null;
+    }
+
+    function openFor(btn) {
+      const tip = btn.getAttribute("data-tip") || "";
+      if (!tip) return;
+
+      if (lastBtn === btn && pop) { close(); return; }
+      close();
+
+      const r = btn.getBoundingClientRect();
+
+      pop = document.createElement("div");
+      pop.className = "tip-popover";
+      pop.setAttribute("role", "dialog");
+      pop.innerHTML = `
+        <div class="tip-popover__inner">
+          <div class="tip-popover__title">Dettagli</div>
+          <div class="tip-popover__body">${escapeHtml(tip)}</div>
+        </div>
+      `;
+
+      document.body.appendChild(pop);
+
+      // Position near the button; keep inside viewport.
+      const pr = pop.getBoundingClientRect();
+      let left = r.left + r.width/2 - pr.width/2;
+      let top = r.bottom + 8;
+
+      const pad = 8;
+      left = Math.max(pad, Math.min(left, window.innerWidth - pr.width - pad));
+      if (top + pr.height + pad > window.innerHeight) {
+        top = r.top - pr.height - 8;
+      }
+      top = Math.max(pad, Math.min(top, window.innerHeight - pr.height - pad));
+
+      pop.style.left = left + "px";
+      pop.style.top = top + "px";
+
+      lastBtn = btn;
+      btn.setAttribute("aria-expanded", "true");
+      // prevent click inside popover from closing
+      pop.addEventListener("click", (e) => e.stopPropagation());
+    }
+
+    tbody.addEventListener("click", (e) => {
+      const btn = e.target && e.target.closest ? e.target.closest(".info-btn") : null;
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openFor(btn);
+    });
+
+    // Keyboard accessibility
+    tbody.addEventListener("keydown", (e) => {
+      const btn = e.target && e.target.closest ? e.target.closest(".info-btn") : null;
+      if (!btn) return;
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        e.stopPropagation();
+        openFor(btn);
+      }
+    });
+
+    document.addEventListener("click", close);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+    window.addEventListener("resize", close);
+    window.addEventListener("scroll", close, { passive: true });
+  }
+
+async function init() {
     const minSel = document.getElementById("minGames");
     const playerSel = document.getElementById("playerPick");
     let stats = null;
+    setupInfoPopovers();
 
 function _dateKey(s){ return (s||"").slice(0,10); }
 function getPeriodLabel(games){
@@ -292,7 +379,7 @@ function getPeriodLabel(games){
     const tbody = document.querySelector("#calTable tbody");
     if (tbody) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="7" style="padding:14px; color:${COL_TEXT_MUTED};">Errore nel caricamento dati.</td>`;
+      tr.innerHTML = `<td colspan="4" style="padding:14px; color:${COL_TEXT_MUTED};">Errore nel caricamento dati.</td>`;
       tbody.appendChild(tr);
     }
   });

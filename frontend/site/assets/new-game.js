@@ -61,40 +61,6 @@
     return `${d} ${hh}:${mm}:${ss}`;
   }
 
-  
-function setupMobileKeyboardAssist() {
-  // Helps on mobile browsers (notably Firefox/Android) where the keyboard can cover content.
-  const vv = window.visualViewport;
-  const setKb = () => {
-    // Estimate keyboard overlay height (positive when viewport shrinks)
-    let kb = 0;
-    if (vv) {
-      const overlap = (window.innerHeight - vv.height - vv.offsetTop);
-      kb = Math.max(0, Math.round(overlap));
-    }
-    document.documentElement.style.setProperty("--kb", kb + "px");
-  };
-
-  // Keep focused controls visible
-  const onFocus = (ev) => {
-    const el = ev.target;
-    if (!(el instanceof HTMLElement)) return;
-    // Delay so the browser has time to resize viewport for the keyboard
-    window.setTimeout(() => {
-      try { el.scrollIntoView({ block: "center", inline: "nearest" }); } catch (_) {}
-    }, 80);
-  };
-
-  document.addEventListener("focusin", onFocus);
-
-  if (vv) {
-    vv.addEventListener("resize", setKb);
-    vv.addEventListener("scroll", setKb);
-  }
-  window.addEventListener("resize", setKb);
-  setKb();
-}
-
   function escapeHtml(s) {
     return String(s)
       .replace(/&/g, "&amp;")
@@ -465,10 +431,39 @@ function setupMobileKeyboardAssist() {
     }
   }
 
+  function setupKeyboardAvoidance() {
+    // Mobile Firefox may overlay the virtual keyboard without resizing layout,
+    // which can hide the bottom action buttons. If supported, VisualViewport
+    // lets us measure the "covered" area and expose it to CSS.
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const root = document.documentElement;
+    function updateInset() {
+      // Covered area = full layout viewport height - visual viewport height - offset
+      // (clamped to >= 0). Add a small cushion.
+      const covered = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+      root.style.setProperty("--keyboard-inset", (covered ? (covered + 12) : 0) + "px");
+    }
+
+    vv.addEventListener("resize", updateInset);
+    vv.addEventListener("scroll", updateInset);
+    updateInset();
+
+    // Also, on focus, gently scroll the focused field into view.
+    function onFocus(e) {
+      const el = e.target;
+      if (!el || !el.scrollIntoView) return;
+      // Delay one frame so the keyboard/viewport has applied.
+      requestAnimationFrame(() => {
+        try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (_e) { el.scrollIntoView(); }
+      });
+    }
+    form.addEventListener("focusin", onFocus);
+  }
+
   function init() {
-    
-    setupMobileKeyboardAssist();
-// set datetime default to now
+    // set datetime default to now
     const now = new Date();
     const y = now.getFullYear();
     const m = pad2(now.getMonth() + 1);
@@ -503,6 +498,8 @@ function setupMobileKeyboardAssist() {
 
     copyBtn.addEventListener("click", onCopy);
     form.addEventListener("submit", onSubmit);
+
+    setupKeyboardAvoidance();
 
     loadSuggestions();
   }

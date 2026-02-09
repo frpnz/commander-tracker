@@ -11,6 +11,26 @@
     // e.g. /stats/ -> / ; /repo/stats/ -> /repo/
     var root = new URL("..", window.location.href);
 
+    // Make the logo behave like a Home link (works across GitHub Pages subpaths).
+    // Markup uses a <div class="logo">, so we attach link-like behavior here.
+    var logo = document.querySelector(".topbar .logo");
+    if (logo) {
+      var homeHref = new URL("", root).toString();
+      logo.style.cursor = "pointer";
+      logo.setAttribute("role", "link");
+      logo.setAttribute("tabindex", "0");
+      logo.setAttribute("aria-label", "Home");
+      logo.addEventListener("click", function () {
+        window.location.href = homeHref;
+      });
+      logo.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          window.location.href = homeHref;
+        }
+      });
+    }
+
     var items = [
       { key: "home", path: "", label: "Home" },
       { key: "archive", path: "archive/", label: "Archivio" },

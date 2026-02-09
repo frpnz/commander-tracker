@@ -40,6 +40,54 @@ const barValueLabels = {
   }
 };
 
+
+// --- Plugin: draw symmetric error bars (in data units) for bar charts ---
+const errorBars = {
+  id: "errorBars",
+  afterDatasetsDraw(chart) {
+    const ctx = chart.ctx;
+    const ds = chart.data.datasets?.[0];
+    const errs = ds?.errorBars;
+    if (!errs || !Array.isArray(errs)) return;
+
+    const meta = chart.getDatasetMeta(0);
+    const xScale = chart.scales.x;
+    const yScale = chart.scales.y;
+    if (!meta || !xScale || !yScale) return;
+
+    ctx.save();
+    ctx.lineWidth = 2;
+    // Use current text color / border color derived from CSS
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--fg').trim() || '#e8eaed';
+
+    meta.data.forEach((elem, i) => {
+      const err = Number(errs[i] ?? 0);
+      if (!isFinite(err) || err <= 0) return;
+
+      const val = Number(ds.data[i] ?? 0);
+      if (!isFinite(val)) return;
+
+      // For horizontal bars, Chart.js uses indexAxis: 'y'
+      const y = elem.y;
+      const x = xScale.getPixelForValue(val);
+      const x0 = xScale.getPixelForValue(Math.max(0, val - err));
+      const x1 = xScale.getPixelForValue(Math.min(100, val + err));
+      const cap = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(x0, y);
+      ctx.lineTo(x1, y);
+      ctx.moveTo(x0, y - cap);
+      ctx.lineTo(x0, y + cap);
+      ctx.moveTo(x1, y - cap);
+      ctx.lineTo(x1, y + cap);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+  }
+};
+
 (function () {
   "use strict";
 
@@ -76,7 +124,8 @@ const barValueLabels = {
 
   const COL_TEXT_MUTED = "#aab3d3";
   const COL_TEXT_MAIN = "#e9ecf7";
-  const MAX_Y_PLOTS = 60
+  // Default cap for percent-like plots (used as a safety net only)
+  const MAX_Y_PLOTS = 100
 
   function pcGet(name) {
     return (window.PlayerColors && window.PlayerColors.get) ? window.PlayerColors.get(name) : "#9CA3AF";
@@ -166,45 +215,135 @@ const barValueLabels = {
     }));
   }
 
-  function renderPlayerCommanderHeatmap(playerName) {
-    if (!elHeatBody) return;
+  
+function renderPlayerCommanderWinrateChart(playerName) {
+    const canvas = $("#pcWinChart");
+    const hint = $("#pcWinChartHint");
+    if (!canvas || !hint) return;
 
-    const minGames = elMinGames ? Math.max(1, parseInt(elMinGames.value || "1", 10)) : 1;
-
-    // If "Tutti i giocatori" is selected, show all commanders aggregated across all players.
-    const showingAllPlayers = !playerName;
-
-    const baseline = showingAllPlayers ? getPlayerBaselineWinRate("") : getPlayerBaselineWinRate(playerName);
-    const rows = (showingAllPlayers ? computeCommandersAll() : computeCommandersForPlayer(playerName))
-      .filter((r) => asNum(r.games, 0) >= minGames);
-
-    if (!rows.length) {
-      elHeatBody.innerHTML = `<tr><td colspan="3" class="muted">Nessun commander con almeno ${minGames} partite.</td></tr>`;
+    // Only active when a specific player is selected (not "Tutti i giocatori")
+    if (!playerName) {
+      if (window.__pcWinChart) {
+        window.__pcWinChart.destroy();
+        window.__pcWinChart = null;
+      }
+      hint.textContent = "Seleziona un giocatore per vedere il winrate per commander.";
+      hint.style.display = "block";
       return;
     }
 
-    // Sort by |delta| desc, then games desc
+    const minGames = elMinGames ? Math.max(1, parseInt(elMinGames.value || "1", 10)) : 1;
+
+    const rows = computeCommandersForPlayer(playerName)
+      .filter((r) => asNum(r.games, 0) >= minGames);
+
+    if (!rows.length) {
+      if (window.__pcWinChart) {
+        window.__pcWinChart.destroy();
+        window.__pcWinChart = null;
+      }
+      hint.textContent = `Nessun commander con almeno ${minGames} partite per ${playerName}.`;
+      hint.style.display = "block";
+      return;
+    }
+
+    // Sort by winrate desc, then games desc
     rows.sort((a, b) => {
-      const da = Math.abs(asNum(a.winRate, 0) - baseline);
-      const db = Math.abs(asNum(b.winRate, 0) - baseline);
-      if (db !== da) return db - da;
+      const wa = asNum(a.winRate, 0);
+      const wb = asNum(b.winRate, 0);
+      if (wb !== wa) return wb - wa;
       return asNum(b.games, 0) - asNum(a.games, 0);
     });
 
-    const THRESH = 5; // percentage points vs baseline
-    elHeatBody.innerHTML = rows.map((r) => {
-      const wr = asNum(r.winRate, 0);
-      const delta = wr - baseline;
-      const cls = Math.abs(delta) < THRESH ? "heat-neutral" : (delta > 0 ? "heat-up" : "heat-down");
-      const emoji = Math.abs(delta) < THRESH ? "⏺️" : (delta > 0 ? "⬆️" : "⬇️");
-      const title = `Winrate: ${wr.toFixed(1)}% · Partite: ${asNum(r.games,0)} · Baseline ${showingAllPlayers ? 'Globale' : playerName}: ${baseline.toFixed(1)}% · Delta: ${(delta>=0?"+":"")}${delta.toFixed(1)}pp`;
-      return `
-        <tr>
-          <td>${escapeHtml(r.commander)}</td>
-          <td class="right">${asNum(r.games, 0)}</td>
-          <td class="right heatcell ${cls}" title="${escapeHtml(title)}">${emoji} ${wr.toFixed(1)}%</td>
-        </tr>`;
-    }).join("");
+    const labels = rows.map((r) => r.commander);
+    const data = rows.map((r) => asNum(r.winRate, 0));
+
+    // Error bars: 95% CI for a proportion (normal approximation) in percentage points.
+    // ci = 1.96 * sqrt(p*(1-p)/n) * 100
+    const errors = rows.map((r) => {
+      const n = Math.max(1, asNum(r.games, 0));
+      const p = Math.min(1, Math.max(0, asNum(r.winRate, 0) / 100));
+      const se = Math.sqrt((p * (1 - p)) / n);
+      return 1.96 * se * 100;
+    });
+
+    const color = (window.PlayerColors?.getColor?.(playerName)) || "rgba(255,255,255,.85)";
+
+    hint.style.display = "none";
+
+    const ctx = canvas.getContext("2d");
+
+    if (window.__pcWinChart) {
+      // update
+      window.__pcWinChart.data.labels = labels;
+      window.__pcWinChart.data.datasets[0].data = data;
+      window.__pcWinChart.data.datasets[0].backgroundColor = color;
+      window.__pcWinChart.data.datasets[0].borderColor = color;
+      window.__pcWinChart.data.datasets[0].errorBars = errors;
+      window.__pcWinChart.update();
+      return;
+    }
+
+    window.__pcWinChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Winrate (%)",
+          data,
+          errorBars: errors,
+          backgroundColor: color,
+          borderColor: color,
+          borderWidth: 1,
+          borderRadius: 10,
+          barThickness: 14,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y", // horizontal bars
+        scales: {
+          x: {
+            min: 0,
+            max: 100,
+            ticks: {
+              callback: (v) => `${v}%`
+            },
+            grid: { display: true }
+          },
+          y: {
+            ticks: {
+              autoSkip: false,
+              // Keep labels readable even when many commanders
+              font: (ctx) => {
+                const n = (ctx.chart?.data?.labels?.length || 1);
+                const size = n > 18 ? 10 : (n > 12 ? 11 : 12);
+                return { size };
+              }
+            },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (c) => {
+                const i = c.dataIndex;
+                const r = rows[i];
+                const wr = asNum(r.winRate, 0);
+                const g = asNum(r.games, 0);
+                const w = asNum(r.wins, 0);
+                const ci = errors[i];
+                return ` ${wr.toFixed(1)}%  ·  ${w}/${g}  ·  ±${ci.toFixed(1)}pp (95% CI)`;
+              }
+            }
+          }
+        }
+      },
+      plugins: [errorBars]
+    });
   }
 
 
@@ -260,6 +399,9 @@ const barValueLabels = {
       return pcAlpha(base, p.name === highlightName ? 0.90 : 0.15);
     });
 
+    const vMax = Math.max(0, ...values.map((v) => Number(v) || 0));
+    const scaleMax = vMax > 0 ? Math.min(100, vMax + 0.10 * vMax) : 10;
+
     barChart = new Chart(canvasBar.getContext("2d"), {
       type: "bar",
       plugins: [barValueLabels],
@@ -280,8 +422,9 @@ const barValueLabels = {
         scales: {
           x: {
             min: 0,
-            max: MAX_Y_PLOTS,
+            max: Math.min(MAX_Y_PLOTS, scaleMax),
             grace: 0, // niente extra spazio sopra
+            position: "top",
             ticks: { color: COL_TEXT_MUTED, callback: (v) => `${v}%` },
             grid: { color: "rgba(255,255,255,0.05)" },
           },
@@ -329,6 +472,8 @@ const barValueLabels = {
       : [...players].filter((p) => p.games > 0);
 
     const maxGames = Math.max(1, ...rows.map((r) => r.games));
+    const yMax = Math.max(0, ...rows.map((r) => Number(r.winRate) || 0));
+    const yScaleMax = yMax > 0 ? Math.min(100, yMax + 0.10 * yMax) : 10;
 
     
 // Build points. In focus-mode (player -> commanders), multiple commanders can share the same (games, winRate)
@@ -398,13 +543,14 @@ const points = basePoints;
           x: {
             min: 0,
             suggestedMax: maxGames * 1.15,
+            position: "top",
             title: { display: true, text: "Partite", color: COL_TEXT_MUTED },
             ticks: { color: COL_TEXT_MUTED },
             grid: { color: "rgba(255,255,255,0.05)" },
           },
           y: {
-            min: isFocus ? -10 : 0,
-            max: isFocus ? 110 : 65,          // no-focus: zoom 0–65
+            min: 0,
+            max: yScaleMax,
             grace: 0,
             title: { display: true, text: "Winrate (%)", color: COL_TEXT_MUTED },
             ticks: {
@@ -453,7 +599,7 @@ const points = basePoints;
     renderBubble(players, chosen || null);
  
 
-    renderPlayerCommanderHeatmap(chosen || "");
+    renderPlayerCommanderWinrateChart(chosen || "");
   }
 
   async function init() {

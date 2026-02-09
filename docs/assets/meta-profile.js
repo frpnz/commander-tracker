@@ -120,38 +120,21 @@ function getPeriodLabel(games){
     return mdiRaw / bracketInfo.rng;
   }
 
-  function computeAxisLimitY(points) {
-    let m = 0;
-    for (const p of points) {
-      if (typeof p.oewr_z === "number") m = Math.max(m, Math.abs(p.oewr_z));
+  function computeSymmetricAxisLimit(values, padFrac = 0.10, minLimit = 0.5) {
+    // Computes a symmetric [-m, +m] axis, where m is driven by min/max values.
+    // (Keeps the origin centered for quadrant reading.)
+    let vmin = Infinity;
+    let vmax = -Infinity;
+    for (const v of values) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) continue;
+      if (n < vmin) vmin = n;
+      if (n > vmax) vmax = n;
     }
-    if (!isFinite(m) || m <= 0) m = 1;
-    m *= 1.12; // padding
-    m = Math.max(0.75, Math.min(3.0, m)); // sane clamp
-    return m;
-  }
-
-  function computeAxisLimitXNormalized(bracketInfo) {
-    // Normalized MDI lives roughly in [-1, +1] (exact if bracket range is complete).
-    // Add a little padding and keep it within reasonable bounds.
-    let m = 1.0;
-    // If no bracketInfo, we fall back to raw MDI and let Y logic drive; keep previous behavior later.
-    m *= 1.08;
-    m = Math.max(0.75, Math.min(1.5, m));
-    return m;
-  }
-
-
-  function computeAxisLimit(points) {
-    let m = 0;
-    for (const p of points) {
-      if (typeof p.mdi === "number") m = Math.max(m, Math.abs(p.mdi));
-      if (typeof p.oewr_z === "number") m = Math.max(m, Math.abs(p.oewr_z));
-    }
-    if (!isFinite(m) || m <= 0) m = 1;
-    m *= 1.12; // padding
-    m = Math.max(0.75, Math.min(3.0, m)); // sane clamp
-    return m;
+    if (!Number.isFinite(vmin) || !Number.isFinite(vmax)) return 1;
+    const m = Math.max(Math.abs(vmin), Math.abs(vmax));
+    const padded = m > 0 ? (m + padFrac * m) : 1;
+    return Math.max(minLimit, padded);
   }
 
   // --- PLUGIN: sfondo quadranti + assi zero + vettori ---
@@ -267,13 +250,17 @@ function getPeriodLabel(games){
     if (!canvas) return;
     if (chart) chart.destroy();
 
-    const axisY = computeAxisLimitY(points);
+    // Build datasets and compute axis limits from actual min/max in data.
+    const safePoints = (points || [])
+      .filter((p) => typeof p.mdi === "number" && typeof p.oewr_z === "number" && normalizeMdi(p.mdi, bracketInfo) !== null);
 
-    // MDI is shown normalized on X when bracket range is available (hybrid: tooltip keeps raw MDI).
-    const axisX = bracketInfo ? computeAxisLimitXNormalized(bracketInfo) : computeAxisLimit(points);
-    const datasets = (points || [])
-      .filter((p) => typeof p.mdi === "number" && typeof p.oewr_z === "number" && normalizeMdi(p.mdi, bracketInfo) !== null)
-      .map((p) => {
+    const xVals = safePoints.map((p) => normalizeMdi(p.mdi, bracketInfo));
+    const yVals = safePoints.map((p) => p.oewr_z);
+
+    const axisX = computeSymmetricAxisLimit(xVals, 0.10, 0.35);
+    const axisY = computeSymmetricAxisLimit(yVals, 0.10, 0.35);
+
+    const datasets = safePoints.map((p) => {
         const col = pcGet(p.player);
         const games = Number(p.games_total || 0);
         const r = Math.max(5, Math.sqrt(Math.max(1, games)) * 2);

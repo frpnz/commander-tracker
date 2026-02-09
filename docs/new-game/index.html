@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Nuova partita</title>
-  <link rel="stylesheet" href="../assets/style.css?v=20260209a"/>
+  <link rel="stylesheet" href="../assets/style.css?v=20260209"/>
 </head>
 <body>
   <header class="topbar">
@@ -29,7 +29,7 @@
       </div>
 
       <div class="card-body">
-        <form id="gameForm">
+        <form id="gameForm" class="has-sticky-actions">
           <div class="grid2">
             <label>Data e ora
               <input id="playedAt" name="playedAt" type="datetime-local" required/>
@@ -60,10 +60,10 @@
 
           <div class="grid3" style="margin-top:10px;">
             <label>Player
-              <input id="inPlayer" list="playersList" placeholder="Nome player"  type="text" placeholder="Nome player" spellcheck="false" autocapitalize="none" autocomplete="on"/>
+              <input id="inPlayer" name="player" list="playersList" placeholder="Nome player" autocomplete="on"/>
             </label>
             <label>Commander
-              <input id="inCommander" list="commandersList" placeholder="Nome commander"  type="text" placeholder="Nome commander" spellcheck="false" autocapitalize="none" autocomplete="on"/>
+              <input id="inCommander" name="commander" list="commandersList" placeholder="Nome commander" autocomplete="on"/>
             </label>
             <label>Bracket
               <select id="inBracket">
@@ -92,7 +92,7 @@
             </table>
           </div>
 
-          <div class="actions" style="margin-top:14px;">
+          <div class="actions sticky-actions" style="margin-top:14px;">
             <button id="copyBtn" class="pill" type="button">Copia JSON</button>
             <button id="downloadBtn" class="primary" type="submit">Scarica file</button>
           </div>
@@ -111,6 +111,6 @@
   </main>
 
   <script src="../assets/nav.js?v=20260206"></script>
-  <script src="../assets/new-game.js?v=20260209a"></script>
+  <script src="../assets/new-game.js?v=20260209"></script>
 </body>
 </html>

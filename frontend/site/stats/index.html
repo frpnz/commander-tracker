@@ -71,20 +71,12 @@
           Seleziona un giocatore per vedere i suoi commander, oppure lascia “Tutti i giocatori” per una vista globale.
           Il colore indica la performance rispetto al winrate medio del giocatore (o alla media globale).
         </div>
-        <div class="table-wrap" style="margin-top:12px;">
-          <table class="table" aria-label="Heatmap player commander">
-            <thead>
-              <tr>
-                <th>Commander</th>
-                <th class="right">Partite</th>
-                <th class="right">Winrate</th>
-              </tr>
-            </thead>
-            <tbody id="pcHeatBody">
-              <tr><td colspan="3" class="muted">Seleziona un giocatore o lascia “Tutti i giocatori” per la vista globale.</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="chart-card" style="margin-top:12px;">
+  <div class="muted" id="pcWinChartHint">Seleziona un giocatore per vedere il winrate per commander.</div>
+  <div class="chart-wrap" style="margin-top:10px;">
+    <canvas id="pcWinChart" height="340" aria-label="Winrate per commander del player"></canvas>
+  </div>
+</div>
         <div class="muted" style="margin-top:10px; font-size:12px; opacity:.85;">
           Tip: imposta “Min partite” per ridurre rumore da campioni piccoli. Su mobile la lista è pensata per scorrere in verticale.
         </div>

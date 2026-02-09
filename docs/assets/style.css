@@ -41,7 +41,7 @@ body::before{
 }
 
 /* --- Layout --- */
-.container,.wrap{max-width:1180px; margin:20px auto; padding:0 16px calc(24px + var(--kb, 0px)) 16px}
+.container,.wrap{max-width:1180px; margin:20px auto; padding:0 16px}
 
 .topbar{
   position:sticky; top:0; z-index:5;
@@ -64,6 +64,7 @@ body::before{
   position: relative;
   overflow: hidden;
 }
+.logo:focus{outline: 2px solid rgba(110,231,255,.55); outline-offset: 3px}
 .logo::before{
   content:"";
   position:absolute;
@@ -204,6 +205,18 @@ select,input,textarea{
 select option{background: var(--bg); color: var(--text);}
 
 .actions{display:flex; gap:10px; justify-content:flex-end}
+
+/* New-game mobile UX: keep action buttons reachable when the virtual keyboard is open */
+.actions.sticky-actions{
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom) + var(--keyboard-inset, 0px));
+  background: linear-gradient(to top, rgba(11,16,32,.92), rgba(11,16,32,0));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+form.has-sticky-actions{padding-bottom: calc(18px + var(--keyboard-inset, 0px))}
 .hint{margin-top:10px; color:var(--muted); font-size:12px}
 
 /* --- Charts (stats) --- */
@@ -485,6 +498,18 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
   #tList tbody td:nth-child(2){flex:1 1 44%; min-width:0}
   #tList tbody td:nth-child(3){flex:0 0 auto}
   #tList tbody td:nth-child(4){flex:0 0 auto; text-align:right}
+
+  /* Opt-out: keep classic table rows on mobile (single line + horizontal scroll). */
+  .table-wrap.keep-table{overflow:auto; padding:0 6px 10px}
+  table.keep-table{
+    border-spacing:0;
+    min-width:560px;
+  }
+  table.keep-table thead{display:table-header-group}
+  table.keep-table tbody tr{display:table-row; padding:0; border-radius:0; background:transparent; border:0}
+  table.keep-table tbody td{display:table-cell; padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.06)}
+  table.keep-table tbody td::before{content:none}
+  table.keep-table th, table.keep-table td{white-space:nowrap}
 }
 
 /* --- Home background image (desktop) --- */
