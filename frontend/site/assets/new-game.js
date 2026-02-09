@@ -61,6 +61,40 @@
     return `${d} ${hh}:${mm}:${ss}`;
   }
 
+  
+function setupMobileKeyboardAssist() {
+  // Helps on mobile browsers (notably Firefox/Android) where the keyboard can cover content.
+  const vv = window.visualViewport;
+  const setKb = () => {
+    // Estimate keyboard overlay height (positive when viewport shrinks)
+    let kb = 0;
+    if (vv) {
+      const overlap = (window.innerHeight - vv.height - vv.offsetTop);
+      kb = Math.max(0, Math.round(overlap));
+    }
+    document.documentElement.style.setProperty("--kb", kb + "px");
+  };
+
+  // Keep focused controls visible
+  const onFocus = (ev) => {
+    const el = ev.target;
+    if (!(el instanceof HTMLElement)) return;
+    // Delay so the browser has time to resize viewport for the keyboard
+    window.setTimeout(() => {
+      try { el.scrollIntoView({ block: "center", inline: "nearest" }); } catch (_) {}
+    }, 80);
+  };
+
+  document.addEventListener("focusin", onFocus);
+
+  if (vv) {
+    vv.addEventListener("resize", setKb);
+    vv.addEventListener("scroll", setKb);
+  }
+  window.addEventListener("resize", setKb);
+  setKb();
+}
+
   function escapeHtml(s) {
     return String(s)
       .replace(/&/g, "&amp;")
@@ -432,7 +466,9 @@
   }
 
   function init() {
-    // set datetime default to now
+    
+    setupMobileKeyboardAssist();
+// set datetime default to now
     const now = new Date();
     const y = now.getFullYear();
     const m = pad2(now.getMonth() + 1);

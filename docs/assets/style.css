@@ -41,7 +41,7 @@ body::before{
 }
 
 /* --- Layout --- */
-.container,.wrap{max-width:1180px; margin:20px auto; padding:0 16px}
+.container,.wrap{max-width:1180px; margin:20px auto; padding:0 16px calc(24px + var(--kb, 0px)) 16px}
 
 .topbar{
   position:sticky; top:0; z-index:5;
