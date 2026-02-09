@@ -345,8 +345,8 @@ class Handler(BaseHTTPRequestHandler):
         <p class="muted">Carica il file <code>.json</code> o incolla il contenuto qui sotto.</p>
 
         <div class="card" style="margin-bottom: 20px; border: 2px dashed #ccc; padding: 20px; text-align: center;">
-            <label style="margin-top:0;"><b>Seleziona un file .json</b></label>
-            <input type="file" id="json_file_input" accept=".json" style="margin-top:10px;">
+            <label style="margin-top:0;"><b>Seleziona uno o più file .json</b></label>
+            <input type="file" id="json_file_input" accept=".json" multiple style="margin-top:10px;">
             <p id="file_status" class="muted" style="margin-top:10px; font-weight: bold;"></p>
         </div>
 
@@ -361,29 +361,36 @@ class Handler(BaseHTTPRequestHandler):
         </form>
 
         <script>
-        document.getElementById('json_file_input').addEventListener('change', function(e) {{
-            const file = e.target.files[0];
+        document.getElementById('json_file_input').addEventListener('change', async function(e) {{
+            const files = Array.from(e.target.files || []);
             const status = document.getElementById('file_status');
             const textarea = document.getElementById('json_payload');
 
-            if (!file) return;
+            if (!files.length) return;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {{
-                try {{
-                    const content = e.target.result;
+            try {{
+                const payloads = [];
+                for (const file of files) {{
+                    const text = await file.text();
                     // Validazione minima per l'utente
-                    JSON.parse(content); 
-                    textarea.value = content;
-                    status.style.color = "green";
-                    status.textContent = "✅ File '" + file.name + "' pronto per l'invio";
-                }} catch (err) {{
-                    status.style.color = "red";
-                    status.textContent = "❌ Errore: Il file non è un JSON valido";
-                    textarea.value = "";
+                    const parsed = JSON.parse(text);
+                    payloads.push(parsed);
                 }}
-            }};
-            reader.readAsText(file);
+
+                // Se è un singolo file, manteniamo il formato originale (oggetto)
+                // Se sono più file, inviamo un array di oggetti.
+                const out = (payloads.length === 1)
+                    ? JSON.stringify(payloads[0], null, 2)
+                    : JSON.stringify(payloads, null, 2);
+
+                textarea.value = out;
+                status.style.color = "green";
+                status.textContent = "✅ " + files.length + " file pronto/i per l'invio";
+            }} catch (err) {{
+                status.style.color = "red";
+                status.textContent = "❌ Errore: uno o più file non sono JSON validi";
+                textarea.value = "";
+            }}
         }});
         </script>
         """
@@ -400,67 +407,116 @@ class Handler(BaseHTTPRequestHandler):
             return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("JSON non valido"))
 
         try:
-            if payload.get("version") != "game.v1":
-                return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Versione payload non supportata"))
+            # Supporta sia un singolo oggetto (game.v1) sia una lista di oggetti.
+            payloads = payload if isinstance(payload, list) else [payload]
+            if not payloads:
+                return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Payload vuoto"))
 
-            played_at = (payload.get("played_at") or "").strip()
-            winner_player = (payload.get("winner_player") or "").strip()
-            notes = payload.get("notes", None)
-            entries = payload.get("entries") or []
-
-            if not played_at or not winner_player:
-                return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("played_at e winner_player sono obbligatori"))
-
-            if not isinstance(entries, list) or len(entries) < 2:
-                return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("entries deve essere una lista (min 2)"))
-
-            # Normalize + validate entries
-            seen_players: set[str] = set()
-            norm_entries: list[tuple[str, str, int | None]] = []
-            for e in entries:
-                if not isinstance(e, dict):
-                    return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("entries contiene un elemento non valido"))
-                player = (e.get("player") or "").strip()
-                commander = (e.get("commander") or "").strip()
-                bracket = e.get("bracket", None)
-
-                if not player or not commander:
-                    return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Ogni entry richiede player e commander"))
-
-                if player in seen_players:
-                    return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Player duplicato nelle entries: " + player))
-                seen_players.add(player)
-
-                if bracket is None or bracket == "":
-                    b = None
-                else:
-                    try:
-                        b = int(bracket)
-                    except Exception:
-                        return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Bracket non valido per " + player))
-                    if b < 1 or b > 5:
-                        return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Bracket fuori range (1..5) per " + player))
-
-                norm_entries.append((player, commander, b))
-
-            if winner_player not in seen_players:
-                return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("winner_player deve essere uno dei player nelle entries"))
-
+            imported_ids: list[int] = []
             with db() as conn:
                 cur = conn.cursor()
-                cur.execute(
-                    "INSERT INTO game (played_at, notes, winner_player) VALUES (?, ?, ?)",
-                    (played_at, notes, winner_player),
-                )
-                game_id = cur.lastrowid
+                for idx, item in enumerate(payloads, start=1):
+                    if not isinstance(item, dict):
+                        return self._redirect(
+                            "/admin/games/import_json?msg="
+                            + urllib.parse.quote(f"Elemento #{idx} non è un oggetto JSON valido")
+                        )
 
-                cur.executemany(
-                    "INSERT INTO gameentry (game_id, player, commander, bracket) VALUES (?, ?, ?, ?)",
-                    [(game_id, p, c, b) for (p, c, b) in norm_entries],
-                )
+                    if item.get("version") != "game.v1":
+                        return self._redirect(
+                            "/admin/games/import_json?msg="
+                            + urllib.parse.quote(f"Elemento #{idx}: Versione payload non supportata")
+                        )
+
+                    played_at = (item.get("played_at") or "").strip()
+                    winner_player = (item.get("winner_player") or "").strip() or None
+                    notes = item.get("notes", None)
+                    entries = item.get("entries") or []
+
+                    if not played_at:
+                        return self._redirect(
+                            "/admin/games/import_json?msg="
+                            + urllib.parse.quote(f"Elemento #{idx}: played_at è obbligatorio")
+                        )
+
+                    if not isinstance(entries, list) or len(entries) < 2:
+                        return self._redirect(
+                            "/admin/games/import_json?msg="
+                            + urllib.parse.quote(f"Elemento #{idx}: entries deve essere una lista (min 2)")
+                        )
+
+                    # Normalize + validate entries
+                    seen_players: set[str] = set()
+                    norm_entries: list[tuple[str, str, int | None]] = []
+                    for e in entries:
+                        if not isinstance(e, dict):
+                            return self._redirect(
+                                "/admin/games/import_json?msg="
+                                + urllib.parse.quote(f"Elemento #{idx}: entries contiene un elemento non valido")
+                            )
+                        player = (e.get("player") or "").strip()
+                        commander = (e.get("commander") or "").strip()
+                        bracket = e.get("bracket", None)
+
+                        if not player or not commander:
+                            return self._redirect(
+                                "/admin/games/import_json?msg="
+                                + urllib.parse.quote(f"Elemento #{idx}: ogni entry richiede player e commander")
+                            )
+
+                        if player in seen_players:
+                            return self._redirect(
+                                "/admin/games/import_json?msg="
+                                + urllib.parse.quote(f"Elemento #{idx}: player duplicato nelle entries: {player}")
+                            )
+                        seen_players.add(player)
+
+                        if bracket is None or bracket == "":
+                            b = None
+                        else:
+                            try:
+                                b = int(bracket)
+                            except Exception:
+                                return self._redirect(
+                                    "/admin/games/import_json?msg="
+                                    + urllib.parse.quote(f"Elemento #{idx}: bracket non valido per {player}")
+                                )
+                            if b < 1 or b > 5:
+                                return self._redirect(
+                                    "/admin/games/import_json?msg="
+                                    + urllib.parse.quote(f"Elemento #{idx}: bracket fuori range (1..5) per {player}")
+                                )
+
+                        norm_entries.append((player, commander, b))
+
+                    if winner_player and winner_player not in seen_players:
+                        return self._redirect(
+                            "/admin/games/import_json?msg="
+                            + urllib.parse.quote(f"Elemento #{idx}: winner_player deve essere uno dei player nelle entries")
+                        )
+
+                    cur.execute(
+                        "INSERT INTO game (played_at, notes, winner_player) VALUES (?, ?, ?)",
+                        (played_at, notes, winner_player),
+                    )
+                    game_id = int(cur.lastrowid)
+
+                    cur.executemany(
+                        "INSERT INTO gameentry (game_id, player, commander, bracket) VALUES (?, ?, ?, ?)",
+                        [(game_id, p, c, b) for (p, c, b) in norm_entries],
+                    )
+                    imported_ids.append(game_id)
+
                 conn.commit()
 
-            return self._redirect("/admin/games/%d?updated=1&msg=%s" % (game_id, urllib.parse.quote("Import JSON")))
+            if len(imported_ids) == 1:
+                gid = imported_ids[0]
+                return self._redirect("/admin/games/%d?updated=1&msg=%s" % (gid, urllib.parse.quote("Import JSON")))
+
+            return self._redirect(
+                "/admin/games/import_json?updated=1&msg="
+                + urllib.parse.quote(f"Importati {len(imported_ids)} game")
+            )
         except Exception as e:
             return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Errore import: " + str(e)))
 

@@ -46,6 +46,13 @@
     return n.toFixed(2).replace(/\.00$/, "");
   }
 
+  function fmtNum(v, digits) {
+    if (v === null || v === undefined) return "—";
+    const n = Number(v);
+    if (!Number.isFinite(n)) return "—";
+    return n.toFixed(digits);
+  }
+
 
 function fmtSigned(v) {
   if (v === null || v === undefined) return "—";
@@ -210,18 +217,22 @@ function formatDelta(delta) {
 
       const games = Number(r.games || 0);
       const wins = Number(r.wins || 0);
+      const sdPost = fmtNum(r.b_post_sd, 2);
+      const cprz = fmtSigned(r.cpr_z);
 
       const u = uncertaintyCat(r.b_post_sd, cutoffs);
 
       const isFocus = focusSet ? focusSet.has(commander) : true;
       if (focusSet && !isFocus) tr.classList.add("row-dim");
 
-      const rowTip = `Partite: ${games} · Vittorie: ${wins}`;
+      // Keep extra columns out of the table for mobile readability.
+      // Expose the full context in a touch-friendly popover.
+      const rowTip = `Partite: ${games} · Vittorie: ${wins} · CPR-Z: ${cprz} · σ_post: ${sdPost}`;
 
       tr.innerHTML = `
         <td class="commander-cell">
           <span class="commander-name">${escapeHtml(commander)}</span>
-          <button type="button" class="info-btn" aria-label="Dettagli partite e vittorie" data-tip="${escapeHtml(rowTip)}">ℹ️</button>
+          <button type="button" class="info-btn" aria-label="Dettagli" data-tip="${escapeHtml(rowTip)}">ℹ️</button>
         </td>
         <td class="num">${fmtB(bPrior)}</td>
         <td class="num"><b>${escapeHtml(fmtB(bPost))}</b></td>
@@ -354,7 +365,11 @@ function getPeriodLabel(games){
       if (period) parts.push(`Periodo: ${period}`);
       if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
       if (gen) parts.push(`Gen: ${gen}`);
-      elMeta.textContent = parts.join(" · ");
+      // Mantieni il riepilogo nei dati ma non mostrarlo in UI
+      const summary = parts.join(" · ");
+      elMeta.dataset.summary = summary;
+      elMeta.textContent = "";
+      elMeta.style.display = "none";
     }
 
     const players = (stats?.filters?.players || []).slice().sort((a,b)=>String(a).localeCompare(String(b)));

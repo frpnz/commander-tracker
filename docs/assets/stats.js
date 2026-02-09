@@ -50,6 +50,10 @@ const errorBars = {
     const errs = ds?.errorBars;
     if (!errs || !Array.isArray(errs)) return;
 
+    // Optional helpers provided by the dataset
+    const zeroMarkers = Array.isArray(ds.zeroMarkers) ? ds.zeroMarkers : null;
+    const ciStroke = (ds.ciColor && String(ds.ciColor).trim()) ? String(ds.ciColor).trim() : null;
+
     const meta = chart.getDatasetMeta(0);
     const xScale = chart.scales.x;
     const yScale = chart.scales.y;
@@ -57,31 +61,65 @@ const errorBars = {
 
     ctx.save();
     ctx.lineWidth = 2;
-    // Use current text color / border color derived from CSS
-    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--fg').trim() || '#e8eaed';
+    // Use dataset CI color (preferred) or fall back to the current text color.
+    ctx.strokeStyle = ciStroke || getComputedStyle(document.documentElement).getPropertyValue('--fg').trim() || '#e8eaed';
 
     meta.data.forEach((elem, i) => {
       const err = Number(errs[i] ?? 0);
-      if (!isFinite(err) || err <= 0) return;
-
       const val = Number(ds.data[i] ?? 0);
       if (!isFinite(val)) return;
 
       // For horizontal bars, Chart.js uses indexAxis: 'y'
       const y = elem.y;
-      const x = xScale.getPixelForValue(val);
-      const x0 = xScale.getPixelForValue(Math.max(0, val - err));
-      const x1 = xScale.getPixelForValue(Math.min(100, val + err));
-      const cap = 6;
+      // Keep 0-axis marker inside the plot area (Chart.js may place 0 slightly outside)
+      const xZero = Math.max(chart.chartArea.left + 2, xScale.getPixelForValue(0));
 
-      ctx.beginPath();
-      ctx.moveTo(x0, y);
-      ctx.lineTo(x1, y);
-      ctx.moveTo(x0, y - cap);
-      ctx.lineTo(x0, y + cap);
-      ctx.moveTo(x1, y - cap);
-      ctx.lineTo(x1, y + cap);
-      ctx.stroke();
+      // Draw CI only when > 0
+      if (isFinite(err) && err > 0) {
+        const x0 = xScale.getPixelForValue(Math.max(0, val - err));
+        const x1 = xScale.getPixelForValue(Math.min(100, val + err));
+        const cap = 6;
+
+        ctx.beginPath();
+        ctx.moveTo(x0, y);
+        ctx.lineTo(x1, y);
+        ctx.moveTo(x0, y - cap);
+        ctx.lineTo(x0, y + cap);
+        ctx.moveTo(x1, y - cap);
+        ctx.lineTo(x1, y + cap);
+        ctx.stroke();
+      }
+
+      // Explicit marker for 0% winrate (so it never "disappears")
+      if (zeroMarkers && zeroMarkers[i]) {
+        // Small marker at 0% so it never "disappears": short hairline + dot.
+        // Draw slightly inside the plot area for maximum visibility.
+        ctx.save();
+
+        const x0 = xZero + 2;
+        const x1 = xZero + 18;
+
+        // Hairline
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(x0, y);
+        ctx.lineTo(x1, y);
+        ctx.stroke();
+
+        // Dot (centered on the hairline)
+        const r = 5;
+        ctx.beginPath();
+        ctx.arc((x0 + x1) / 2, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = ciStroke || ctx.strokeStyle;
+        ctx.fill();
+        // Inner highlight to stand out on dark bars
+        ctx.beginPath();
+        ctx.arc((x0 + x1) / 2, y, 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.fill();
+
+        ctx.restore();
+      }
     });
 
     ctx.restore();
@@ -133,6 +171,22 @@ const errorBars = {
 
   function pcAlpha(color, alpha) {
     return (window.PlayerColors && window.PlayerColors.withAlpha) ? window.PlayerColors.withAlpha(color, alpha) : color;
+  }
+
+  // Darken a #RRGGBB color by multiplying RGB channels by `factor` (0..1).
+  function darkenHex(hex, factor) {
+    const h = String(hex || "").trim();
+    if (!h.startsWith("#") || h.length !== 7) return hex;
+    const r = parseInt(h.slice(1, 3), 16);
+    const g = parseInt(h.slice(3, 5), 16);
+    const b = parseInt(h.slice(5, 7), 16);
+    if (![r, g, b].every(Number.isFinite)) return hex;
+    const clamp = (x) => Math.max(0, Math.min(255, Math.round(x)));
+    const rr = clamp(r * factor);
+    const gg = clamp(g * factor);
+    const bb = clamp(b * factor);
+    const toHex = (x) => x.toString(16).padStart(2, "0");
+    return `#${toHex(rr)}${toHex(gg)}${toHex(bb)}`;
   }
 
   function asNum(x, dflt = 0) {
@@ -267,7 +321,13 @@ function renderPlayerCommanderWinrateChart(playerName) {
       return 1.96 * se * 100;
     });
 
-    const color = (window.PlayerColors?.getColor?.(playerName)) || "rgba(255,255,255,.85)";
+    const base = pcGet(playerName);
+    // Make the bar slightly darker than the CI lines for contrast.
+    const barColor = pcAlpha(darkenHex(base, 0.72), 0.95);
+    const ciColor = pcAlpha(darkenHex(base, 0.90), 0.95);
+
+    // Mark rows that have games but zero wins (to draw explicit 0% marker).
+    const zeroMarkers = rows.map((r) => asNum(r.games, 0) > 0 && asNum(r.wins, 0) === 0);
 
     hint.style.display = "none";
 
@@ -277,9 +337,11 @@ function renderPlayerCommanderWinrateChart(playerName) {
       // update
       window.__pcWinChart.data.labels = labels;
       window.__pcWinChart.data.datasets[0].data = data;
-      window.__pcWinChart.data.datasets[0].backgroundColor = color;
-      window.__pcWinChart.data.datasets[0].borderColor = color;
+      window.__pcWinChart.data.datasets[0].backgroundColor = barColor;
+      window.__pcWinChart.data.datasets[0].borderColor = barColor;
       window.__pcWinChart.data.datasets[0].errorBars = errors;
+      window.__pcWinChart.data.datasets[0].ciColor = ciColor;
+      window.__pcWinChart.data.datasets[0].zeroMarkers = zeroMarkers;
       window.__pcWinChart.update();
       return;
     }
@@ -292,8 +354,10 @@ function renderPlayerCommanderWinrateChart(playerName) {
           label: "Winrate (%)",
           data,
           errorBars: errors,
-          backgroundColor: color,
-          borderColor: color,
+          ciColor: ciColor,
+          zeroMarkers,
+          backgroundColor: barColor,
+          borderColor: barColor,
           borderWidth: 1,
           borderRadius: 10,
           barThickness: 14,
@@ -472,8 +536,7 @@ function renderPlayerCommanderWinrateChart(playerName) {
       : [...players].filter((p) => p.games > 0);
 
     const maxGames = Math.max(1, ...rows.map((r) => r.games));
-    const yMax = Math.max(0, ...rows.map((r) => Number(r.winRate) || 0));
-    const yScaleMax = yMax > 0 ? Math.min(100, yMax + 0.10 * yMax) : 10;
+    // La scala Y è fissata (vedi options.scales.y) per essere coerente tra viste.
 
     
 // Build points. In focus-mode (player -> commanders), multiple commanders can share the same (games, winRate)
@@ -549,8 +612,10 @@ const points = basePoints;
             grid: { color: "rgba(255,255,255,0.05)" },
           },
           y: {
-            min: 0,
-            max: yScaleMax,
+            // Mantieni un po' di respiro sopra/sotto (anche per jitter/tooltip)
+            // ma mostra i tick etichettati solo tra 0 e 100 inclusi.
+            min: -10,
+            max: 110,
             grace: 0,
             title: { display: true, text: "Winrate (%)", color: COL_TEXT_MUTED },
             ticks: {
@@ -617,7 +682,11 @@ const points = basePoints;
         if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
         if (Number.isFinite(entries)) parts.push(`Entries: ${entries}`);
         if (gen) parts.push(`Gen: ${gen}`);
-        elMeta.textContent = parts.join(" · ");
+        // Mantieni il riepilogo nei dati ma non mostrarlo in UI
+        const summary = parts.join(" · ");
+        elMeta.dataset.summary = summary;
+        elMeta.textContent = "";
+        elMeta.style.display = "none";
       }
 
       const players = computePlayers();

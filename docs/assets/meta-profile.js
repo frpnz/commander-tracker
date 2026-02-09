@@ -375,7 +375,11 @@ if (elMeta) {
   if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
   if (Number.isFinite(entries)) parts.push(`Entries: ${entries}`);
   if (gen) parts.push(`Gen: ${String(gen).replace("T", " ").replace("Z", " UTC")}`);
-  elMeta.textContent = parts.join(" · ");
+  // Mantieni il riepilogo nei dati ma non mostrarlo in UI
+  const summary = parts.join(" · ");
+  elMeta.dataset.summary = summary;
+  elMeta.textContent = "";
+  elMeta.style.display = "none";
 }
 
       const points = stats.meta_profile_by_player || [];

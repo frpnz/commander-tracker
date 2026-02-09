@@ -11,6 +11,7 @@
   const form = $("gameForm");
   const statusEl = $("status");
   const copyBtn = $("copyBtn");
+  const downloadBtn = $("downloadBtn");
 
   // Single-row inputs
   const inPlayer = $("inPlayer");
@@ -105,6 +106,10 @@
   function setWinner(name) {
     winnerPlayer = name ? String(name) : null;
     winnerNameEl.textContent = winnerPlayer || "—";
+    // Export is allowed even without a winner. Validation happens on import
+    // (admin) or when the user later updates the winner.
+    if (copyBtn) copyBtn.disabled = false;
+    if (downloadBtn) downloadBtn.disabled = false;
     renderEntriesTable();
   }
 
@@ -175,11 +180,8 @@
     clearStatus();
     const entry = validateEntry(inPlayer.value, inCommander.value, inBracket.value);
 
-    // Unique players constraint (same as before). If editing, allow replacing self.
-    const duplicateIndex = entries.findIndex((e, idx) => e.player === entry.player && idx !== (editingIndex ?? -1));
-    if (duplicateIndex !== -1) {
-      throw new Error("Ogni player deve comparire una sola volta nelle entries.");
-    }
+    // Allow the same player to appear multiple times (e.g., multiple commanders).
+    // Winner selection is by player name, so all rows for that player will show 🏆.
 
     if (editingIndex != null) {
       entries[editingIndex] = entry;
@@ -257,23 +259,17 @@
 
     if (!playedAt) throw new Error("Inserisci data e ora.");
     if (entries.length < 2) throw new Error("Inserisci almeno 2 entries (player/commander).");
-    if (!winnerPlayer) throw new Error("Seleziona il vincitore (🏆) nella lista dei giocatori.");
-
-    // winner must exist
-    if (!entries.some(e => e.player === winnerPlayer)) {
+    // Winner is optional. If provided, it must exist among the players.
+    if (winnerPlayer && !entries.some(e => e.player === winnerPlayer)) {
       throw new Error("Il vincitore deve essere uno dei player inseriti.");
     }
 
-    // Ensure players unique (should be enforced at insert)
-    const players = new Set(entries.map(e => e.player));
-    if (players.size !== entries.length) {
-      throw new Error("Ogni player deve comparire una sola volta nelle entries.");
-    }
+    // Duplicates are allowed (same player can appear multiple times with different commanders).
 
     return {
       version: "game.v1",
       played_at: playedAt,
-      winner_player: winnerPlayer,
+      winner_player: winnerPlayer || null,
       notes: notes || null,
       entries: entries.map(e => ({
         player: e.player,

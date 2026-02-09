@@ -15,34 +15,27 @@
         <div class="subtitle">Dashboard statica · dati da SQLite · export deterministico</div>
       </div>
     </div>
+    <nav class="nav" id="nav"></nav>
 </header>
 
   <main class="wrap">
-    <section class="card hero">
-      <h1>Statistiche e analisi del meta</h1>
-      <p class="muted">Non sei il tuo deck. Sei i tuoi numeri.</p>
-      <p class="muted" style="margin-top:8px; opacity:.85;">Entra da <b>Archivio</b> per esplorare per player/commander, oppure <b>Stats</b> per la vista rapida.</p>
-      <picture class="home-visual">
-        <!-- Prefer WebP + responsive srcset to avoid downloading the full PNG on mobile -->
-        <source
-          type="image/webp"
-          media="(max-width: 520px)"
-          srcset="assets/home-mobile-520.webp 520w, assets/home-mobile.webp 1024w"
-          sizes="(max-width: 520px) 100vw, 520px"
-        />
-        <source
-          media="(max-width: 520px)"
-          srcset="assets/home-mobile.png"
-        />
+    <section class="card hero home-hero">
+      <div class="home-copy">
+        <h1>Commander Tracker</h1>
+        <p class="muted">Vista mobile-first: leggera, veloce, senza CTA ridondanti.</p>
+        <p class="muted" style="margin-top:8px; opacity:.9;">Usa la <b>navbar</b> per navigare tra Archivio, Stats e il resto.</p>
+      </div>
 
+      <picture class="home-visual" aria-hidden="true">
+        <!-- Mobile-first: carica un asset piccolo (768w) come default, poi scala con srcset -->
         <source
           type="image/webp"
           srcset="assets/home-768.webp 768w, assets/home.webp 1536w"
-          sizes="(max-width: 860px) 100vw, 760px"
+          sizes="(max-width: 520px) 92vw, (max-width: 860px) 760px, 760px"
         />
         <img
-          src="assets/home.png"
-          alt="Anteprima schermata"
+          src="assets/home-768.webp"
+          alt=""
           loading="lazy"
           decoding="async"
           fetchpriority="low"
@@ -50,20 +43,13 @@
           height="1024"
         />
       </picture>
-
-      <div class="hero-actions">
-        <a class="btn primary" href="archive/">Archivio</a>
-        <a class="btn" href="stats/">Stats</a>
-        <a class="btn" href="meta-profile/">Meta Profile</a>
-        <a class="btn" href="bracket-calibration/">Calibrazione</a>
-        <a class="btn primary" href="new-game/">Nuova partita</a>
-        <a class="btn primary" href="metrics/">Metrics</a>
-      </div>
     </section>
   </main>
 
   <footer class="footer">
     <span class="muted">By Tempio • GitHub Pages friendly</span>
   </footer>
+
+  <script src="assets/nav.js?v=20260209"></script>
 </body>
 </html>
