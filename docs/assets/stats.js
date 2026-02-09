@@ -536,7 +536,8 @@ function renderPlayerCommanderWinrateChart(playerName) {
       : [...players].filter((p) => p.games > 0);
 
     const maxGames = Math.max(1, ...rows.map((r) => r.games));
-    // La scala Y è fissata (vedi options.scales.y) per essere coerente tra viste.
+    const yMax = Math.max(0, ...rows.map((r) => Number(r.winRate) || 0));
+    const yScaleMax = yMax > 0 ? Math.min(100, yMax + 0.10 * yMax) : 10;
 
     
 // Build points. In focus-mode (player -> commanders), multiple commanders can share the same (games, winRate)
@@ -612,10 +613,8 @@ const points = basePoints;
             grid: { color: "rgba(255,255,255,0.05)" },
           },
           y: {
-            // Mantieni un po' di respiro sopra/sotto (anche per jitter/tooltip)
-            // ma mostra i tick etichettati solo tra 0 e 100 inclusi.
             min: -10,
-            max: 110,
+            max: yScaleMax + yScaleMax * 0.1,
             grace: 0,
             title: { display: true, text: "Winrate (%)", color: COL_TEXT_MUTED },
             ticks: {

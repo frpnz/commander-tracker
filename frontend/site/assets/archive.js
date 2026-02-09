@@ -261,24 +261,16 @@ async function main() {
   if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
   const data = await res.json();
 
-  // Uniforma la scheda Archivio alle altre: mantieni il riepilogo nei dati,
-  // ma non mostrarlo in UI.
   const games = (data.counts && data.counts.games !== undefined && data.counts.games !== null) ? data.counts.games : 0;
   const entries = (data.counts && data.counts.entries !== undefined && data.counts.entries !== null) ? data.counts.entries : 0;
   const gen = data.generated_utc ? data.generated_utc : "";
   const period = getPeriodLabel(data?.games);
   const parts = [];
-  if (period) parts.push(`Periodo: ${period}`);
-  if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
-  if (Number.isFinite(entries)) parts.push(`Entries: ${entries}`);
-  if (gen) parts.push(`Gen: ${gen}`);
-  const summary = parts.join(" · ");
-  const elMeta = $("#meta");
-  if (elMeta) {
-    elMeta.dataset.summary = summary;
-    elMeta.textContent = "";
-    elMeta.style.display = "none";
-  }
+  if (Number.isFinite(games)) parts.push(`${games} partite`);
+  if (Number.isFinite(entries)) parts.push(`${entries} entries`);
+  if (period) parts.push(`periodo ${period}`);
+  if (gen) parts.push(`gen ${gen}`);
+  $("#meta").textContent = parts.join(" · ");
 
   setOptions($("#fPlayer"), (data.filters && data.filters.players) ? data.filters.players : []);
   buildCommanderOptions(data, "");

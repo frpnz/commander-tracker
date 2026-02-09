@@ -291,8 +291,8 @@ function getPeriodLabel(games){
               text: "MDI (normalizzato)  ← sotto tavolo | sopra tavolo →",
               color: "#aab3d3",
             },
-            ticks: { color: "#aab3d3", maxTicksLimit: isMobile() ? 5 : 7 },
-            grid: { color: "rgba(255,255,255,0.08)" },
+            ticks: { color: "#aab3d3", display: false, maxTicksLimit: isMobile() ? 5 : 7 },
+            grid: { color: "rgba(255,255,255,0.08)" , drawTicks: false},
           },
           y: {
             min: -axisY,
@@ -302,8 +302,8 @@ function getPeriodLabel(games){
               text: "OEWR_Z (z-score vs attesa)  ← sotto attesa | sopra attesa →",
               color: "#aab3d3",
             },
-            ticks: { color: "#aab3d3", maxTicksLimit: isMobile() ? 5 : 7 },
-            grid: { color: "rgba(255,255,255,0.08)" },
+            ticks: { color: "#aab3d3", display: false, maxTicksLimit: isMobile() ? 5 : 7 },
+            grid: { color: "rgba(255,255,255,0.08)" , drawTicks: false},
           },
         },
         plugins: {

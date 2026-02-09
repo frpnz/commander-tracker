@@ -446,8 +446,8 @@ class Handler(BaseHTTPRequestHandler):
                         )
 
                     # Normalize + validate entries
-                    seen_players: set[str] = set()
                     norm_entries: list[tuple[str, str, int | None]] = []
+                    players_set: set[str] = set()
                     for e in entries:
                         if not isinstance(e, dict):
                             return self._redirect(
@@ -461,15 +461,13 @@ class Handler(BaseHTTPRequestHandler):
                         if not player or not commander:
                             return self._redirect(
                                 "/admin/games/import_json?msg="
-                                + urllib.parse.quote(f"Elemento #{idx}: ogni entry richiede player e commander")
+                                + urllib.parse.quote(
+                                    f"Elemento #{idx}: ogni entry richiede player e commander"
+                                )
                             )
 
-                        if player in seen_players:
-                            return self._redirect(
-                                "/admin/games/import_json?msg="
-                                + urllib.parse.quote(f"Elemento #{idx}: player duplicato nelle entries: {player}")
-                            )
-                        seen_players.add(player)
+                        # Allow duplicate players across entries (e.g., team games or multi-seat aliasing).
+                        players_set.add(player)
 
                         if bracket is None or bracket == "":
                             b = None
@@ -489,7 +487,7 @@ class Handler(BaseHTTPRequestHandler):
 
                         norm_entries.append((player, commander, b))
 
-                    if winner_player and winner_player not in seen_players:
+                    if winner_player and winner_player not in players_set:
                         return self._redirect(
                             "/admin/games/import_json?msg="
                             + urllib.parse.quote(f"Elemento #{idx}: winner_player deve essere uno dei player nelle entries")

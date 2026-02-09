@@ -3,7 +3,29 @@
  * Works with GitHub Pages (relative URLs) by using URL resolution.
  */
 (function () {
+  // Normalize URLs on hosts that serve directory indexes without a trailing slash.
+  // Without this, relative URL resolution can break (notably on some mobile webviews),
+  // producing links like /archive/ instead of /<repo>/archive/.
+  function ensureTrailingSlashForDirs() {
+    try {
+      var u = new URL(window.location.href);
+      var path = u.pathname || "";
+      var last = path.split("/").pop();
+
+      // If it doesn't end with '/' and doesn't look like a file, treat it as a directory.
+      if (!path.endsWith("/") && last && last.indexOf(".") === -1) {
+        window.location.replace(path + "/" + u.search + u.hash);
+        return true; // redirected
+      }
+    } catch (e) {
+      // ignore
+    }
+    return false;
+  }
+
   function buildNav() {
+    if (ensureTrailingSlashForDirs()) return;
+
     var nav = document.getElementById("nav");
     if (!nav) return;
 
