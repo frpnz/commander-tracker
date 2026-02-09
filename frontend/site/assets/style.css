@@ -79,7 +79,7 @@ body::before{
 .meta{color:var(--muted); font-size:13px; text-align:right}
 
 .nav{display:flex; gap:10px; align-items:center}
-.navlink{color:var(--muted); text-decoration:none; padding:10px 12px; border-radius:12px; border:1px solid transparent}
+.navlink{color:var(--muted); text-decoration:none; padding:10px 12px; border-radius:12px; border:1px solid transparent; white-space:nowrap}
 .navlink:hover{color:var(--text); border-color:var(--border); background:rgba(255,255,255,.03)}
 .navlink.active{color:var(--text); border-color:var(--border); background:rgba(255,255,255,.05)}
 
@@ -390,8 +390,19 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
   .topbar{padding:12px 12px; gap:12px; flex-wrap:wrap; justify-content:flex-start}
   .meta{display:none}
   .brand{flex:1 1 100%}
-  .nav{flex:1 1 100%; flex-wrap:wrap; justify-content:flex-start; gap:8px}
-  .navlink{padding:8px 10px}
+  /* Keep nav in a single row on mobile: scroll horizontally instead of wrapping */
+  .nav{
+    flex:1 1 100%;
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    gap:8px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:2px;
+    scrollbar-width:none;
+  }
+  .nav::-webkit-scrollbar{height:0}
+  .navlink{padding:8px 10px; font-size:13px}
 
   h1{font-size:18px}
   h2{font-size:14px}

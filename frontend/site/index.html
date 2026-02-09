@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Commander Tempio's Tracker</title>
-  <link rel="stylesheet" href="assets/style.css?v=20260203"/>
+  <link rel="stylesheet" href="assets/style.css?v=20260209"/>
 </head>
 <body class="home">
   <header class="topbar">
@@ -23,8 +23,32 @@
       <p class="muted">Non sei il tuo deck. Sei i tuoi numeri.</p>
       <p class="muted" style="margin-top:8px; opacity:.85;">Entra da <b>Archivio</b> per esplorare per player/commander, oppure <b>Stats</b> per la vista rapida.</p>
       <picture class="home-visual">
-        <source media="(max-width: 520px)" srcset="assets/home-mobile.png"/>
-        <img src="assets/home.png" alt="Anteprima schermata" loading="lazy"/>
+        <!-- Prefer WebP + responsive srcset to avoid downloading the full PNG on mobile -->
+        <source
+          type="image/webp"
+          media="(max-width: 520px)"
+          srcset="assets/home-mobile-520.webp 520w, assets/home-mobile.webp 1024w"
+          sizes="(max-width: 520px) 100vw, 520px"
+        />
+        <source
+          media="(max-width: 520px)"
+          srcset="assets/home-mobile.png"
+        />
+
+        <source
+          type="image/webp"
+          srcset="assets/home-768.webp 768w, assets/home.webp 1536w"
+          sizes="(max-width: 860px) 100vw, 760px"
+        />
+        <img
+          src="assets/home.png"
+          alt="Anteprima schermata"
+          loading="lazy"
+          decoding="async"
+          fetchpriority="low"
+          width="1536"
+          height="1024"
+        />
       </picture>
 
       <div class="hero-actions">
