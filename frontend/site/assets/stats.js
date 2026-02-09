@@ -491,6 +491,7 @@ const errorBars = {
             position: "top",
             ticks: {
               color: COL_TEXT_MUTED,
+              display: false,
               stepSize: 10,
               callback: (v) => {
                 const n = typeof v === "string" ? Number(v) : v;
@@ -632,11 +633,12 @@ const errorBars = {
             title: { display: true, text: "Winrate (%)", color: COL_TEXT_MUTED },
             ticks: {
               color: COL_TEXT_MUTED,
+              max: Math.ceil(yScaleMax * 1.1 / 10) * 10,
               // Nasconde eventuali tick "artificiali" (es. negativi) se Chart.js li produce
               callback: (v) => {
                 const n = typeof v === "string" ? Number(v) : v;
                 if (!Number.isFinite(n) || n < 0 || n > 100) return "";
-                return `${Math.round(n*10)/10}%`; //
+                return `${Math.round(n / 10) * 10}%`;
               },
               // opzionale (consigliato): rende la scala leggibile e stabile
               stepSize: 10,
