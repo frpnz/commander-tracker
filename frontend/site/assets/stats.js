@@ -620,7 +620,11 @@ const points = basePoints;
             ticks: {
               color: COL_TEXT_MUTED,
               // Nasconde eventuali tick "artificiali" (es. negativi) se Chart.js li produce
-              callback: (v) => (v < 0 || v > 100) ? "" : `${v}%`,
+              callback: (v) => {
+                const n = typeof v === "string" ? Number(v) : v;
+                if (!Number.isFinite(n) || n < 0 || n > 100) return "";
+                return `${Math.round(n*10)/10}%`; // 
+              },
               // opzionale (consigliato): rende la scala leggibile e stabile
               stepSize: 10,
             },
