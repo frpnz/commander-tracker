@@ -93,12 +93,16 @@ function renderListTable(data, state) {
       gate.textContent = "Seleziona almeno un filtro (Player, Commander o Bracket) per visualizzare l’elenco.";
     }
     if (tableWrap) tableWrap.style.display = "none";
+    const tList = document.getElementById("tList");
+    if (tList) tList.classList.remove("hide-player-col");
     const pill = $("#countList");
     if (pill) pill.textContent = "";
     return;
   }
   if (gate) gate.style.display = "none";
   if (tableWrap) tableWrap.style.display = "";
+  const tList = document.getElementById("tList");
+  if (tList) tList.classList.toggle("hide-player-col", Boolean(state.player));
   const rows = (data.by_player_commander || [])
     .filter((r) => !state.player || r.player === state.player)
     .filter((r) => !state.commander || r.commander === state.commander)

@@ -651,6 +651,17 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
   /* No inline labels inside cells on mobile */
   #tList tbody td::before{content:none}
 
+  /* If a player filter is active, hide the redundant Player column to prevent clipping on mobile */
+  #tList.hide-player-col thead tr,
+  #tList.hide-player-col tbody tr{
+    grid-template-columns:
+      minmax(160px, 2.2fr)  /* Commander */
+      minmax(64px, 0.9fr)   /* Bracket */
+      minmax(64px, 0.9fr);  /* Partite */
+  }
+  #tList.hide-player-col thead th:first-child,
+  #tList.hide-player-col tbody td:first-child{display:none}
+
   /* Numeric last column aligned */
   #tList thead th:last-child,
   #tList tbody td:last-child{text-align:right}
@@ -764,4 +775,13 @@ nav {
     black calc(100% - 16px),
     transparent 100%
   );
+}
+
+
+/* Very small screens: tighter spacing for Archive list table */
+@media (max-width: 380px){
+  #tList thead tr,
+  #tList tbody tr{column-gap:8px}
+  #tList thead th,
+  #tList tbody td{font-size:12px}
 }
