@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nuova partita</title>
-  <link rel="stylesheet" href="../assets/style.css?v=20260209"/>
+  <link rel="stylesheet" href="../assets/style.css?v=20260209" />
 </head>
+
 <body>
   <header class="topbar">
     <div class="brand">
@@ -15,6 +16,7 @@
         <div class="subtitle">Compila e scarica un JSON importabile in admin</div>
       </div>
     </div>
+
     <div class="meta" id="meta"></div>
     <nav class="nav" id="nav"></nav>
   </header>
@@ -24,41 +26,60 @@
       <div class="card-head">
         <div>
           <div class="card-title">Dati partita</div>
-          <div class="card-subtitle muted">Nessun upload: il sito genera un file da portare in admin.</div>
+          <div class="card-subtitle muted">
+            Nessun upload: il sito genera un file da portare in admin.
+          </div>
         </div>
       </div>
 
       <div class="card-body">
         <form id="gameForm" class="has-sticky-actions">
           <div class="grid2">
-            <label>Data e ora
-              <input id="playedAt" name="playedAt" type="datetime-local" required/>
-            <span class="muted" style="display:block; margin-top:6px; font-size:12px; opacity:.85;">Usa l’orario di fine partita (consigliato) per mantenere un ordine coerente.</span></label>
+            <label>
+              Data e ora
+              <input id="playedAt" name="playedAt" type="datetime-local" required />
+              <span class="muted" style="display:block; margin-top:6px; font-size:12px; opacity:.85;">
+                Usa l’orario di fine partita (consigliato) per mantenere un ordine coerente.
+              </span>
+            </label>
+
             <div>
               <div class="muted" style="font-size:12px;">Vincitore</div>
-              <div id="winnerBadge" class="badge" style="display:inline-flex; align-items:center; gap:8px; margin-top:6px;">
+              <div id="winnerBadge" class="badge"
+                   style="display:inline-flex; align-items:center; gap:8px; margin-top:6px;">
                 <span id="winnerName">—</span>
-                <button id="clearWinner" class="pill" type="button" style="padding:6px 10px;">Annulla</button>
+                <button id="clearWinner" class="pill" type="button" style="padding:6px 10px;">
+                  Annulla
+                </button>
               </div>
+            </div>
           </div>
+
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
             <div>
               <div class="card-title" style="font-size:14px;">Inserimento rapido</div>
-              <div class="muted" style="font-size:12px;">Una riga alla volta: compila e premi <b>Invio</b> per aggiungere.</div>
+              <div class="muted" style="font-size:12px;">
+                Una riga alla volta: compila e premi <b>Invio</b> per aggiungere.
+              </div>
             </div>
             <button id="addEntry" class="pill" type="button">Aggiungi</button>
           </div>
 
           <div class="grid3" style="margin-top:10px;">
-            <label class="ac">Player
-              <input id="inPlayer" name="player" placeholder="Nome player" autocomplete="off"/>
+            <label class="ac">
+              Player
+              <input id="inPlayer" name="player" placeholder="Nome player" autocomplete="off" />
               <div id="playerMenu" class="ac-menu" hidden></div>
             </label>
-            <label class="ac">Commander
-              <input id="inCommander" name="commander" placeholder="Nome commander" autocomplete="off"/>
+
+            <label class="ac">
+              Commander
+              <input id="inCommander" name="commander" placeholder="Nome commander" autocomplete="off" />
               <div id="commanderMenu" class="ac-menu" hidden></div>
             </label>
-            <label>Bracket
+
+            <label>
+              Bracket
               <select id="inBracket">
                 <option value="">—</option>
                 <option value="1">1</option>
@@ -86,7 +107,7 @@
           </div>
 
           <div class="actions sticky-actions" style="margin-top:14px;">
-            <button id="copyBtn" class="pill" type="button">Copia JSON</button>
+<!--            <button id="copyBtn" class="pill" type="button">Copia JSON</button>-->
             <button id="downloadBtn" class="primary" type="submit">Scarica file</button>
           </div>
 
