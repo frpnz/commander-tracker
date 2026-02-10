@@ -1,303 +1,314 @@
 <!doctype html>
-
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Metrics Guide</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Metrics</title>
   <link rel="stylesheet" href="../assets/style.css?v=20260209" />
   <style>
-    .guide { max-width: 980px; margin: 0 auto; }
-    .muted { opacity: .85; }
-    .card-lite {
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 14px;
-      padding: 14px 14px;
-      margin: 12px 0;
-      background: rgba(255,255,255,.03);
+    /* Minimal helpers (tiny + consistent with existing pages) */
+    details.metrics-details > summary {
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
     }
-    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media (max-width: 820px) { .grid2 { grid-template-columns: 1fr; } }
-    .callout {
-      border-left: 4px solid rgba(255,255,255,.18);
+    .metrics-kv {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 10px 14px;
+    }
+    @media (max-width: 720px) {
+      .metrics-kv { grid-template-columns: 1fr; }
+    }
+    .codeblock {
+      margin-top: 10px;
       padding: 10px 12px;
-      border-radius: 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.03);
-      margin: 10px 0;
-    }
-    .bullets { margin: 8px 0 0 18px; }
-    .bullets li { margin: 4px 0; }
-    .tag {
-      display:inline-block;
-      padding: 2px 10px;
-      border-radius: 999px;
+      overflow-x: auto;
       font-size: 12px;
-      line-height: 20px;
-      border: 1px solid rgba(255,255,255,.15);
-      margin-right: 6px;
-      margin-bottom: 6px;
-      white-space: nowrap;
-      background: rgba(0,0,0,.10);
+      line-height: 1.45;
+      white-space: pre;
     }
+    .pillrow {
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .pillrow .pill { padding: 6px 10px; }
   </style>
 </head>
 
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="logo" aria-label="About metrics"></div>
+      <div class="logo" aria-label="Commander Tracker"></div>
       <div>
-        <div class="title">About metrics</div>
-        <div class="subtitle">Guida alla lettura di grafici e metriche</div>
+        <div class="title">Metrics</div>
+        <div class="subtitle">Guida alle metriche</div>
       </div>
     </div>
+
+    <div class="meta" id="meta"></div>
     <nav class="nav" id="nav"></nav>
   </header>
 
   <main class="container">
-    <div class="guide">
-
-  
-  <section class="card-lite">
-    <h1 style="margin:0 0 6px 0;">Metrics</h1>
-    <div class="muted">
-      Guida <b>incrementale</b> alla lettura delle schede. Parti dalle “regole pratiche”; apri gli
-      <b>approfondimenti</b> solo se ti serve capire il perché dei numeri.
-    </div>
-
-    <div class="muted" style="margin-top:10px;">
-      Vai a:
-      <a href="../">Home</a> ·
-      <a href="../archive/">Archivio</a> ·
-      <a href="../stats/">Stats</a> ·
-      <a href="../meta-profile/">Meta Profile</a> ·
-      <a href="../bracket-calibration/">Calibrazione</a> ·
-      <a href="../new-game/">Nuova partita</a> ·
-      <b>Metrics</b>
-    </div>
-
-    <div class="callout">
-      <b>Idea generale:</b>
-      <ul class="bullets" style="margin-top:6px;">
-        <li><b>Archivio</b> = esplora le partite (filtri, ultimi game, dettaglio).</li>
-        <li><b>Stats</b> = “cosa succede” (winrate e volumi).</li>
-        <li><b>Meta Profile</b> = “in che contesto succede” (livello dei tavoli) e “oltre l’atteso”.</li>
-        <li><b>Calibrazione</b> = coerenza tra bracket assegnato e risultati osservati.</li>
-        <li><b>Nuova partita</b> = inserimento rapido e consistente.</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- ARCHIVIO -->
-  <section class="card-lite">
-    <h2 style="margin:0 0 6px 0;">Archivio</h2>
-    <div class="muted">
-      È la scheda “da cronologia”: serve per <b>trovare partite</b>, verificare dettagli e fare controlli veloci.
-    </div>
-
-    <ul class="bullets">
-      <li><b>Filtri</b>: usa Giocatore / Commander / Bracket per restringere l’elenco.</li>
-      <li><b>Ultime partite</b>: mostra le partite più recenti coerenti coi filtri (selezioni incluse).</li>
-      <li><b>Dettaglio</b>: utile per risolvere dubbi (“chi aveva cosa?”, “che bracket?”).</li>
-    </ul>
-
-    <details style="margin-top:10px;">
-      <summary style="cursor:pointer; font-weight:600;">Dettagli (quando usarlo)</summary>
-      <div class="muted" style="margin-top:10px;">
-        <ul class="bullets">
-          <li>Quando un numero in Stats “non torna”, parti dall’Archivio: è la fonte più concreta.</li>
-          <li>Quando vuoi discutere un singolo periodo o una serie di game, filtra e scorri.</li>
-          <li>Se stai valutando un commander “nuovo”, guarda prima i game reali (campione piccolo = alta variabilità).</li>
-        </ul>
+    <section class="card">
+      <div class="card-head">
+        <h2>Come leggere questa pagina</h2>
       </div>
-    </details>
-  </section>
-
-  <!-- STATS -->
-  <section class="card-lite">
-    <h2 style="margin:0 0 6px 0;">Stats</h2>
-    <div class="muted">
-      Vista rapida: <b>winrate</b> e <b>volume</b>. È la pagina migliore per orientarsi in 30 secondi.
-    </div>
-
-    <ul class="bullets">
-      <li><b>Chi vince di più</b>: confronto diretto tra giocatori (clic su una barra per mettere a fuoco).</li>
-      <li><b>Efficacia vs volume</b>: aiuta a distinguere tra risultati solidi e numeri ancora “volatili”.</li>
-    </ul>
-
-    <details style="margin-top:10px;">
-      <summary style="cursor:pointer; font-weight:600;">Dettagli (regole pratiche)</summary>
-      <div class="muted" style="margin-top:10px;">
-        <ul class="bullets">
-          <li><b>Non leggere solo il winrate</b>: con poche partite anche 1–2 game cambiano tutto.</li>
-          <li>Nel bubble plot, <b>più a destra</b> = più partite = segnale più affidabile.</li>
-          <li>Usa Stats come “radar”, poi vai in Archivio se vuoi capire il perché.</li>
-        </ul>
-      </div>
-    </details>
-  </section>
-
-  <!-- META PROFILE -->
-  <section class="card-lite">
-    <h2 style="margin:0 0 6px 0;">Meta Profile</h2>
-    <div class="muted">
-      Qui ogni player è una <b>freccia</b> che descrive due cose insieme:
-      <b>contesto dei tavoli</b> (X) e <b>risultati oltre l’atteso</b> (Y).
-    </div>
-
-    <div class="grid2" style="margin-top:10px;">
-      <div class="card-lite" style="margin:0;">
-        <h3 style="margin:0 0 6px 0; font-size:16px;">Lettura rapida</h3>
-        <ul class="bullets">
-          <li><b>Centro (0,0)</b>: profilo “neutro” (risultati in linea col contesto).</li>
-          <li><b>Asse X (MDI)</b>: quanto giochi sopra/sotto il livello medio del tavolo.</li>
-          <li><b>Asse Y (OEWR‑Z)</b>: quanto vinci più/meno di quanto sarebbe atteso nel tuo contesto.</li>
-          <li><b>Lunghezza</b> = quanto è marcato il profilo; <b>bolla</b> = quante partite.</li>
-        </ul>
-      </div>
-      <div class="card-lite" style="margin:0;">
-        <h3 style="margin:0 0 6px 0; font-size:16px;">Quadranti (intuizione)</h3>
-        <ul class="bullets">
-          <li><b>alto‑destra (DOMINANT)</b>: contesto più facile + sopra atteso.</li>
-          <li><b>alto‑sinistra (OUTPLAYING)</b>: contesto più duro + sopra atteso.</li>
-          <li><b>basso‑destra (INEFFICIENT)</b>: contesto più facile + sotto atteso.</li>
-          <li><b>basso‑sinistra (STRUGGLING)</b>: contesto più duro + sotto atteso.</li>
-        </ul>
-      </div>
-    </div>
-
-    <details style="margin-top:10px;">
-      <summary style="cursor:pointer; font-weight:600;">Dettagli (cosa significa “oltre l’atteso”)</summary>
-      <div class="muted" style="margin-top:10px;">
-        Il modello stima, per ogni partita, una probabilità di vittoria per ciascun player in base ai bracket al tavolo.
-        <b>OEWR‑Z</b> misura se, sommando le partite, stai convertendo più o meno di quelle probabilità.
-        <div class="callout" style="margin-top:10px;">
-          <b>Attenzione:</b> non è “skill assoluta”. È una lettura <i>relativa al vostro meta</i> e dipende dai tavoli che giocate.
-          Con poche partite, una striscia può spostare la freccia sensibilmente.
+      <div class="card-body">
+        <div class="muted" style="font-size:12px; opacity:.85;">
+          Ogni sezione corrisponde a una scheda dell’app. Per ciascuna:
+          <b>Panoramica</b> (lettura veloce) + <b>Dettagli matematici</b> (rigorosi).
+          <span style="display:block; margin-top:6px;">Ultima rigenerazione: <b>2026-02-10</b> (UTC).</span>
+        </div>
+        <div class="pillrow">
+          <span class="pill">Win-rate</span>
+          <span class="pill">OEWR</span>
+          <span class="pill">Bracket posterior (b_post)</span>
+          <span class="pill">cpr_z</span>
         </div>
       </div>
-    </details>
-  </section>
+    </section>
 
-  <!-- CALIBRAZIONE -->
-  <section class="card-lite">
-    <h2 style="margin:0 0 6px 0;">Calibrazione</h2>
-    <div class="muted">
-      Serve a verificare se il <b>bracket assegnato</b> ad un commander (1–5) è coerente con i risultati osservati nel vostro meta.
-      In pratica: “questo commander è <b>sottovalutato</b> o <b>sovrastimato</b> rispetto al bracket dichiarato?”
-    </div>
-
-    <ul class="bullets">
-      <li><b>B prior</b>: bracket di riferimento (moda dei bracket dichiarati per quel commander; intero 1–5).</li>
-      <li><b>B posterior</b>: stima continua “consigliata” dai risultati (media a posteriori su griglia con step 0.25).</li>
-      <li><b>σ posterior</b> (se presente): incertezza della stima (deviazione standard a posteriori). Più è bassa, più la calibrazione è stabile.</li>
-      <li><b>Min partite</b>: evita di prendere decisioni su campioni troppo piccoli.</li>
-    </ul>
-
-    <details style="margin-top:10px;">
-      <summary style="cursor:pointer; font-weight:600;">Dettagli (come leggere la riga)</summary>
-      <div class="muted" style="margin-top:10px;">
-        Una riga è più credibile quando:
-        <ul class="bullets">
-          <li>ha un <b>numero di partite</b> sufficiente, e</li>
-          <li>lo scostamento <b>B posterior − B prior</b> è consistente (non guidato da 1–2 game “swing”).</li>
-        </ul>
-        Il colore enfatizza lo scostamento, ma la decisione pratica passa sempre da <b>volume</b>, <b>contesto</b> e (se disponibile) <b>σ posterior</b>.
+    <section class="card">
+      <div class="card-head"><h2>Home</h2></div>
+      <div class="card-body">
+        <div class="metrics-kv">
+          <div><b>Panoramica</b></div>
+          <div class="muted" style="opacity:.85;">
+            Sintesi dei dati disponibili (conteggi partite/entries, ultimo aggiornamento) e link alle altre schede.
+          </div>
+          <div><b>Dati</b></div>
+          <div class="muted" style="opacity:.85;">
+            Derivano da <code>stats.v1.json</code>: <code>counts</code>, <code>generated_utc</code>.
+          </div>
+        </div>
+        <details class="metrics-details" style="margin-top:12px;">
+          <summary>Dettagli matematici</summary>
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            La Home non introduce metriche nuove: espone solo aggregazioni e metadati.
+          </div>
+          <div class="codeblock">counts.games = N_partite
+counts.entries = N_righe_totali
+generated_utc = timestamp di generazione dataset (backend)</div>
+        </details>
       </div>
-    </details>
-  </section>
+    </section>
 
-  <!-- NUOVA PARTITA -->
-  <section class="card-lite">
-    <h2 style="margin:0 0 6px 0;">Nuova partita</h2>
-    <div class="muted">
-      Pagina di inserimento: l’obiettivo è <b>rapidità</b> e <b>coerenza</b> dei dati.
-    </div>
-
-    <ul class="bullets">
-      <li>Inserisci player e commander per ogni entry, poi seleziona il <b>vincitore</b>.</li>
-      <li><b>Data e ora</b>: usa l’orario di fine partita per mantenere un ordine coerente nell’Archivio.</li>
-      <li><b>Bracket</b>: resta su 1–5 coerenti col gruppo; la calibrazione ti aiuta a riallineare nel tempo.</li>
-    </ul>
-  </section>
-
-  <!-- APPROFONDIMENTI TECNICI -->
-  <section class="card-lite">
-    <h2 style="margin:0 0 6px 0;">Approfondimenti tecnici</h2>
-    <div class="muted">
-      Se vuoi “il perché”, qui trovi i dettagli minimi necessari per interpretare correttamente le metriche,
-      restando strettamente aderenti a ciò che mostrano le schede.
-    </div>
-
-    <details style="margin-top:10px;">
-      <summary style="cursor:pointer;"><b>Dal bracket (1–5) alle probabilità: perché e come (softmax)</b></summary>
-      <div class="card-lite" style="margin:10px 0 0 0;">
-        <h3 style="margin:0 0 6px 0;">Perché non basta il bracket “intero”</h3>
-        <div class="muted">
-          Il bracket è un <b>ordine</b> (1 &lt; 2 &lt; … &lt; 5), ma per calcolare “quanto era atteso che vincessi” in un tavolo da N giocatori
-          serve una <b>distribuzione di probabilità</b>:
-          deve essere sempre positiva e le probabilità devono <b>sommare a 1</b>.
-          Inoltre vogliamo evitare estremi (“bracket più alto = 100%”), perché in Commander c’è sempre varianza e interazione.
+    <section class="card">
+      <div class="card-head"><h2>Stats</h2></div>
+      <div class="card-body">
+        <div class="metrics-kv">
+          <div><b>Panoramica</b></div>
+          <div class="muted" style="opacity:.85;">
+            Mostra <b>win-rate</b> per giocatore e per commander (con filtri tipo “min partite”).
+            Il win-rate è affidabile solo se supportato da volume (N partite).
+          </div>
+          <div><b>Metriche</b></div>
+          <div class="muted" style="opacity:.85;">
+            <b>WR</b> (win-rate), <b>N</b> (partite), confronto per ranking e grafici (bar / bubble).
+          </div>
         </div>
-        <ul class="bullets">
-          <li><b>Input</b>: bracket discreto 1–5 per ciascun player nella partita.</li>
-          <li><b>Output</b>: probabilità attese <code>p_i</code> per ciascun player (somma = 1).</li>
-        </ul>
+        <details class="metrics-details" style="margin-top:12px;">
+          <summary>Dettagli matematici</summary>
+          <div class="codeblock">WR = wins / games
+
+wins  = numero di partite vinte
+games = numero di partite giocate
+
+Nota: per N piccolo, WR ha alta varianza (stima instabile).</div>
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            (Opzionale, futuro) shrinkage Beta-Binomial: WR_shrunk = (wins + α) / (games + α + β).
+            Attualmente la UI usa WR grezzo + filtro “min partite”.
+          </div>
+        </details>
       </div>
+    </section>
 
-      <div class="card-lite" style="margin:10px 0 0 0;">
-        <h3 style="margin:0 0 6px 0;">Come si fa: softmax su un punteggio</h3>
-        <div class="muted">
-          Convertiamo ogni bracket <code>b_i</code> in un punteggio <code>s_i</code> e poi applichiamo una softmax:
-          il risultato è una probabilità “liscia”, che cresce con il bracket ma non arriva mai a 0%/100%.
+    <section class="card">
+      <div class="card-head"><h2>Meta profile</h2></div>
+      <div class="card-body">
+        <div class="metrics-kv">
+          <div><b>Panoramica</b></div>
+          <div class="muted" style="opacity:.85;">
+            Valuta l’impatto al netto del tavolo: quanto un giocatore (o coppia player+commander)
+            performa rispetto all’atteso, considerando i bracket del tavolo.
+          </div>
+          <div><b>Termini</b></div>
+          <div class="muted" style="opacity:.85;">
+            La pipeline espone <code>OEWR</code> (expected win residual) e lo z-score <code>oewr_z</code>.
+            Vedi <code>stats.v1.json</code>: <code>meta_profile_by_player</code>, <code>meta_profile_by_player_commander</code>.
+          </div>
         </div>
-        <div style="margin-top:8px; font-family: ui-monospace, monospace; font-size: 13px;">
-          s_i = k · b_i<br/>
-          p_i = exp(s_i) / Σ_j exp(s_j) &nbsp;&nbsp; (k = 0.8)
+
+        <details class="metrics-details" style="margin-top:12px;">
+          <summary>Dettagli matematici</summary>
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            Dal backend (metodo dichiarato nel JSON):
+            <code>oewr_method = "softmax_expected_win_residual"</code>.
+          </div>
+          <div class="codeblock">Per una partita g con players i=1..m e bracket b_i:
+
+1) Probabilità attesa di vittoria (softmax):
+   p_i = exp(k * b_i) / Σ_j exp(k * b_j)
+
+2) Residuo:
+   r_i = 1 - p_i   se i è il vincitore
+   r_i = 0 - p_i   altrimenti
+
+3) Aggregazione:
+   OEWR = media(r_i) (o somma normalizzata) sulle partite considerate
+
+4) Standardizzazione:
+   oewr_z = (OEWR - μ_ref) / σ_ref
+   (μ_ref, σ_ref stimati su dataset di riferimento)</div>
+
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            La forma esatta di aggregazione/standardizzazione è nel backend e resa esplicita dai campi
+            <code>meta_profile.method</code>, <code>oewr_method</code>, <code>oewr_k</code>.
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Bracket calibration</h2></div>
+      <div class="card-body">
+        <div class="metrics-kv">
+          <div><b>Panoramica</b></div>
+          <div class="muted" style="opacity:.85;">
+            Stima, per ogni commander, un <b>bracket posteriore</b> <code>b_post</code> (step 0.25)
+            che massimizza la coerenza con i risultati osservati, partendo da <code>bracket_prior</code> (se presente).
+            La tabella evidenzia anche un segnale standardizzato <code>cpr_z</code>.
+          </div>
+          <div><b>Campi</b></div>
+          <div class="muted" style="opacity:.85;">
+            <code>bracket_prior</code>, <code>b_post</code>, <code>b_post_sd</code>, <code>b_post_map</code>, <code>games</code>, <code>wins</code>, <code>cpr_z</code>.
+          </div>
         </div>
-        <div class="muted" style="margin-top:8px;">
-          <b>Interpretazione di k</b>: controlla “quanto pesa” un punto bracket.
-          Se k è grande, un +1 bracket aumenta molto le probabilità; se è piccolo, i player restano più vicini (più aleatorietà).
+
+        <details class="metrics-details" style="margin-top:12px;">
+          <summary>Dettagli matematici (calibrazione, molto dettagliati)</summary>
+
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            Il backend calcola un posteriore deterministico su griglia per un parametro
+            <code>θ</code> (il “vero bracket” del commander) su <code>[1, 5]</code> con passo <code>0.25</code>.
+            Ogni occorrenza del commander è una Bernoulli (vittoria/non-vittoria) per il “pilot player”,
+            con probabilità data dallo stesso modello softmax usato per OEWR.
+          </div>
+
+          <div class="codeblock">Griglia
+θ ∈ {1.00, 1.25, ..., 5.00}
+
+Osservazioni
+y_i ∈ {0,1}   (pilot vince?)
+p_i(θ) = P(y_i=1 | θ)  (softmax con override del bracket del pilot a θ)
+
+Posterior (non normalizzato)
+log post(θ) ∝ log prior(θ) + Σ_i log Bernoulli(y_i; p_i(θ))
+
+Prior (forma tipo normale troncata, a costante additiva)
+prior_mu    = bracket_prior se disponibile, altrimenti 3.0
+prior_sigma = 0.90
+log prior(θ) = -0.5 * ((θ - prior_mu)/prior_sigma)^2
+
+Likelihood (stabile numericamente)
+log Bernoulli(y;p) = log(p) se y=1, altrimenti log(1-p)
+con clamp p∈[1e-12, 1-1e-12]</div>
+
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            Normalizzazione (log-sum-exp) e statistiche riportate:
+          </div>
+
+          <div class="codeblock">Normalizzazione
+w(θ) = exp(log post(θ) - m) / Σ_θ' exp(log post(θ') - m)
+dove m = max_θ log post(θ)
+
+Output
+b_post     = E[θ|D] = Σ_θ w(θ) * θ
+b_post_sd  = sqrt( Var[θ|D] ) = sqrt( Σ_θ w(θ) * (θ - b_post)^2 )
+b_post_map = argmax_θ log post(θ)</div>
+
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            Interpretazione rapida:
+            <ul style="margin:8px 0 0 18px;">
+              <li><b>b_post</b> più alto del prior ⇒ il commander è più “forte” del bracket dichiarato (a parità di tavoli).</li>
+              <li><b>b_post_sd</b> grande ⇒ pochi dati / evidenza debole (servono più partite).</li>
+              <li><b>cpr_z</b> è un indicatore standardizzato: valori assoluti alti ⇒ segnale più forte.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Nuova partita</h2></div>
+      <div class="card-body">
+        <div class="metrics-kv">
+          <div><b>Panoramica</b></div>
+          <div class="muted" style="opacity:.85;">
+            Scheda di inserimento: non calcola metriche, ma genera un JSON coerente con l’import admin.
+            L’autocomplete usa le liste di <code>players</code> e <code>commanders</code> dal dataset.
+          </div>
+          <div><b>Output</b></div>
+          <div class="muted" style="opacity:.85;">
+            Partita con <code>playedAt</code>, entries (player, commander, bracket) e vincitore.
+          </div>
+        </div>
+        <details class="metrics-details" style="margin-top:12px;">
+          <summary>Dettagli matematici</summary>
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            Nessuna metrica: le metriche si calcolano dopo l’import, nel backend.
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Archive</h2></div>
+      <div class="card-body">
+        <div class="metrics-kv">
+          <div><b>Panoramica</b></div>
+          <div class="muted" style="opacity:.85;">
+            Consultazione dettagliata di partite e entries. Utile per auditing e debug.
+          </div>
+          <div><b>Tipico</b></div>
+          <div class="muted" style="opacity:.85;">
+            Filtri + conteggi. Le metriche analitiche sono in Stats / Meta profile / Bracket calibration.
+          </div>
+        </div>
+        <details class="metrics-details" style="margin-top:12px;">
+          <summary>Dettagli matematici</summary>
+          <div class="codeblock">Conteggi
+- N partite per filtro
+- N entries per filtro</div>
+        </details>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Metrics</h2></div>
+      <div class="card-body">
+        <div class="metrics-kv">
+          <div><b>Panoramica</b></div>
+          <div class="muted" style="opacity:.85;">
+            Questa scheda è un manuale: collega “cosa vedo” ↔ “come è calcolato”.
+            Riferimenti: <code>backend/commander_stats/compute.py</code> e <code>backend/stats.v1.schema.json</code>.
+          </div>
+          <div><b>Consiglio</b></div>
+          <div class="muted" style="opacity:.85;">
+            Per calibrazione: guarda insieme <b>b_post</b>, <b>b_post_sd</b> e <b>games</b>.
+          </div>
         </div>
       </div>
-
-      <div class="card-lite" style="margin:10px 0 0 0;">
-        <h3 style="margin:0 0 6px 0;">Implicazioni pratiche</h3>
-        <ul class="bullets">
-          <li><b>Comparabilità tra tavoli</b>: la softmax funziona con qualsiasi numero di player (3, 4, 5…), perché normalizza sempre a somma 1.</li>
-          <li><b>Relatività</b>: conta la differenza tra bracket al tavolo, non un “valore assoluto”.</li>
-          <li><b>Nessun determinismo</b>: anche con bracket alto, <code>p_i</code> resta &lt; 1 ⇒ la varianza resta parte del gioco.</li>
-          <li><b>Odds ratio</b>: un +1 bracket moltiplica il “peso” di un fattore ~<code>exp(k)</code> (con k=0.8 è ~2.23) rispetto agli altri, prima della normalizzazione.</li>
-        </ul>
-        <div class="callout">
-          <b>Razionale statistico:</b> una volta che hai <code>p_i</code>, puoi confrontare <i>esito reale</i> e <i>atteso</i> con un residuo:
-          <code>residual = actual − expected</code>. Aggregando residui su molte partite ottieni segnali interpretabili (Meta Profile, Calibrazione),
-          e normalizzando per la varianza attesa ottieni uno score confrontabile tra volumi diversi.
-        </div>
-      </div>
-
-      <div class="card-lite" style="margin:10px 0 0 0;">
-        <h3 style="margin:0 0 6px 0;">Nota di robustezza numerica</h3>
-        <div class="muted">
-          In implementazione si usa una softmax “stabile” sottraendo il massimo punteggio prima di fare <code>exp</code>,
-          per evitare overflow quando i punteggi crescono:
-        </div>
-        <div style="margin-top:8px; font-family: ui-monospace, monospace; font-size: 13px;">
-          p_i = exp(s_i − max(s)) / Σ_j exp(s_j − max(s))
-        </div>
-      </div>
-    </details>
-  </section>
-
-  <footer class="footer">
-    <span>Static site per GitHub Pages · dati da SQLite</span>
-  </footer>
-
-</div>
-
+    </section>
   </main>
 
-  <script src="../assets/nav.js?v=20260203"></script>
-
+  <script src="../assets/nav.js?v=20260206"></script>
 </body>
 </html>
