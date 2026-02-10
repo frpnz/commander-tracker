@@ -28,7 +28,8 @@
 
   // Datalists
   const playersList = $("playersList");
-  const commandersList = $("commandersList");
+  // Commander autocomplete is custom (datalist is not reliable cross-browser).
+  const commanderMenu = $("commanderMenu");
 
   // Suggestions
   let basePlayers = [];
@@ -71,6 +72,32 @@
       .replace(/'/g, "&#039;");
   }
 
+  // --- Datalist helpers (Firefox-safe) ---
+  // Firefox is picky about dynamically updated <datalist>:
+  // - using innerHTML is less reliable
+  // - updates while the input is focused may not refresh suggestions
+  function fillDatalist(listEl, values) {
+    if (!listEl) return;
+    const opts = (values || []).map((v) => {
+      const o = document.createElement("option");
+      o.value = String(v);
+      return o;
+    });
+    // replaceChildren is well-supported and avoids HTML parsing quirks
+    listEl.replaceChildren(...opts);
+  }
+
+  function refreshFocusedDatalist(listEl) {
+    // Force Firefox to re-evaluate suggestions.
+    const a = document.activeElement;
+    if (!a) return;
+    // Only if the focused element is an <input> linked to this datalist.
+    if (a.tagName === "INPUT" && a.list === listEl) {
+      a.blur();
+      requestAnimationFrame(() => a.focus());
+    }
+  }
+
   function setStatus(msg, kind) {
     statusEl.style.display = "block";
     statusEl.textContent = msg;
@@ -89,18 +116,103 @@
   function syncPlayersDatalist() {
     const merged = new Set([...(basePlayers || []), ...entries.map(e => e.player)]);
     const arr = Array.from(merged).filter(Boolean).sort((a, b) => a.localeCompare(b, "it"));
-    playersList.innerHTML = arr.map(p => `<option value="${escapeHtml(p)}"></option>`).join("");
+    fillDatalist(playersList, arr);
+    refreshFocusedDatalist(playersList);
   }
 
-  function setCommandersDatalistForPlayer(playerName) {
+  // --- Commander autocomplete (custom dropdown) ---
+  let commanderOpen = false;
+  let commanderActive = -1;
+  /** @type {string[]} */
+  let commanderCurrentItems = [];
+
+  function getCommandersForPlayer(playerName) {
     const p = normalizeName(playerName);
-    const arr = (p && playerToCommanders.has(p))
-      ? (playerToCommanders.get(p) || [])
-      : (baseCommanders || []);
-    const merged = Array.from(new Set([...(arr || []), ...entries.filter(e => e.player === p).map(e => e.commander)]))
+    const fromStats = (p && playerToCommanders.has(p)) ? (playerToCommanders.get(p) || []) : (baseCommanders || []);
+    const fromEntries = entries.filter(e => e.player === p).map(e => e.commander);
+    return Array.from(new Set([...(fromStats || []), ...(fromEntries || [])]))
       .filter(Boolean)
       .sort((a, b) => a.localeCompare(b, "it"));
-    commandersList.innerHTML = merged.map(c => `<option value="${escapeHtml(c)}"></option>`).join("");
+  }
+
+  function rankSuggestions(items, qRaw) {
+    const q = normalizeName(qRaw).toLocaleLowerCase("it");
+    if (!q) return items.slice(0, 50);
+    const starts = [];
+    const contains = [];
+    for (const it of items) {
+      const s = String(it);
+      const sl = s.toLocaleLowerCase("it");
+      if (sl.startsWith(q)) starts.push(s);
+      else if (sl.includes(q)) contains.push(s);
+    }
+    return [...starts, ...contains].slice(0, 50);
+  }
+
+  function closeCommanderMenu() {
+    if (!commanderMenu) return;
+    commanderMenu.hidden = true;
+    commanderOpen = false;
+    commanderActive = -1;
+    commanderCurrentItems = [];
+  }
+
+  function renderCommanderMenu(items) {
+    if (!commanderMenu) return;
+    commanderMenu.innerHTML = "";
+    if (!items.length) {
+      const empty = document.createElement("div");
+      empty.className = "ac-empty";
+      empty.textContent = "Nessun suggerimento";
+      commanderMenu.appendChild(empty);
+      commanderCurrentItems = [];
+      commanderActive = -1;
+    } else {
+      commanderCurrentItems = items;
+      commanderActive = -1;
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        const div = document.createElement("div");
+        div.className = "ac-item";
+        div.textContent = it;
+        div.dataset.idx = String(i);
+        div.addEventListener("mousedown", (e) => {
+          // mousedown (not click) so we can select before input loses focus.
+          e.preventDefault();
+          selectCommander(it);
+        });
+        commanderMenu.appendChild(div);
+      }
+    }
+    commanderMenu.hidden = false;
+    commanderOpen = true;
+  }
+
+  function setCommanderActive(idx) {
+    if (!commanderMenu) return;
+    const children = Array.from(commanderMenu.querySelectorAll(".ac-item"));
+    for (const el of children) el.classList.remove("active");
+    if (idx < 0 || idx >= children.length) {
+      commanderActive = -1;
+      return;
+    }
+    commanderActive = idx;
+    const el = children[idx];
+    el.classList.add("active");
+    // Ensure visible
+    try { el.scrollIntoView({ block: "nearest" }); } catch (_e) {}
+  }
+
+  function selectCommander(name) {
+    inCommander.value = String(name || "");
+    closeCommanderMenu();
+    updateBracketAuto();
+  }
+
+  function updateCommanderMenu() {
+    const list = getCommandersForPlayer(inPlayer.value);
+    const ranked = rankSuggestions(list, inCommander.value);
+    renderCommanderMenu(ranked);
   }
 
   function setWinner(name) {
@@ -156,7 +268,7 @@
     inBracket.value = "";
     editingIndex = null;
     addEntryBtn.textContent = "Aggiungi";
-    setCommandersDatalistForPlayer("");
+    closeCommanderMenu();
     inPlayer.focus();
   }
 
@@ -243,7 +355,8 @@
       const entry = entries[idx];
       editingIndex = idx;
       inPlayer.value = entry.player;
-      setCommandersDatalistForPlayer(entry.player);
+      // Refresh commander suggestions for the selected player.
+      closeCommanderMenu();
       inCommander.value = entry.commander;
       inBracket.value = entry.bracket == null ? "" : String(entry.bracket);
       addEntryBtn.textContent = "Salva";
@@ -399,24 +512,73 @@
       }
 
       syncPlayersDatalist();
-      setCommandersDatalistForPlayer("");
+      closeCommanderMenu();
     } catch (_e) {
       // silent: user can still type freely
       basePlayers = [];
       baseCommanders = [];
       syncPlayersDatalist();
-      setCommandersDatalistForPlayer("");
+      closeCommanderMenu();
     }
   }
 
   function onPlayerChanged() {
-    setCommandersDatalistForPlayer(inPlayer.value);
+    // Player change affects commander suggestions.
+    if (document.activeElement === inCommander) updateCommanderMenu();
     // Changing player may enable better bracket auto for the current commander.
     updateBracketAuto();
   }
 
   function onCommanderChanged() {
+    // Keep menu in sync with typed query.
+    if (document.activeElement === inCommander) updateCommanderMenu();
     updateBracketAuto();
+  }
+
+  function onCommanderFocus() {
+    updateCommanderMenu();
+  }
+
+  function onCommanderBlur() {
+    // Delay so mousedown selection can run.
+    setTimeout(() => {
+      if (document.activeElement !== inCommander) closeCommanderMenu();
+    }, 80);
+  }
+
+  function onCommanderKeyDown(e) {
+    if (e.key === "ArrowDown") {
+      if (!commanderOpen) updateCommanderMenu();
+      e.preventDefault();
+      const next = Math.min((commanderActive < 0 ? -1 : commanderActive) + 1, commanderCurrentItems.length - 1);
+      setCommanderActive(next);
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      if (!commanderOpen) updateCommanderMenu();
+      e.preventDefault();
+      const prev = Math.max((commanderActive < 0 ? commanderCurrentItems.length : commanderActive) - 1, 0);
+      setCommanderActive(prev);
+      return;
+    }
+    if (e.key === "Escape") {
+      if (commanderOpen) {
+        e.preventDefault();
+        closeCommanderMenu();
+      }
+      return;
+    }
+    if (e.key === "Enter") {
+      if (commanderOpen && commanderActive >= 0 && commanderActive < commanderCurrentItems.length) {
+        e.preventDefault();
+        selectCommander(commanderCurrentItems[commanderActive]);
+        return;
+      }
+      // Otherwise, Enter adds the entry (handled here to avoid conflicts).
+      e.preventDefault();
+      try { upsertEntry(); } catch (err) { setStatus(err.message || String(err), "error"); }
+      return;
+    }
   }
 
   function onKeyDownAdd(e) {
@@ -484,10 +646,13 @@
     inPlayer.addEventListener("change", onPlayerChanged);
     inCommander.addEventListener("input", onCommanderChanged);
     inCommander.addEventListener("change", onCommanderChanged);
+    inCommander.addEventListener("focus", onCommanderFocus);
+    inCommander.addEventListener("blur", onCommanderBlur);
+    inCommander.addEventListener("keydown", onCommanderKeyDown);
 
     // Enter handling
     inPlayer.addEventListener("keydown", onKeyDownAdd);
-    inCommander.addEventListener("keydown", onKeyDownAdd);
+    // Commander uses its own key handling (Arrow/Enter/Esc + add entry).
     inBracket.addEventListener("keydown", onKeyDownAdd);
 
     clearWinnerBtn.addEventListener("click", () => setWinner(null));

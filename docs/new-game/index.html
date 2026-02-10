@@ -53,8 +53,9 @@
             <label>Player
               <input id="inPlayer" name="player" list="playersList" placeholder="Nome player" autocomplete="on"/>
             </label>
-            <label>Commander
-              <input id="inCommander" name="commander" list="commandersList" placeholder="Nome commander" autocomplete="on"/>
+            <label class="ac">Commander
+              <input id="inCommander" name="commander" placeholder="Nome commander" autocomplete="off"/>
+              <div id="commanderMenu" class="ac-menu" hidden></div>
             </label>
             <label>Bracket
               <select id="inBracket">
@@ -96,7 +97,6 @@
         </form>
 
         <datalist id="playersList"></datalist>
-        <datalist id="commandersList"></datalist>
       </div>
     </section>
   </main>

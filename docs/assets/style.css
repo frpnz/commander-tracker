@@ -69,8 +69,21 @@ body::before{
   inset: 3px;
   display:block;
   background: currentColor;
-  -webkit-mask: var(--logo-mask) no-repeat center / contain;
-  mask: var(--logo-mask) no-repeat center / contain;
+  /*
+    Cross-browser mask rendering:
+    - Firefox is more strict about mask-* longhands and SVG luminance.
+    - Explicit longhands avoid sizing quirks.
+  */
+  -webkit-mask-image: var(--logo-mask);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: var(--logo-mask);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  mask-mode: alpha;
 }
 
 .title{font-weight:750; letter-spacing:.2px}
@@ -335,6 +348,36 @@ select,input,textarea{
   padding:10px 10px;
   border-radius:12px;
   outline:none;
+}
+
+/* --- Autocomplete dropdown (robust cross-browser replacement for <datalist>) --- */
+label.ac{ position: relative; }
+.ac-menu{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  max-height: 240px;
+  overflow: auto;
+  z-index: 60;
+}
+.ac-item{
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  user-select: none;
+}
+.ac-item:hover,
+.ac-item.active{ background: rgba(255,255,255,.06); }
+.ac-empty{
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--muted);
 }
 select option{background: var(--bg); color: var(--text);}
 
