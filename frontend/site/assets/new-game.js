@@ -10,7 +10,6 @@
 
   const form = $("gameForm");
   const statusEl = $("status");
-  const copyBtn = $("copyBtn");
   const downloadBtn = $("downloadBtn");
 
   // Single-row inputs
@@ -269,7 +268,6 @@
     winnerNameEl.textContent = winnerPlayer || "—";
     // Export is allowed even without a winner. Validation happens on import
     // (admin) or when the user later updates the winner.
-    if (copyBtn) copyBtn.disabled = false;
     if (downloadBtn) downloadBtn.disabled = false;
     renderEntriesTable();
   }
@@ -446,33 +444,6 @@
     const dt = (payload.played_at || "").replace(/[-:]/g, "").replace(" ", "_").slice(0, 13);
     return `game_${dt}.json`;
   }
-
-  async function copyToClipboard(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(text);
-      return;
-    }
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.left = "-9999px";
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-  }
-
-  async function onCopy() {
-    try {
-      const payload = collect();
-      const text = JSON.stringify(payload, null, 2);
-      await copyToClipboard(text);
-      setStatus("JSON copiato negli appunti.", "ok");
-    } catch (err) {
-      setStatus(err.message || String(err), "error");
-    }
-  }
-
   function onSubmit(e) {
     e.preventDefault();
     try {
@@ -759,8 +730,6 @@
     inBracket.addEventListener("keydown", onKeyDownAdd);
 
     clearWinnerBtn.addEventListener("click", () => setWinner(null));
-
-    copyBtn.addEventListener("click", onCopy);
     form.addEventListener("submit", onSubmit);
 
     setupKeyboardAvoidance();
