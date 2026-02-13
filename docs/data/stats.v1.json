@@ -1,7 +1,7 @@
 {
   "by_player": [
     {
-      "games": 39,
+      "games": 40,
       "player": "Da",
       "wins": 12
     },
@@ -16,14 +16,14 @@
       "wins": 13
     },
     {
-      "games": 31,
+      "games": 32,
       "player": "Giamma",
       "wins": 9
     },
     {
-      "games": 26,
+      "games": 27,
       "player": "Stanca",
-      "wins": 4
+      "wins": 5
     },
     {
       "games": 24,
@@ -40,7 +40,7 @@
     {
       "bracket": 5,
       "commander": "K'rrik",
-      "games": 17,
+      "games": 18,
       "player": "Da",
       "wins": 6
     },
@@ -122,18 +122,18 @@
       "wins": 2
     },
     {
+      "bracket": 3,
+      "commander": "Galtha",
+      "games": 5,
+      "player": "Giamma",
+      "wins": 1
+    },
+    {
       "bracket": 5,
       "commander": "Magda",
       "games": 4,
       "player": "Fra",
       "wins": 2
-    },
-    {
-      "bracket": 3,
-      "commander": "Galtha",
-      "games": 4,
-      "player": "Giamma",
-      "wins": 1
     },
     {
       "bracket": 4,
@@ -175,6 +175,13 @@
       "commander": "Ivy",
       "games": 3,
       "player": "Matti",
+      "wins": 1
+    },
+    {
+      "bracket": 3,
+      "commander": "Elas",
+      "games": 3,
+      "player": "Stanca",
       "wins": 1
     },
     {
@@ -252,13 +259,6 @@
       "commander": "Flubs",
       "games": 2,
       "player": "Matti",
-      "wins": 0
-    },
-    {
-      "bracket": 3,
-      "commander": "Elas",
-      "games": 2,
-      "player": "Stanca",
       "wins": 0
     },
     {
@@ -411,6 +411,16 @@
       "wins": 1
     },
     {
+      "b_post": 3.318158635850891,
+      "b_post_map": 3.25,
+      "b_post_sd": 0.7858180776215541,
+      "bracket_prior": 3,
+      "commander": "Elas",
+      "cpr_z": 1.2341308246459943,
+      "games": 3,
+      "wins": 1
+    },
+    {
       "b_post": 2.392006881962733,
       "b_post_map": 2.25,
       "b_post_sd": 0.7473381656088128,
@@ -511,16 +521,6 @@
       "wins": 0
     },
     {
-      "b_post": 3.213221667375621,
-      "b_post_map": 3.25,
-      "b_post_sd": 0.7737259398979012,
-      "bracket_prior": 3,
-      "commander": "Galtha",
-      "cpr_z": 0.7459316670352691,
-      "games": 4,
-      "wins": 1
-    },
-    {
       "b_post": 1.9972995357919354,
       "b_post_map": 1.75,
       "b_post_sd": 0.6713047597040585,
@@ -581,14 +581,14 @@
       "wins": 0
     },
     {
-      "b_post": 2.885435862349043,
-      "b_post_map": 3.0,
-      "b_post_sd": 0.8186325651516307,
+      "b_post": 3.1322080061802167,
+      "b_post_map": 3.25,
+      "b_post_sd": 0.7618127379004408,
       "bracket_prior": 3,
-      "commander": "Elas",
-      "cpr_z": -0.4552839343441946,
-      "games": 2,
-      "wins": 0
+      "commander": "Galtha",
+      "cpr_z": 0.46691170896413525,
+      "games": 5,
+      "wins": 1
     },
     {
       "b_post": 2.888505904707459,
@@ -599,6 +599,16 @@
       "cpr_z": -0.44791654510656176,
       "games": 2,
       "wins": 0
+    },
+    {
+      "b_post": 4.560626789797521,
+      "b_post_map": 4.75,
+      "b_post_sd": 0.3827522883892615,
+      "bracket_prior": 5,
+      "commander": "K'rrik",
+      "cpr_z": -0.4435408561945608,
+      "games": 18,
+      "wins": 6
     },
     {
       "b_post": 2.894313514759931,
@@ -711,16 +721,6 @@
       "wins": 1
     },
     {
-      "b_post": 4.626996527858202,
-      "b_post_map": 5.0,
-      "b_post_sd": 0.3557498610057184,
-      "bracket_prior": 5,
-      "commander": "K'rrik",
-      "cpr_z": -0.09313118632097092,
-      "games": 17,
-      "wins": 6
-    },
-    {
       "b_post": 4.582894526434818,
       "b_post_map": 5.0,
       "b_post_sd": 0.39392565327664764,
@@ -742,8 +742,8 @@
     }
   ],
   "counts": {
-    "entries": 198,
-    "games": 56
+    "entries": 201,
+    "games": 57
   },
   "filters": {
     "brackets": [
@@ -805,6 +805,29 @@
     ]
   },
   "games": [
+    {
+      "entries": [
+        {
+          "bracket": 3,
+          "commander": "Galtha",
+          "player": "Giamma"
+        },
+        {
+          "bracket": 3,
+          "commander": "Elas",
+          "player": "Stanca"
+        },
+        {
+          "bracket": 5,
+          "commander": "K'rrik",
+          "player": "Da"
+        }
+      ],
+      "id": 61,
+      "notes": null,
+      "played_at": "2026-02-13 01:30:00",
+      "winner_player": "Stanca"
+    },
     {
       "entries": [
         {
@@ -2244,7 +2267,7 @@
       "winner_player": "Fra"
     }
   ],
-  "generated_utc": "2026-02-13T00:43:00Z",
+  "generated_utc": "2026-02-13T01:30:00Z",
   "meta_profile": {
     "method": "delta_player_minus_avg_table_excl_player",
     "min_games_default": 3,
@@ -2257,13 +2280,13 @@
   },
   "meta_profile_by_player": [
     {
-      "games_total": 39,
-      "games_used": 38,
-      "mdi": 0.4912280701754385,
-      "mpi": 0.68859649122807,
-      "oewr": -0.03362045444625717,
-      "oewr_used": 38,
-      "oewr_z": -0.4557786469006344,
+      "games_total": 40,
+      "games_used": 39,
+      "mdi": 0.5299145299145298,
+      "mpi": 0.7222222222222221,
+      "oewr": -0.05102392281418887,
+      "oewr_used": 39,
+      "oewr_z": -0.7008335925967524,
       "player": "Da"
     },
     {
@@ -2287,23 +2310,23 @@
       "player": "Matti"
     },
     {
-      "games_total": 31,
-      "games_used": 31,
-      "mdi": -0.3844086021505377,
-      "mpi": 0.879032258064516,
-      "oewr": 0.045745013239902196,
-      "oewr_used": 31,
-      "oewr_z": 0.6281694705144873,
+      "games_total": 32,
+      "games_used": 32,
+      "mdi": -0.40364583333333337,
+      "mpi": 0.8828124999999999,
+      "oewr": 0.0398210397135864,
+      "oewr_used": 32,
+      "oewr_z": 0.5577628996271061,
       "player": "Giamma"
     },
     {
-      "games_total": 26,
-      "games_used": 26,
-      "mdi": -0.407051282051282,
-      "mpi": 0.6442307692307693,
-      "oewr": -0.14429229100110977,
-      "oewr_used": 25,
-      "oewr_z": -1.7271998459212503,
+      "games_total": 27,
+      "games_used": 27,
+      "mdi": -0.4290123456790123,
+      "mpi": 0.6574074074074074,
+      "oewr": -0.10581266979345952,
+      "oewr_used": 26,
+      "oewr_z": -1.299048508145656,
       "player": "Stanca"
     },
     {
@@ -2330,13 +2353,13 @@
   "meta_profile_by_player_commander": [
     {
       "commander": "K'rrik",
-      "games_total": 18,
-      "games_used": 17,
-      "mdi": 0.622549019607843,
-      "mpi": 0.622549019607843,
-      "oewr": -0.010780604687147715,
-      "oewr_used": 17,
-      "oewr_z": -0.09313118632097092,
+      "games_total": 19,
+      "games_used": 18,
+      "mdi": 0.699074074074074,
+      "mpi": 0.699074074074074,
+      "oewr": -0.049757000026505814,
+      "oewr_used": 18,
+      "oewr_z": -0.4435408561945608,
       "player": "Da"
     },
     {
@@ -2549,6 +2572,17 @@
       "player": "Giamma"
     },
     {
+      "commander": "Galtha",
+      "games_total": 5,
+      "games_used": 5,
+      "mdi": -0.85,
+      "mpi": 0.85,
+      "oewr": 0.06993015452573385,
+      "oewr_used": 5,
+      "oewr_z": 0.46691170896413525,
+      "player": "Giamma"
+    },
+    {
       "commander": "Brion",
       "games_total": 4,
       "games_used": 4,
@@ -2557,17 +2591,6 @@
       "oewr": -0.08987025968725554,
       "oewr_used": 4,
       "oewr_z": -0.6586030187820833,
-      "player": "Giamma"
-    },
-    {
-      "commander": "Galtha",
-      "games_total": 4,
-      "games_used": 4,
-      "mdi": -0.8124999999999999,
-      "mpi": 0.8124999999999999,
-      "oewr": 0.12336822805771813,
-      "oewr_used": 4,
-      "oewr_z": 0.7459316670352691,
       "player": "Giamma"
     },
     {
@@ -2704,13 +2727,13 @@
     },
     {
       "commander": "Elas",
-      "games_total": 2,
-      "games_used": 2,
-      "mdi": -1.6666666666666665,
-      "mpi": 1.6666666666666665,
-      "oewr": -0.09390396169310938,
-      "oewr_used": 2,
-      "oewr_z": -0.4552839343441946,
+      "games_total": 3,
+      "games_used": 3,
+      "mdi": -1.4444444444444444,
+      "mpi": 1.4444444444444444,
+      "oewr": 0.22278997900385933,
+      "oewr_used": 3,
+      "oewr_z": 1.2341308246459943,
       "player": "Stanca"
     },
     {
