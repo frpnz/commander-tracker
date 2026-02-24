@@ -111,7 +111,13 @@
           "rank": 8
         }
       ],
-      "playoffs": null
+      "playoffs": null,
+      "podium": {
+        "gold": "Fra",
+        "silver": "Giamma",
+        "bronze": "Lori",
+        "method": "standings"
+      }
     }
   ],
   "by_player": [
@@ -126,7 +132,11 @@
       "via_avg": 71.42,
       "via_n": 1,
       "best_rank": 1,
-      "avg_rank": 1.0
+      "avg_rank": 1.0,
+      "podium_gold": 1,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 1
     },
     {
       "player": "Giamma",
@@ -139,7 +149,11 @@
       "via_avg": 63.85,
       "via_n": 1,
       "best_rank": 2,
-      "avg_rank": 2.0
+      "avg_rank": 2.0,
+      "podium_gold": 0,
+      "podium_silver": 1,
+      "podium_bronze": 0,
+      "podium_total": 1
     },
     {
       "player": "Lori",
@@ -152,7 +166,11 @@
       "via_avg": 58.33,
       "via_n": 1,
       "best_rank": 3,
-      "avg_rank": 3.0
+      "avg_rank": 3.0,
+      "podium_gold": 0,
+      "podium_silver": 0,
+      "podium_bronze": 1,
+      "podium_total": 1
     },
     {
       "player": "Ivan",
@@ -165,7 +183,11 @@
       "via_avg": 49.12,
       "via_n": 1,
       "best_rank": 4,
-      "avg_rank": 4.0
+      "avg_rank": 4.0,
+      "podium_gold": 0,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 0
     },
     {
       "player": "Stanca",
@@ -178,7 +200,11 @@
       "via_avg": 44.9,
       "via_n": 1,
       "best_rank": 6,
-      "avg_rank": 6.0
+      "avg_rank": 6.0,
+      "podium_gold": 0,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 0
     },
     {
       "player": "Teo",
@@ -191,7 +217,11 @@
       "via_avg": 46.77,
       "via_n": 1,
       "best_rank": 5,
-      "avg_rank": 5.0
+      "avg_rank": 5.0,
+      "podium_gold": 0,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 0
     },
     {
       "player": "Da",
@@ -204,7 +234,11 @@
       "via_avg": 35.6,
       "via_n": 1,
       "best_rank": 8,
-      "avg_rank": 8.0
+      "avg_rank": 8.0,
+      "podium_gold": 0,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 0
     },
     {
       "player": "Matti",
@@ -217,7 +251,11 @@
       "via_avg": 38.25,
       "via_n": 1,
       "best_rank": 7,
-      "avg_rank": 7.0
+      "avg_rank": 7.0,
+      "podium_gold": 0,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 0
     }
   ]
 }

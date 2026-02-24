@@ -50,9 +50,11 @@
         <div class="subtitle">Guida alle metriche</div>
       </div>
     </div>
-
-    <div class="meta" id="meta"></div>
-    <nav class="nav" id="nav"></nav>
+    <div class="topbar-right">
+      <div class="meta" id="meta"></div>
+      <nav class="nav" id="nav"></nav>
+      <a class="help-icon" href="../metrics/" aria-label="Guida alle metriche" title="Guida alle metriche">?</a>
+    </div>
   </header>
 
   <main class="container">
@@ -71,6 +73,9 @@
           <span class="pill">OEWR</span>
           <span class="pill">Bracket posterior (b_post)</span>
           <span class="pill">cpr_z</span>
+          <span class="pill">Match Win % (Draft)</span>
+          <span class="pill">VIA% (Draft)</span>
+          <span class="pill">Podi (Draft)</span>
         </div>
       </div>
     </section>
@@ -287,6 +292,77 @@ b_post_map = argmax_θ log post(θ)</div>
           <div class="codeblock">Conteggi
 - N partite per filtro
 - N entries per filtro</div>
+        </details>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Draft</h2></div>
+      <div class="card-body">
+        <div class="metrics-kv">
+          <div><b>Panoramica</b></div>
+          <div class="muted" style="opacity:.85;">
+            Traccia tornei Draft (svizzera + eventuale fase finale) importando l’output di MTG Companion.
+            La scheda mostra <b>Match Win %</b> per player (con filtro “min match”) e una tabella <b>Podi</b>.
+          </div>
+
+          <div><b>Input</b></div>
+          <div class="muted" style="opacity:.85;">
+            Per ogni player: record <code>W-L-D</code> (Vittorie–Sconfitte–Pareggi) e <code>VIA%</code>
+            (tie-breaker di Companion). Facoltativo: righe Playoff (SF/F) per determinare campione e finalista.
+          </div>
+
+          <div><b>Dati</b></div>
+          <div class="muted" style="opacity:.85;">
+            Derivano da <code>draft.v1.json</code> (export dal Draft DB separato): <code>tournaments</code>, <code>by_player</code>,
+            <code>podium_by_player</code> (aggregato) e <code>tournaments[].podium</code> (per torneo).
+          </div>
+        </div>
+
+        <details class="metrics-details" style="margin-top:12px;">
+          <summary>Dettagli matematici</summary>
+
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            La metrica principale del Draft è il <b>Match Win %</b> (MWP), che tratta un pareggio come “mezza vittoria”.
+          </div>
+
+          <div class="codeblock">Definizioni
+W = vittorie (wins)
+L = sconfitte (losses)
+D = pareggi (draws)
+M = match totali = W + L + D
+
+Match Win % (MWP)
+MWP = (W + 0.5 * D) / M</div>
+
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            <b>VIA%</b> è un tie-breaker esportato da Companion e usato per ordinare la classifica quando il record è a pari.
+            La UI lo mostra e lo usa per riprodurre l’ordine “da Companion” (record → VIA).
+          </div>
+
+          <div class="codeblock">Ordinamento standings (stile Companion)
+1) Punti match: P = 3*W + 1*D
+2) VIA% (discendente) come spareggio
+3) Nome player (per stabilità)</div>
+
+          <div class="muted" style="margin-top:8px; opacity:.85;">
+            <b>Podi</b>: per ogni torneo assegniamo oro/argento/bronzo in modo deterministico.
+            Se esiste la finale, oro e argento vengono dalla finale; il bronzo deriva da semifinali (se presenti)
+            oppure dalla classifica. Se non esiste la finale, il podio è Top-3 della classifica.
+          </div>
+
+          <div class="codeblock">Podi per torneo
+Caso A) Finale presente
+  🥇 = winner(F)
+  🥈 = loser(F)
+  🥉 =
+      - se SF presenti: migliore in standings tra i due sconfitti in SF
+      - altrimenti: 3° in standings (escludendo 🥇 e 🥈)
+
+Caso B) Finale assente
+  🥇 = 1° in standings
+  🥈 = 2° in standings
+  🥉 = 3° in standings</div>
         </details>
       </div>
     </section>

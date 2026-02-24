@@ -11,8 +11,6 @@
     { key: "meta-profile", path: "meta-profile/", label: "Meta Profile" },
     { key: "bracket-calibration", path: "bracket-calibration/", label: "Calibrazione" },
     { key: "draft", path: "draft/", label: "Draft" },
-    // Keep "Nuova partita" immediately before "Metrics" (edit here in the future)
-    { key: "new-game", path: "new-game/", label: "Nuova partita" },
-    { key: "metrics", path: "metrics/", label: "Metrics" }
+    { key: "new-game", path: "new-game/", label: "Nuova partita" }
   ];
 })();

@@ -2,6 +2,37 @@
  * Reads /data/draft.v1.json exported from the separate Draft DB.
  */
 
+// --- Plugin: print value labels on horizontal bars (same style as Stats) ---
+const barValueLabels = {
+  id: "barValueLabels",
+  afterDatasetsDraw(chart, args, opts) {
+    const { ctx } = chart;
+    const meta = chart.getDatasetMeta(0);
+    const data = chart.data.datasets[0].data || [];
+
+    ctx.save();
+    ctx.font = (opts && opts.font) || "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillStyle = (opts && opts.color) || "rgba(255,255,255,0.9)";
+
+    meta.data.forEach((bar, i) => {
+      const v = data[i];
+      if (v == null || Number.isNaN(v)) return;
+
+      const p = bar.tooltipPosition();
+      const txt = `${Number(v).toFixed(1)}%`;
+
+      const areaRight = chart.chartArea.right;
+      const w = ctx.measureText(txt).width;
+      let x = p.x + 8;
+      if (x + w > areaRight - 2) x = areaRight - w - 2;
+
+      ctx.fillText(txt, x, p.y + 4);
+    });
+
+    ctx.restore();
+  }
+};
+
 (function () {
   const $ = (sel) => document.querySelector(sel);
   const fmtPct = (x) => (x == null || Number.isNaN(x)) ? "—" : (x * 100).toFixed(1) + "%";
@@ -15,6 +46,8 @@
   const tableTitle = $("#tableTitle");
   const playoffCard = $("#playoffCard");
   const playoffBody = $("#playoffBody");
+  const podiumTitle = $("#podiumTitle");
+  const podiumTblBody = $("#podiumTbl tbody");
   const tblBody = $("#tbl tbody");
 
   let DATA = null;
@@ -155,6 +188,13 @@
 
     const ctx = $("#mwpBar").getContext("2d");
 
+    // Dynamic height for mobile/readability (works with maintainAspectRatio:false)
+    const wrap = $("#mwpBar")?.closest?.(".chart-wrap");
+    if (wrap) {
+      const n = Math.max(4, labels.length || 0);
+      wrap.style.height = Math.min(520, 120 + n * 28) + "px";
+    }
+
     if (BAR) {
       BAR.data.labels = labels;
       BAR.data.datasets[0].data = values;
@@ -177,14 +217,20 @@
         }]
       },
       options: {
+        indexAxis: "y",
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: {
+          x: {
             beginAtZero: true,
             max: 100,
             ticks: {
               callback: (v) => v + "%"
+            }
+          },
+          y: {
+            ticks: {
+              autoSkip: false,
             }
           }
         },
@@ -200,7 +246,96 @@
           legend: { display: false }
         }
       }
+    ,
+      plugins: [barValueLabels]
     });
+  }
+
+  function _podiumCountsFromTournament(t) {
+    const p = t && t.podium ? t.podium : null;
+    if (!p) return [];
+    const map = new Map();
+    const add = (name, k) => {
+      if (!name) return;
+      const cur = map.get(name) || { player: name, gold: 0, silver: 0, bronze: 0, total: 0 };
+      if (k === "gold") cur.gold += 1;
+      if (k === "silver") cur.silver += 1;
+      if (k === "bronze") cur.bronze += 1;
+      cur.total = cur.gold + cur.silver + cur.bronze;
+      map.set(name, cur);
+    };
+    add(p.gold, "gold");
+    add(p.silver, "silver");
+    add(p.bronze, "bronze");
+    return Array.from(map.values());
+  }
+
+  function _podiumCountsAggregate(minMatches) {
+    const rows = (DATA && DATA.by_player) ? DATA.by_player.slice() : [];
+    return rows
+      .filter((r) => (r.matches || 0) >= minMatches)
+      .map((r) => {
+        return {
+          player: r.player,
+          gold: Number(r.podium_gold || 0),
+          silver: Number(r.podium_silver || 0),
+          bronze: Number(r.podium_bronze || 0),
+          total: Number(r.podium_total || 0),
+        };
+      })
+      .filter((r) => r.total > 0)
+      .sort((a, b) => {
+        if (b.total !== a.total) return b.total - a.total;
+        if (b.gold !== a.gold) return b.gold - a.gold;
+        return (a.player || "").localeCompare(b.player || "", "it", { sensitivity: "base" });
+      });
+  }
+
+  function renderPodium(view) {
+    if (!podiumTitle || !podiumTblBody) return;
+
+    const minMatches = Math.max(0, Number(fMinMatches.value || 0));
+    const isTournament = view.mode === "tournament" && view.tournament;
+
+    const rows = isTournament
+      ? _podiumCountsFromTournament(view.tournament)
+      : _podiumCountsAggregate(minMatches);
+
+    podiumTitle.textContent = isTournament
+      ? `Podi — ${view.tournament.name}`
+      : "Podi (tutti i tornei)";
+
+    // Table
+    podiumTblBody.innerHTML = "";
+    if (!rows.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 5;
+      td.className = "muted";
+      td.textContent = isTournament
+        ? "Nessun podio calcolabile per questo torneo (mancano standings)."
+        : "Nessun torneo con podio ancora disponibile.";
+      tr.appendChild(td);
+      podiumTblBody.appendChild(tr);
+    } else {
+      for (const r of rows) {
+        const tr = document.createElement("tr");
+        const cells = [
+          { label: "Player", value: r.player },
+          { label: "🥇", value: String(r.gold) },
+          { label: "🥈", value: String(r.silver) },
+          { label: "🥉", value: String(r.bronze) },
+          { label: "Tot", value: String(r.total) },
+        ];
+        for (const c of cells) {
+          const td = document.createElement("td");
+          td.setAttribute("data-label", c.label);
+          td.textContent = c.value;
+          tr.appendChild(td);
+        }
+        podiumTblBody.appendChild(tr);
+      }
+    }
   }
 
   function renderTable(view) {
@@ -259,6 +394,7 @@
     renderHint(view);
     renderPlayoffs(view);
     renderChart(view);
+    renderPodium(view);
     renderTable(view);
   }
 

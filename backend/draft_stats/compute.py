@@ -119,6 +119,8 @@ def compute_draft(db_path: str) -> dict[str, Any]:
         ).fetchall()
         playoff_matches: list[dict[str, Any]] = []
         champion: str | None = None
+        final_match: dict[str, str] | None = None
+        sf_losers: list[str] = []
         for r in pm_rows:
             stage = str(r["stage"]).strip().upper()
             pa = str(r["player_a"]).strip()
@@ -127,6 +129,71 @@ def compute_draft(db_path: str) -> dict[str, Any]:
             playoff_matches.append({"stage": stage, "player_a": pa, "player_b": pb, "winner": wnr})
             if stage in ("F", "FINAL"):
                 champion = wnr
+                final_match = {"player_a": pa, "player_b": pb, "winner": wnr}
+            if stage in ("SF", "SEMIFINAL", "SEMIFINALS"):
+                loser = pb if wnr == pa else (pa if wnr == pb else None)
+                if loser:
+                    sf_losers.append(loser)
+
+        # Podium rules (deterministic):
+        # - If a final exists: gold=winner(final), silver=loser(final)
+        #   bronze: if SF exists -> best-ranked (lowest standings rank) among SF losers; else -> 3rd in standings
+        # - If no final: podium is standings top 3
+        podium: dict[str, Any] | None = None
+        if standings:
+            if final_match and champion:
+                gold = champion
+                silver = final_match["player_b"] if final_match["winner"] == final_match["player_a"] else final_match["player_a"]
+                bronze: str | None = None
+                if sf_losers:
+                    rank_by_player = {s["player"]: int(s.get("rank") or 10_000) for s in standings}
+                    sf_losers_sorted = sorted(sf_losers, key=lambda p: (rank_by_player.get(p, 10_000), p.casefold()))
+                    bronze = sf_losers_sorted[0] if sf_losers_sorted else None
+                if bronze is None:
+                    for s in standings:
+                        pnm = s["player"]
+                        if pnm not in (gold, silver):
+                            bronze = pnm
+                            break
+                podium = {"gold": gold, "silver": silver, "bronze": bronze, "method": "final"}
+            else:
+                gold = standings[0]["player"] if len(standings) >= 1 else None
+                silver = standings[1]["player"] if len(standings) >= 2 else None
+                bronze = standings[2]["player"] if len(standings) >= 3 else None
+                podium = {"gold": gold, "silver": silver, "bronze": bronze, "method": "standings"}
+
+        # Update podium aggregates per player
+        if podium:
+            for k in ("gold", "silver", "bronze"):
+                pl = podium.get(k)
+                if not pl:
+                    continue
+                p = by_player.setdefault(
+                    pl,
+                    {
+                        "player": pl,
+                        "tournaments": 0,
+                        "matches": 0,
+                        "wins": 0,
+                        "losses": 0,
+                        "draws": 0,
+                        "match_win_pct": None,
+                        "via_avg": None,
+                        "via_n": 0,
+                        "best_rank": None,
+                        "avg_rank": None,
+                        "_rank_sum": 0,
+                    },
+                )
+                p.setdefault("podium_gold", 0)
+                p.setdefault("podium_silver", 0)
+                p.setdefault("podium_bronze", 0)
+                if k == "gold":
+                    p["podium_gold"] += 1
+                elif k == "silver":
+                    p["podium_silver"] += 1
+                elif k == "bronze":
+                    p["podium_bronze"] += 1
 
         tournaments.append(
             {
@@ -138,6 +205,7 @@ def compute_draft(db_path: str) -> dict[str, Any]:
                 "notes": str(t["notes"]) if t["notes"] is not None else "",
                 "standings": standings,
                 "playoffs": {"matches": playoff_matches, "champion": champion} if playoff_matches else None,
+                "podium": podium,
             }
         )
 
@@ -154,6 +222,10 @@ def compute_draft(db_path: str) -> dict[str, Any]:
             p["via_avg"] = None
         p["avg_rank"] = float(p["_rank_sum"]) / int(p["tournaments"]) if p["tournaments"] else None
         p.pop("_rank_sum", None)
+        p["podium_gold"] = int(p.get("podium_gold", 0))
+        p["podium_silver"] = int(p.get("podium_silver", 0))
+        p["podium_bronze"] = int(p.get("podium_bronze", 0))
+        p["podium_total"] = p["podium_gold"] + p["podium_silver"] + p["podium_bronze"]
         out_players.append(p)
 
     out_players.sort(key=lambda x: (-float(x["match_win_pct"] or 0.0), x["player"].casefold()))
