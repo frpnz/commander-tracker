@@ -11,6 +11,7 @@ from .site import copy_static_site
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="export_stats", description="Export static stats site (GitHub Pages friendly).")
     ap.add_argument("--db", required=True, help="Path to commander_tracker.sqlite")
+    ap.add_argument("--draft-db", default=None, help="Optional path to draft_tracker.sqlite. If set, also writes docs/data/draft.v1.json")
     ap.add_argument("--docs", default="docs", help="Output docs directory (default: docs)")
     ap.add_argument("--site", default=None, help="Path to frontend/site (default: <repo>/frontend/site)")
     return ap
@@ -49,6 +50,16 @@ def main(argv: list[str] | None = None) -> int:
     schema_src = repo_root / "backend" / "stats.v1.schema.json"
     if schema_src.exists():
         (data_dir / "stats.v1.schema.json").write_text(schema_src.read_text(encoding="utf-8"), encoding="utf-8")
+
+    # Optional: draft export into the same docs output (separate DB for safety)
+    if args.draft_db:
+        try:
+            from draft_stats.compute import compute_draft, write_json  # type: ignore
+        except Exception as e:
+            raise SystemExit(f"Draft export requested but draft_stats not importable: {e}")
+
+        draft_data = compute_draft(str(Path(args.draft_db).resolve()))
+        write_json(draft_data, str(data_dir / "draft.v1.json"))
 
     return 0
 

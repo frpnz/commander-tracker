@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Draft Win Rate</title>
+  <link rel="stylesheet" href="../assets/style.css?v=20260223"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-label="Commander Tracker"></div>
+      <div>
+        <div class="title">Draft</div>
+        <div class="subtitle" id="subtitle">Win rate (Match Win %)</div>
+      </div>
+    </div>
+    <div class="meta" id="meta"></div>
+    <nav class="nav" id="nav"></nav>
+  </header>
+
+  <main class="container">
+    <section class="card filters">
+      <div class="grid2">
+        <label>
+          Torneo
+          <select id="fTournament">
+            <option value="">Tutti i tornei</option>
+          </select>
+        </label>
+        <label>
+          Min match
+          <input id="fMinMatches" type="number" min="3" step="1" value="3" style="width:110px"/>
+        </label>
+      </div>
+      <div class="hint" id="hint"></div>
+    </section>
+
+    <section class="charts">
+      <section class="card">
+        <div class="card-head">
+          <h2 id="chartTitle">Match Win % per player</h2>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="mwpBar" aria-label="Istogramma match win % per player" role="img"></canvas>
+        </div>
+        <div class="muted" style="margin-top:8px; font-size:12px; opacity:.85;">
+          Match Win % = (W + 0.5·D) / match totali. Se selezioni un torneo, la classifica segue l'ordinamento Companion (win, poi VIA%).
+        </div>
+      </section>
+
+      <section class="card" id="playoffCard" style="display:none;">
+        <div class="card-head">
+          <h2>Playoff</h2>
+        </div>
+        <div id="playoffBody" class="muted"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2 id="tableTitle">Dettaglio</h2>
+        </div>
+        <div class="table-wrap">
+          <table id="tbl" class="responsive">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Record</th>
+                <th>Match</th>
+                <th>Match Win %</th>
+                <th>VIA%</th>
+                <th>Tornei</th>
+                <th>Best rank</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <span>Static site per GitHub Pages · Draft DB separato</span>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="../assets/player-colors.js?v=20260204"></script>
+  <script src="../assets/draft.js?v=20260223"></script>
+
+  <script src="../assets/nav-items.js?v=20260223"></script>
+  <script src="../assets/nav.js?v=20260223"></script>
+</body>
+</html>

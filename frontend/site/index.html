@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Tempio's Tracker</title>
   <link rel="stylesheet" href="assets/style.css?v=20260209"/>
+  <script src="assets/nav-items.js?v=20260223"></script>
   <script>
     // Some hosts (or mobile webviews) may open the site at a directory URL without a trailing slash
     // (e.g. /repo instead of /repo/). In that case, relative links like "archive/" can resolve
@@ -67,15 +68,12 @@
         </div>
 
         <div class="hero-actions home-actions" aria-label="Azioni home">
-          <a class="btn" href="archive/">Archivio</a>
-          <a class="btn" href="new-game/">Nuova partita</a>
-          <a class="btn" href="stats/">Stats</a>
-          <a class="btn" href="meta-profile/">Meta Profile</a>
-          <a class="btn" href="bracket-calibration/">Calibrazione</a>
-          <a class="btn" href="metrics/">Metrics</a>
+          <!-- Buttons are generated from assets/nav-items.js to stay consistent with the navbar -->
         </div>
       </div>
     </section>
   </main>
+
+  <script src="assets/home-actions.js?v=20260223"></script>
 </body>
 </html>

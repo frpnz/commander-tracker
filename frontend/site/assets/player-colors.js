@@ -1,16 +1,14 @@
-/* Shared player color mapping (<=12 players)
-   - Very distinct palette for dark UI
-   - Stable across pages via localStorage
-   - Adding new players does NOT change existing players' colors
+/* Shared player color mapping
+   - Deterministic across pages AND across runs (no localStorage / no order-dependence)
+   - Same player name => same color everywhere
+   - If you want manual overrides, define window.PLAYER_COLOR_OVERRIDES before this script.
 */
 
 (function () {
   "use strict";
 
-  const STORAGE_KEY = "commanderTracker.playerColors.v1";
-
-  // 12 highly distinguishable colors (chosen to be visually far apart)
-  // and still readable on a dark background.
+  // 24 distinguishable colors (readable on a dark background).
+  // More colors => fewer collisions when using hashing.
   const PALETTE = [
     "#56B4E9", // sky blue
     "#E69F00", // orange
@@ -24,30 +22,20 @@
     "#7CAE00", // green
     "#C77CFF", // violet
     "#A3A500", // olive
+
+    "#8DD3C7", // teal
+    "#FFFFB3", // pale yellow
+    "#BEBADA", // lavender
+    "#FB8072", // coral
+    "#80B1D3", // light blue
+    "#FDB462", // light orange
+    "#B3DE69", // lime
+    "#FCCDE5", // pink
+    "#BC80BD", // purple
+    "#CCEBC5", // mint
+    "#FFED6F", // sand
+    "#9AD0F5", // soft azure
   ];
-
-  function safeParse(json, fallback) {
-    try {
-      const v = JSON.parse(json);
-      return v && typeof v === "object" ? v : fallback;
-    } catch {
-      return fallback;
-    }
-  }
-
-  function loadMap() {
-    const raw = window.localStorage ? window.localStorage.getItem(STORAGE_KEY) : null;
-    return raw ? safeParse(raw, {}) : {};
-  }
-
-  function saveMap(map) {
-    if (!window.localStorage) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
-    } catch {
-      // ignore quota / private-mode errors
-    }
-  }
 
   function normalizeName(name) {
     return String(name || "").trim().toLowerCase();
@@ -62,33 +50,20 @@
     return h >>> 0;
   }
 
-  function pickFirstFreeIndex(map) {
-    const used = new Set(Object.values(map).map((x) => Number(x)));
-    for (let i = 0; i < PALETTE.length; i++) {
-      if (!used.has(i)) return i;
-    }
-    return null;
-  }
-
   function getColorForPlayer(playerName) {
     const key = normalizeName(playerName);
     if (!key) return "#9CA3AF";
 
-    const map = loadMap();
-    if (Object.prototype.hasOwnProperty.call(map, key)) {
-      const idx = Number(map[key]);
-      return PALETTE[(idx % PALETTE.length + PALETTE.length) % PALETTE.length];
+    // Optional manual overrides
+    const overrides = (window.PLAYER_COLOR_OVERRIDES && typeof window.PLAYER_COLOR_OVERRIDES === "object")
+      ? window.PLAYER_COLOR_OVERRIDES
+      : null;
+    if (overrides && Object.prototype.hasOwnProperty.call(overrides, key)) {
+      return String(overrides[key]);
     }
 
-    // Assign a free color if available (keeps colors unique up to 12 players)
-    let idx = pickFirstFreeIndex(map);
-    if (idx === null) {
-      // Fallback: deterministic hash (collisions possible only if >12 players)
-      idx = djb2(key) % PALETTE.length;
-    }
-
-    map[key] = idx;
-    saveMap(map);
+    // Fully deterministic: hash(name) -> palette index
+    const idx = djb2(key) % PALETTE.length;
     return PALETTE[idx];
   }
 

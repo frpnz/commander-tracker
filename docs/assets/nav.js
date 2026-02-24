@@ -53,11 +53,13 @@
       });
     }
 
-    var items = [
+    // Single source of truth (preferred): assets/nav-items.js
+    // Fallback to a default list for robustness.
+    var items = (window.NAV_ITEMS && window.NAV_ITEMS.slice && window.NAV_ITEMS.slice()) || [
       { key: "home", path: "", label: "Home" },
       { key: "archive", path: "archive/", label: "Archivio" },
       { key: "stats", path: "stats/", label: "Stats" },
-                  { key: "meta-profile", path: "meta-profile/", label: "Meta Profile" },
+      { key: "meta-profile", path: "meta-profile/", label: "Meta Profile" },
       { key: "bracket-calibration", path: "bracket-calibration/", label: "Calibrazione" },
       { key: "new-game", path: "new-game/", label: "Nuova partita" },
       { key: "metrics", path: "metrics/", label: "Metrics" }
