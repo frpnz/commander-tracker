@@ -809,15 +809,45 @@ nav {
   scrollbar-width: none;
 }
 
-/* --- Navbar scroll fade hint --- */
-nav {
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    black 16px,
-    black calc(100% - 16px),
-    transparent 100%
-  );
+/*
+  Mobile fix: when the nav scroller sits inside a flex row (the topbar-right area),
+  some mobile browsers can fail to scroll because the flex item refuses to shrink
+  (default min-width:auto). Constrain it only on small screens so desktop layout
+  stays unchanged.
+*/
+@media (max-width: 860px){
+  .topbar-right{min-width:0;}
+  .topbar-right nav#nav{
+    min-width:0;
+    max-width:100%;
+    flex: 1 1 auto;
+    touch-action: pan-x;
+  }
+}
+
+/* --- Navbar scroll fade hint ---
+   NOTE: iOS Safari has long-standing bugs where applying CSS mask-image
+   to an overflow-x scrolling element can prevent horizontal scrolling.
+   We therefore enable the fade hint only on devices with a fine pointer
+   (desktop/laptop), where this issue doesn't occur.
+*/
+@media (hover:hover) and (pointer:fine){
+  nav{
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 16px,
+      black calc(100% - 16px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 16px,
+      black calc(100% - 16px),
+      transparent 100%
+    );
+  }
 }
 
 
