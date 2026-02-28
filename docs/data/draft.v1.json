@@ -31,11 +31,11 @@
           "record": {
             "w": 2,
             "l": 1,
-            "d": 7
+            "d": 0
           },
-          "matches": 10,
-          "match_win_pct": 0.55,
-          "via_pct": 7.8,
+          "matches": 3,
+          "match_win_pct": 0.6666666666666666,
+          "via_pct": 77.8,
           "rank": 2
         },
         {
@@ -156,6 +156,23 @@
       "podium_total": 0
     },
     {
+      "player": "Ivan",
+      "tournaments": 1,
+      "matches": 3,
+      "wins": 2,
+      "losses": 1,
+      "draws": 0,
+      "match_win_pct": 0.6666666666666666,
+      "via_avg": 77.8,
+      "via_n": 1,
+      "best_rank": 2,
+      "avg_rank": 2.0,
+      "podium_gold": 0,
+      "podium_silver": 1,
+      "podium_bronze": 0,
+      "podium_total": 1
+    },
+    {
       "player": "Teo",
       "tournaments": 1,
       "matches": 3,
@@ -170,23 +187,6 @@
       "podium_gold": 0,
       "podium_silver": 0,
       "podium_bronze": 1,
-      "podium_total": 1
-    },
-    {
-      "player": "Ivan",
-      "tournaments": 1,
-      "matches": 10,
-      "wins": 2,
-      "losses": 1,
-      "draws": 7,
-      "match_win_pct": 0.55,
-      "via_avg": 7.8,
-      "via_n": 1,
-      "best_rank": 2,
-      "avg_rank": 2.0,
-      "podium_gold": 0,
-      "podium_silver": 1,
-      "podium_bronze": 0,
       "podium_total": 1
     },
     {
