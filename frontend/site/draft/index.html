@@ -35,6 +35,13 @@
           Min match
           <input id="fMinMatches" type="number" min="3" step="1" value="3" style="width:110px"/>
         </label>
+        <label>
+          Ordina aggregato
+          <select id="fAggSort">
+            <option value="match_win_pct" selected>Match Win %</option>
+            <option value="best_rank">Best rank</option>
+          </select>
+        </label>
       </div>
       <div class="hint" id="hint"></div>
     </section>
@@ -114,7 +121,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="../assets/player-color-overrides.js"></script>
   <script src="../assets/player-colors.js?v=20260204"></script>
-  <script src="../assets/draft.js?v=20260223"></script>
+  <script src="../assets/draft.js?v=20260228_4"></script>
 
   <script src="../assets/nav-items.js?v=20260223"></script>
   <script src="../assets/nav.js?v=20260223"></script>

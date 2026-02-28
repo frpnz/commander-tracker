@@ -55,6 +55,12 @@ def parse_form(body: bytes) -> dict[str, str]:
     return {k: (v[0] if v else "") for k, v in data.items()}
 
 
+def parse_form_multi(body: bytes) -> dict[str, list[str]]:
+    """Parse application/x-www-form-urlencoded keeping multiple values per key."""
+    data = urllib.parse.parse_qs(body.decode("utf-8"), keep_blank_values=True)
+    return {k: [str(x) for x in (v or [])] for k, v in data.items()}
+
+
 def now_iso() -> str:
     return datetime.now().replace(microsecond=0).isoformat(sep=" ")
 
@@ -278,6 +284,7 @@ def nav() -> str:
         '<div class="nav">'
         '<a href="/draft/tournaments">Draft tornei</a>'
         '<a href="/draft/import">Import Companion</a>'
+        '<a href="/draft/players">Player</a>'
         "</div>"
     )
 
@@ -322,6 +329,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/draft/import":
             return self._get_import(qs)
 
+        if path == "/draft/players":
+            return self._get_players(qs)
+
         self._send(404, "text/html", page("404", nav() + "<p>Not found.</p>"))
 
     def do_POST(self):
@@ -334,13 +344,116 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/draft/tournaments/create":
             return self._post_create_tournament(form)
 
+        if path == "/draft/tournament/update":
+            return self._post_update_tournament(form)
+
+        if path == "/draft/standing/replace":
+            return self._post_replace_standings(form)
+
+        if path == "/draft/playoffs/replace":
+            return self._post_replace_playoffs(form)
+
         if path == "/draft/tournament/delete":
             return self._post_delete_tournament(form)
 
         if path == "/draft/import":
             return self._post_import(form)
 
+        if path == "/draft/player/rename":
+            return self._post_rename_player(form)
+
         self._send(404, "text/html", page("404", nav() + "<p>Not found.</p>"))
+
+    def _get_players(self, qs: dict[str, str]) -> None:
+        with db() as conn:
+            players = [
+                r["player"]
+                for r in conn.execute(
+                    """
+                    SELECT player FROM (
+                      SELECT player AS player FROM standing
+                      UNION
+                      SELECT player_a AS player FROM playoff_match
+                      UNION
+                      SELECT player_b AS player FROM playoff_match
+                      UNION
+                      SELECT winner AS player FROM playoff_match
+                    )
+                    WHERE player IS NOT NULL AND TRIM(player) <> ''
+                    GROUP BY LOWER(player)
+                    ORDER BY LOWER(player)
+                    """
+                ).fetchall()
+            ]
+
+        body = nav() + render_flash(qs) + (
+            '<div class="card">'
+            '<h2 style="margin:0 0 8px">Rinomina player (globale)</h2>'
+            '<div class="muted">Aggiorna il nome del player in <code>standing</code> e nei <code>playoff_match</code> (player_a / player_b / winner).</div>'
+            '<form method="POST" action="/draft/player/rename" style="margin-top:12px">'
+            '<label>Player attuale</label>'
+            '<input name="old_player" list="players" placeholder="Seleziona o scrivi..." required />'
+            '<datalist id="players">'
+            + "".join([f'<option value="{esc(p)}"></option>' for p in players])
+            + '</datalist>'
+            '<label>Nuovo nome</label>'
+            '<input name="new_player" placeholder="Nuovo nome player" required />'
+            '<div class="btn-row" style="margin-top:12px">'
+            '<button class="primary" type="submit" onclick="return confirm(\'Applicare la rinomina su tutto il DB draft?\')">Rinomina</button>'
+            '</div>'
+            '</form>'
+            '</div>'
+        )
+
+        self._send(200, "text/html", page("Player", body))
+
+    def _post_rename_player(self, form: dict[str, str]) -> None:
+        oldp = (form.get("old_player") or "").strip()
+        newp = (form.get("new_player") or "").strip()
+
+        if not oldp or not newp:
+            return self._redirect(
+                "/draft/players?kind=err&msg="
+                + urllib.parse.quote("Inserisci sia il player attuale sia il nuovo nome")
+            )
+
+        if oldp.casefold() == newp.casefold():
+            return self._redirect(
+                "/draft/players?kind=err&msg="
+                + urllib.parse.quote("Il nuovo nome è uguale al vecchio (ignorando maiuscole/minuscole)")
+            )
+
+        with db() as conn:
+            conn.execute("BEGIN")
+            cur = conn.cursor()
+            # Standings
+            cur.execute(
+                "UPDATE standing SET player = ? WHERE player = ? COLLATE NOCASE",
+                (newp, oldp),
+            )
+            n_standing = cur.rowcount
+
+            # Playoffs
+            cur.execute(
+                "UPDATE playoff_match SET player_a = ? WHERE player_a = ? COLLATE NOCASE",
+                (newp, oldp),
+            )
+            n_a = cur.rowcount
+            cur.execute(
+                "UPDATE playoff_match SET player_b = ? WHERE player_b = ? COLLATE NOCASE",
+                (newp, oldp),
+            )
+            n_b = cur.rowcount
+            cur.execute(
+                "UPDATE playoff_match SET winner = ? WHERE winner = ? COLLATE NOCASE",
+                (newp, oldp),
+            )
+            n_w = cur.rowcount
+
+            conn.commit()
+
+        msg = f"Rinominato '{oldp}' → '{newp}'. standing: {n_standing}, playoff a/b/w: {n_a}/{n_b}/{n_w}"
+        self._redirect("/draft/players?kind=ok&msg=" + urllib.parse.quote(msg))
 
     def _get_tournaments(self, qs: dict[str, str]) -> None:
         conn = db()
@@ -416,6 +529,13 @@ class Handler(BaseHTTPRequestHandler):
                 f"<tr><td>{i}</td><td>{esc(r['player'])}</td><td><code>{esc(rec)}</code></td><td>{esc(via)}</td></tr>"
             )
 
+        standings_text = "\n".join(
+            [
+                f"{r['player']}\t{int(r['wins'])}-{int(r['losses'])}-{int(r['draws'])}\t{(float(r['via_pct']) if r['via_pct'] is not None else 0):.2f}%"
+                for r in rows
+            ]
+        )
+
         po_rows = conn.execute(
             """
             SELECT stage, player_a, player_b, winner
@@ -427,6 +547,7 @@ class Handler(BaseHTTPRequestHandler):
         ).fetchall()
 
         po_lines: list[str] = []
+        po_edit_lines: list[str] = []
         for r in po_rows:
             stage = str(r["stage"]).strip().upper()
             a = esc(str(r["player_a"]))
@@ -434,12 +555,63 @@ class Handler(BaseHTTPRequestHandler):
             w = esc(str(r["winner"]))
             label = "SF" if stage == "SF" else "F" if stage == "F" else stage
             po_lines.append(f"<li><code>{label}</code> {a} vs {b} → <strong>{w}</strong></li>")
+            po_edit_lines.append(f"{label}: {str(r['player_a'])} vs {str(r['player_b'])} -> {str(r['winner'])}")
         po_html = ""
         if po_lines:
             po_html = (
                 "<h3>Playoff</h3>"
                 "<ul style='margin: 8px 0 0 18px'>" + "".join(po_lines) + "</ul>"
             )
+
+        po_edit_text = "\n".join(po_edit_lines)
+
+        edit_html = (
+            "<div class='card' style='margin-top:14px'>"
+            "<h3 style='margin:0 0 10px'>Modifica torneo</h3>"
+            "<form method='POST' action='/draft/tournament/update'>"
+            f"<input type='hidden' name='id' value='{tid}'>"
+            "<label>Data / ora</label>"
+            f"<input type='datetime-local' name='played_at' value='{esc(iso_to_dtlocal(t['played_at']))}'>"
+            "<label>Nome</label>"
+            f"<input name='name' value='{esc(t['name'])}'>"
+            "<label>Formato</label>"
+            f"<input name='format' value='{esc(t['format'])}'>"
+            "<label>Rounds (opzionale)</label>"
+            f"<input name='rounds' value='{esc(str(t['rounds'] or ''))}'>"
+            "<label>Note (opzionale)</label>"
+            f"<textarea name='notes' rows='3'>{esc(t['notes'] or '')}</textarea>"
+            "<div class='btn-row' style='margin-top:12px'>"
+            "<button class='primary' type='submit'>Salva torneo</button>"
+            "</div>"
+            "</form>"
+            "</div>"
+
+            "<div class='card' style='margin-top:14px'>"
+            "<h3 style='margin:0 0 10px'>Modifica standings (sovrascrive)</h3>"
+            "<p class='muted'>Formato atteso: <code>Nome</code> <code>W-L-D</code> <code>VIA%</code> (spazi o tab). Ogni salvataggio sostituisce tutte le righe.</p>"
+            "<form method='POST' action='/draft/standing/replace'>"
+            f"<input type='hidden' name='tournament_id' value='{tid}'>"
+            "<label>Standings</label>"
+            f"<textarea name='standings_text' rows='10' style='font-family: ui-monospace, SFMono-Regular, Menlo, monospace'>{esc(standings_text)}</textarea>"
+            "<div class='btn-row' style='margin-top:12px'>"
+            "<button class='primary' type='submit'>Salva standings</button>"
+            "</div>"
+            "</form>"
+            "</div>"
+
+            "<div class='card' style='margin-top:14px'>"
+            "<h3 style='margin:0 0 10px'>Modifica playoff (sovrascrive)</h3>"
+            "<p class='muted'>Esempi: <code>SF: Fra &gt; Teo</code> oppure <code>F: Fra vs Giamma -&gt; Fra</code>. Ogni salvataggio sostituisce tutti i match.</p>"
+            "<form method='POST' action='/draft/playoffs/replace'>"
+            f"<input type='hidden' name='tournament_id' value='{tid}'>"
+            "<label>Playoff</label>"
+            f"<textarea name='playoffs_text' rows='5' style='font-family: ui-monospace, SFMono-Regular, Menlo, monospace'>{esc(po_edit_text)}</textarea>"
+            "<div class='btn-row' style='margin-top:12px'>"
+            "<button class='primary' type='submit'>Salva playoff</button>"
+            "</div>"
+            "</form>"
+            "</div>"
+        )
 
         body = (
             nav()
@@ -459,8 +631,91 @@ class Handler(BaseHTTPRequestHandler):
             + "<button type='submit'>Elimina torneo</button>"
             + "</form>"
             + "</div>"
+            + edit_html
         )
         self._send(200, "text/html", page("Torneo", body))
+
+    def _post_update_tournament(self, form: dict[str, str]) -> None:
+        tid = int((form.get("id") or "0").strip() or 0)
+        if not tid:
+            return self._redirect("/draft/tournaments?kind=err&msg=" + urllib.parse.quote("ID torneo mancante"))
+
+        name = (form.get("name") or "").strip()
+        played_at = (form.get("played_at") or "").strip()
+        fmt = (form.get("format") or "Draft").strip() or "Draft"
+        rounds_s = (form.get("rounds") or "").strip()
+        notes = (form.get("notes") or "").strip()
+
+        if not name:
+            return self._redirect(f"/draft/tournament?id={tid}&kind=err&msg=" + urllib.parse.quote("Nome mancante"))
+
+        try:
+            played_at_iso = dtlocal_to_iso(played_at) if played_at else now_iso()
+        except Exception:
+            return self._redirect(f"/draft/tournament?id={tid}&kind=err&msg=" + urllib.parse.quote("Data/ora non valida"))
+
+        rounds = None
+        if rounds_s:
+            try:
+                rounds = int(rounds_s)
+            except ValueError:
+                return self._redirect(f"/draft/tournament?id={tid}&kind=err&msg=" + urllib.parse.quote("Rounds deve essere un intero"))
+
+        conn = db()
+        conn.execute(
+            "UPDATE tournament SET played_at=?, name=?, format=?, rounds=?, notes=? WHERE id=?",
+            (played_at_iso, name, fmt, rounds, notes, tid),
+        )
+        conn.commit()
+        self._redirect(f"/draft/tournament?id={tid}&kind=ok&msg=" + urllib.parse.quote("Torneo aggiornato"))
+
+    def _post_replace_standings(self, form: dict[str, str]) -> None:
+        tid_s = (form.get("tournament_id") or "").strip()
+        text = (form.get("standings_text") or "").strip()
+        if not tid_s:
+            return self._redirect("/draft/tournaments?kind=err&msg=" + urllib.parse.quote("Seleziona un torneo"))
+        tid = int(tid_s)
+        if not text:
+            return self._redirect(f"/draft/tournament?id={tid}&kind=err&msg=" + urllib.parse.quote("Standings vuoti"))
+
+        try:
+            rows = parse_companion_text(text)
+        except Exception as e:
+            return self._redirect(f"/draft/tournament?id={tid}&kind=err&msg=" + urllib.parse.quote(str(e)))
+
+        conn = db()
+        conn.execute("DELETE FROM standing WHERE tournament_id = ?", (tid,))
+        for r in rows:
+            conn.execute(
+                "INSERT INTO standing(tournament_id, player, wins, losses, draws, via_pct) VALUES(?,?,?,?,?,?)",
+                (tid, r["player"], r["w"], r["l"], r["d"], r["via_pct"]),
+            )
+        conn.commit()
+        self._redirect(f"/draft/tournament?id={tid}&kind=ok&msg=" + urllib.parse.quote("Standings aggiornati"))
+
+    def _post_replace_playoffs(self, form: dict[str, str]) -> None:
+        tid_s = (form.get("tournament_id") or "").strip()
+        text = (form.get("playoffs_text") or "").strip()
+        if not tid_s:
+            return self._redirect("/draft/tournaments?kind=err&msg=" + urllib.parse.quote("Seleziona un torneo"))
+        tid = int(tid_s)
+
+        matches = []
+        if text:
+            try:
+                matches = parse_playoffs_text(text)
+            except Exception as e:
+                return self._redirect(f"/draft/tournament?id={tid}&kind=err&msg=" + urllib.parse.quote(str(e)))
+
+        conn = db()
+        conn.execute("DELETE FROM playoff_match WHERE tournament_id = ?", (tid,))
+        for m in matches:
+            conn.execute(
+                "INSERT INTO playoff_match(tournament_id, stage, player_a, player_b, winner) VALUES(?,?,?,?,?)",
+                (tid, m["stage"], m["player_a"], m["player_b"], m["winner"]),
+            )
+        conn.commit()
+        self._redirect(f"/draft/tournament?id={tid}&kind=ok&msg=" + urllib.parse.quote("Playoff aggiornati"))
 
     def _get_import(self, qs: dict[str, str]) -> None:
         conn = db()

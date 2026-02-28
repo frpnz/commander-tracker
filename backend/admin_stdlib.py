@@ -213,6 +213,7 @@ def page(title: str, body: str) -> str:
   <div class="nav">
     <a href="/admin/games">Partite</a>
     <a href="/admin/brackets">Tool Bracket</a>
+    <a href="/admin/players">Player</a>
     <span class="muted">DB: <code>{esc(DB_PATH)}</code></span>
   </div>
   {body}
@@ -255,6 +256,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/admin/games/import_json":
             return self._get_import_json(query)
 
+        if path == "/admin/players":
+            return self._get_players(query)
+
         # Admin UI helpers (JSON)
         if path == "/admin/api/bracket_suggestions":
             return self._get_api_bracket_suggestions(query)
@@ -288,6 +292,9 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/admin/games/import_json":
             return self._post_game_import_json(form)
+
+        if path == "/admin/player/rename":
+            return self._post_rename_player(form)
 
         if path.startswith("/admin/games/") and path.endswith("/update"):
             parts = path.strip("/").split("/")
@@ -1370,6 +1377,91 @@ class Handler(BaseHTTPRequestHandler):
         return self._redirect(
             f"/admin/brackets?updated={changed}&msg={urllib.parse.quote(msg)}"
         )
+
+    def _get_players(self, query: dict[str, list[str]]) -> None:
+        msg = (query.get("msg", [""])[0] or "").strip()
+        kind = (query.get("kind", [""])[0] or "").strip()
+
+        with db() as conn:
+            players = [
+                r["player"]
+                for r in conn.execute(
+                    """
+                    SELECT player FROM (
+                      SELECT player AS player FROM gameentry
+                      UNION
+                      SELECT winner_player AS player FROM game
+                    )
+                    WHERE player IS NOT NULL AND TRIM(player) <> ''
+                    GROUP BY LOWER(player)
+                    ORDER BY LOWER(player)
+                    """
+                ).fetchall()
+            ]
+
+        flash = ""
+        if msg:
+            cls = "flash " + ("ok" if kind == "ok" else "err" if kind == "err" else "")
+            flash = f'<div class="{cls}">{esc(msg)}</div>'
+
+        body = (
+            flash
+            + '<div class="card">'
+            + '<h1 style="margin:0 0 8px">Rinomina player (globale)</h1>'
+            + '<div class="muted">Aggiorna il nome del player in <code>gameentry.player</code> e in <code>game.winner_player</code>.</div>'
+            + '<form method="POST" action="/admin/player/rename" style="margin-top:12px">'
+            + '<label>Player attuale</label>'
+            + '<input name="old_player" list="players" placeholder="Seleziona o scrivi..." required />'
+            + '<datalist id="players">'
+            + "".join([f'<option value="{esc(p)}"></option>' for p in players])
+            + '</datalist>'
+            + '<label>Nuovo nome</label>'
+            + '<input name="new_player" placeholder="Nuovo nome player" required />'
+            + '<div class="btn-row" style="margin-top:12px">'
+            + '<button class="primary" type="submit" onclick="return confirm(\'Applicare la rinomina su tutto il DB commander?\')">Rinomina</button>'
+            + '</div>'
+            + '</form>'
+            + '</div>'
+        )
+
+        return self._send_html(page("Player", body))
+
+    def _post_rename_player(self, form: dict[str, str]) -> None:
+        oldp = (form.get("old_player") or "").strip()
+        newp = (form.get("new_player") or "").strip()
+
+        if not oldp or not newp:
+            return self._redirect(
+                "/admin/players?kind=err&msg="
+                + urllib.parse.quote("Inserisci sia il player attuale sia il nuovo nome")
+            )
+
+        if oldp.casefold() == newp.casefold():
+            return self._redirect(
+                "/admin/players?kind=err&msg="
+                + urllib.parse.quote("Il nuovo nome è uguale al vecchio (ignorando maiuscole/minuscole)")
+            )
+
+        with db() as conn:
+            conn.execute("BEGIN")
+            cur = conn.cursor()
+
+            cur.execute(
+                "UPDATE gameentry SET player = ? WHERE player = ? COLLATE NOCASE",
+                (newp, oldp),
+            )
+            n_entries = cur.rowcount
+
+            cur.execute(
+                "UPDATE game SET winner_player = ? WHERE winner_player = ? COLLATE NOCASE",
+                (newp, oldp),
+            )
+            n_winners = cur.rowcount
+
+            conn.commit()
+
+        msg = f"Rinominato '{oldp}' → '{newp}'. entries: {n_entries}, winners: {n_winners}"
+        return self._redirect("/admin/players?kind=ok&msg=" + urllib.parse.quote(msg))
 
 
 def main() -> None:

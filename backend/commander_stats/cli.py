@@ -93,6 +93,7 @@ def main(argv: list[str] | None = None) -> int:
     if schema_src.exists():
         (data_dir / "stats.v1.schema.json").write_text(schema_src.read_text(encoding="utf-8"), encoding="utf-8")
 
+    draft_data = None
     # Optional: draft export into the same docs output (separate DB for safety)
     if args.draft_db:
         try:
@@ -102,6 +103,22 @@ def main(argv: list[str] | None = None) -> int:
 
         draft_data = compute_draft(str(Path(args.draft_db).resolve()))
         write_json(draft_data, str(data_dir / "draft.v1.json"))
+
+    # --- Player color overrides (static mapping shared across pages) ---
+    # Draft, Stats, Meta-profile, etc. all read window.PLAYER_COLOR_OVERRIDES (if present).
+    # This keeps player colors consistent across the whole site and across runs.
+    commander_players = [str(r.get("player") or "").strip() for r in (stats.get("by_player") or []) if isinstance(r, dict)]
+    draft_players = []
+    if isinstance(draft_data, dict):
+        dp = draft_data.get("by_player")
+        if isinstance(dp, dict):
+            draft_players = [str(k).strip() for k in dp.keys() if str(k).strip()]
+        elif isinstance(dp, list):
+            # future-proofing in case schema changes
+            draft_players = [str(r.get("player") or "").strip() for r in dp if isinstance(r, dict)]
+
+    overrides = _build_player_color_overrides(commander_players, draft_players)
+    _write_player_color_overrides_js(overrides, docs_dir / "assets" / "player-color-overrides.js")
 
     return 0
 
