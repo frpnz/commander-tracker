@@ -628,6 +628,48 @@ tbody tr:hover td{background: rgba(110,231,255,.06)}
   }
   tbody tr:hover td{background: transparent}
 
+  /* Draft: keep podium table as a compact grid (no per-player cards, no horizontal scroll) */
+  #podiumTbl{min-width:0; width:100%; table-layout:fixed; border-spacing:0}
+  #podiumTbl thead{display:block}
+  #podiumTbl thead tr,
+  #podiumTbl tbody tr{
+    display:grid;
+    grid-template-columns:
+      minmax(120px, 1.55fr)  /* Player */
+      minmax(34px, 0.45fr)   /* Gold */
+      minmax(34px, 0.45fr)   /* Silver */
+      minmax(34px, 0.45fr)   /* Bronze */
+      minmax(38px, 0.50fr);  /* Total */
+    column-gap:8px;
+    align-items:center;
+  }
+  #podiumTbl thead tr{
+    padding:8px 12px;
+    border-bottom:1px solid var(--border);
+  }
+  #podiumTbl tbody tr{
+    padding:8px 12px;
+    border-radius:14px;
+    background: rgba(11,16,32,.22);
+    border:1px solid rgba(255,255,255,.08);
+    margin-bottom:8px;
+  }
+  #podiumTbl thead th,
+  #podiumTbl tbody td{
+    padding:0;
+    border:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #podiumTbl tbody td{display:block}
+  #podiumTbl tbody td::before{content:none}
+  #podiumTbl thead th:nth-child(n+2),
+  #podiumTbl tbody td:nth-child(n+2){
+    text-align:center;
+    font-variant-numeric: tabular-nums;
+  }
+
   .recent-table-wrap{overflow:visible}
   .recent-table{min-width:0; border-collapse:separate; border-spacing:0 10px}
   .recent-table thead{display:none}
