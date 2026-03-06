@@ -288,7 +288,7 @@ function getPeriodLabel(games){
              max: axisX,
             title: {
               display: !isMobile(),
-              text: "MDI (normalizzato)  ← sotto tavolo | sopra tavolo →",
+              text: "Pressione  ← sotto tavolo | sopra tavolo →",
               color: "#aab3d3",
             },
             ticks: { color: "#aab3d3", display: false, maxTicksLimit: isMobile() ? 5 : 7 },
@@ -299,7 +299,7 @@ function getPeriodLabel(games){
              max: axisY,
             title: {
               display: !isMobile(),
-              text: "OEWR_Z (z-score vs attesa)  ← sotto attesa | sopra attesa →",
+              text: "Conversione in vittorie  ← sotto attesa | sopra attesa →",
               color: "#aab3d3",
             },
             ticks: { color: "#aab3d3", display: false, maxTicksLimit: isMobile() ? 5 : 7 },

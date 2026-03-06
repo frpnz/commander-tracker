@@ -10,7 +10,7 @@ from .site import copy_static_site
 
 # Keep in sync with frontend/site/assets/player-colors.js
 _COLOR_PALETTE = [
-  "#56B4E9","#E69F00","#009E73","#F0E442","#0072B2","#D55E00","#CC79A7","#00BFC4",
+  "#56B4E9","#E69F00","#009E73","#F0E442","#0072B2","#F8766D","#CC79A7","#00BFC4",
   "#F8766D","#7CAE00","#C77CFF","#A3A500","#8DD3C7","#FFFFB3","#BEBADA","#FB8072",
   "#80B1D3","#FDB462","#B3DE69","#FCCDE5","#BC80BD","#CCEBC5","#FFED6F","#9AD0F5",
 ]
