@@ -1,6 +1,6 @@
 # README – Advanced Overview
 
-Questo documento fornisce una descrizione **approfondita** dell’applicazione di tracking e analytics per partite di Commander (Magic), includendo architettura, flussi dati e funzionalità dettagliate.  
+Questo documento fornisce una descrizione **approfondita** dell’applicazione di tracking e analytics per partite di Commander e Draft (Magic), includendo architettura, flussi dati e funzionalità dettagliate.  
 È pensato come complemento al README principale.
 
 ---
@@ -9,7 +9,7 @@ Questo documento fornisce una descrizione **approfondita** dell’applicazione d
 
 L’applicazione è composta da tre parti principali:
 
-1. **Database SQLite** per la persistenza dei dati delle partite  
+1. **Database SQLite** separati per la persistenza dei dati (Commander + Draft)  
 2. **Backend Python** per amministrazione locale e generazione statistiche  
 3. **Frontend statico HTML/JS** per la visualizzazione (hosting statico, es. GitHub Pages)
 
@@ -24,13 +24,19 @@ Il flusso tipico è:
 ```
 .
 ├── data/
-│   └── commander_tracker.sqlite
+│   ├── commander_tracker.sqlite
+│   └── draft_tracker.sqlite
 ├── backend/
 │   ├── commander_stats/
 │   │   ├── cli.py
 │   │   ├── compute.py
 │   │   ├── site.py
 │   │   └── admin_stdlib.py
+│   ├── draft_stats/
+│   │   ├── cli.py
+│   │   ├── compute.py
+│   │   └── db.py
+│   ├── admin_draft_stdlib.py
 │   └── export_stats.py
 ├── frontend/
 │   └── site/
@@ -106,6 +112,20 @@ POST /admin/brackets/rename_commander
 GET  /admin/api/bracket_suggestions
 ```
 
+### 1.b Admin Draft (stdlib + CLI)
+
+Oltre all’admin UI Commander, esiste un layer admin separato per il dominio Draft:
+
+- `backend/admin_draft_stdlib.py` (funzioni riutilizzabili)
+- `backend/draft_stats/cli.py` (entrypoint CLI)
+
+Esempio:
+
+```bash
+python -m backend.draft_stats --help
+```
+
+
 ---
 
 ### 2. Generazione statistiche
@@ -120,7 +140,8 @@ Responsabilità:
 - output JSON deterministico
 
 #### Output
-- `stats.v1.json`
+- `stats.v1.json` (Commander)
+- `draft.v1.json` (Draft)
 - `stats.v1.schema.json`
 
 ---
@@ -134,6 +155,13 @@ Funzioni:
 - generazione cartella `docs/`
 - inserimento dati JSON
 - pronto per GitHub Pages o hosting statico
+
+Comando completo (Commander + Draft):
+
+```bash
+python backend/export_stats.py --db data/commander_tracker.sqlite --draft-db data/draft_tracker.sqlite --docs docs
+```
+
 
 ---
 
