@@ -1,112 +1,11 @@
 {
   "schema": "draft.v1",
-  "generated_utc": "2026-03-12T00:00:00Z",
+  "generated_utc": "2026-02-28T03:49:00Z",
   "counts": {
-    "tournaments": 2,
+    "tournaments": 1,
     "players": 8
   },
   "tournaments": [
-    {
-      "id": 4,
-      "played_at": "2026-03-12 00:00:00",
-      "name": "Matti's cube",
-      "format": "Draft",
-      "rounds": null,
-      "notes": "",
-      "standings": [
-        {
-          "player": "Matti",
-          "record": {
-            "w": 3,
-            "l": 0,
-            "d": 0
-          },
-          "matches": 3,
-          "match_win_pct": 1.0,
-          "via_pct": 48.1,
-          "rank": 1
-        },
-        {
-          "player": "Giamma",
-          "record": {
-            "w": 2,
-            "l": 1,
-            "d": 0
-          },
-          "matches": 3,
-          "match_win_pct": 0.6666666666666666,
-          "via_pct": 66.7,
-          "rank": 2
-        },
-        {
-          "player": "Teo",
-          "record": {
-            "w": 2,
-            "l": 1,
-            "d": 0
-          },
-          "matches": 3,
-          "match_win_pct": 0.6666666666666666,
-          "via_pct": 50.0,
-          "rank": 3
-        },
-        {
-          "player": "Stanka",
-          "record": {
-            "w": 1,
-            "l": 1,
-            "d": 1
-          },
-          "matches": 3,
-          "match_win_pct": 0.5,
-          "via_pct": 59.3,
-          "rank": 4
-        },
-        {
-          "player": "Lori",
-          "record": {
-            "w": 1,
-            "l": 1,
-            "d": 1
-          },
-          "matches": 3,
-          "match_win_pct": 0.5,
-          "via_pct": 38.9,
-          "rank": 5
-        },
-        {
-          "player": "Fra",
-          "record": {
-            "w": 1,
-            "l": 2,
-            "d": 0
-          },
-          "matches": 3,
-          "match_win_pct": 0.3333333333333333,
-          "via_pct": 66.7,
-          "rank": 6
-        },
-        {
-          "player": "Da",
-          "record": {
-            "w": 1,
-            "l": 2,
-            "d": 0
-          },
-          "matches": 3,
-          "match_win_pct": 0.3333333333333333,
-          "via_pct": 63.0,
-          "rank": 7
-        }
-      ],
-      "playoffs": null,
-      "podium": {
-        "gold": "Matti",
-        "silver": "Giamma",
-        "bronze": "Teo",
-        "method": "standings"
-      }
-    },
     {
       "id": 3,
       "played_at": "2026-02-28 03:49:00",
@@ -224,37 +123,37 @@
   "by_player": [
     {
       "player": "Matti",
-      "tournaments": 2,
-      "matches": 6,
-      "wins": 6,
+      "tournaments": 1,
+      "matches": 3,
+      "wins": 3,
       "losses": 0,
       "draws": 0,
       "match_win_pct": 1.0,
-      "via_avg": 46.25,
-      "via_n": 2,
+      "via_avg": 44.4,
+      "via_n": 1,
       "best_rank": 1,
       "avg_rank": 1.0,
-      "podium_gold": 2,
+      "podium_gold": 1,
       "podium_silver": 0,
       "podium_bronze": 0,
-      "podium_total": 2
+      "podium_total": 1
     },
     {
       "player": "Giamma",
-      "tournaments": 2,
-      "matches": 6,
-      "wins": 4,
-      "losses": 2,
+      "tournaments": 1,
+      "matches": 3,
+      "wins": 2,
+      "losses": 1,
       "draws": 0,
       "match_win_pct": 0.6666666666666666,
-      "via_avg": 55.55,
-      "via_n": 2,
-      "best_rank": 2,
-      "avg_rank": 3.0,
+      "via_avg": 44.4,
+      "via_n": 1,
+      "best_rank": 4,
+      "avg_rank": 4.0,
       "podium_gold": 0,
-      "podium_silver": 1,
+      "podium_silver": 0,
       "podium_bronze": 0,
-      "podium_total": 1
+      "podium_total": 0
     },
     {
       "player": "Ivan",
@@ -275,66 +174,49 @@
     },
     {
       "player": "Teo",
-      "tournaments": 2,
-      "matches": 6,
-      "wins": 4,
-      "losses": 2,
+      "tournaments": 1,
+      "matches": 3,
+      "wins": 2,
+      "losses": 1,
       "draws": 0,
       "match_win_pct": 0.6666666666666666,
-      "via_avg": 52.8,
-      "via_n": 2,
+      "via_avg": 55.6,
+      "via_n": 1,
       "best_rank": 3,
       "avg_rank": 3.0,
       "podium_gold": 0,
       "podium_silver": 0,
-      "podium_bronze": 2,
-      "podium_total": 2
-    },
-    {
-      "player": "Lori",
-      "tournaments": 2,
-      "matches": 6,
-      "wins": 2,
-      "losses": 3,
-      "draws": 1,
-      "match_win_pct": 0.4166666666666667,
-      "via_avg": 52.8,
-      "via_n": 2,
-      "best_rank": 5,
-      "avg_rank": 5.5,
-      "podium_gold": 0,
-      "podium_silver": 0,
-      "podium_bronze": 0,
-      "podium_total": 0
-    },
-    {
-      "player": "Stanka",
-      "tournaments": 2,
-      "matches": 6,
-      "wins": 2,
-      "losses": 3,
-      "draws": 1,
-      "match_win_pct": 0.4166666666666667,
-      "via_avg": 51.849999999999994,
-      "via_n": 2,
-      "best_rank": 4,
-      "avg_rank": 5.5,
-      "podium_gold": 0,
-      "podium_silver": 0,
-      "podium_bronze": 0,
-      "podium_total": 0
+      "podium_bronze": 1,
+      "podium_total": 1
     },
     {
       "player": "Da",
-      "tournaments": 2,
-      "matches": 6,
-      "wins": 2,
-      "losses": 4,
+      "tournaments": 1,
+      "matches": 3,
+      "wins": 1,
+      "losses": 2,
       "draws": 0,
       "match_win_pct": 0.3333333333333333,
-      "via_avg": 70.4,
-      "via_n": 2,
+      "via_avg": 77.8,
+      "via_n": 1,
       "best_rank": 5,
+      "avg_rank": 5.0,
+      "podium_gold": 0,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 0
+    },
+    {
+      "player": "Lori",
+      "tournaments": 1,
+      "matches": 3,
+      "wins": 1,
+      "losses": 2,
+      "draws": 0,
+      "match_win_pct": 0.3333333333333333,
+      "via_avg": 66.7,
+      "via_n": 1,
+      "best_rank": 6,
       "avg_rank": 6.0,
       "podium_gold": 0,
       "podium_silver": 0,
@@ -342,17 +224,34 @@
       "podium_total": 0
     },
     {
-      "player": "Fra",
-      "tournaments": 2,
-      "matches": 6,
+      "player": "Stanka",
+      "tournaments": 1,
+      "matches": 3,
       "wins": 1,
-      "losses": 5,
+      "losses": 2,
       "draws": 0,
-      "match_win_pct": 0.16666666666666666,
-      "via_avg": 61.150000000000006,
-      "via_n": 2,
-      "best_rank": 6,
+      "match_win_pct": 0.3333333333333333,
+      "via_avg": 44.4,
+      "via_n": 1,
+      "best_rank": 7,
       "avg_rank": 7.0,
+      "podium_gold": 0,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 0
+    },
+    {
+      "player": "Fra",
+      "tournaments": 1,
+      "matches": 3,
+      "wins": 0,
+      "losses": 3,
+      "draws": 0,
+      "match_win_pct": 0.0,
+      "via_avg": 55.6,
+      "via_n": 1,
+      "best_rank": 8,
+      "avg_rank": 8.0,
       "podium_gold": 0,
       "podium_silver": 0,
       "podium_bronze": 0,
