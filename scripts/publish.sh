@@ -29,7 +29,7 @@ if command -v sqlite3 >/dev/null 2>&1; then
 fi
 
 # esporta stats
-"$PY" backend/export_stats.py --db "$DB_PATH" --docs "$DOCS_DIR"
+"$PY" backend/export_stats.py --db "$DB_PATH" --draft-db data/draft_tracker.sqlite --docs "$DOCS_DIR"
 
 # Stage selettivo: docs/data + db
 # (docs/data triggera Pages; il DB no, grazie al paths: docs/** nel workflow)
