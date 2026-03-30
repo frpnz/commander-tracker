@@ -472,6 +472,116 @@ form.has-sticky-actions{padding-bottom: calc(18px + var(--keyboard-inset, 0px))}
   .actions{flex-direction:column}
 }
 
+
+
+/* Trend commander picker */
+.trend-controls{
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+}
+.trend-commander-picker{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255,255,255,.03);
+}
+.trend-picker-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.trend-picker-label{
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.trend-picker-sub{
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.trend-clear-btn{
+  appearance: none;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.trend-clear-btn:disabled{
+  opacity: .45;
+  cursor: default;
+}
+.trend-chip-list{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 200px;
+  overflow: auto;
+  padding-right: 2px;
+}
+.trend-chip-list.is-disabled{
+  opacity: .55;
+}
+.trend-chip-empty{
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 0;
+}
+.trend-chip{
+  --trend-chip-tone: rgba(255,255,255,.5);
+  appearance: none;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+.trend-chip-swatch{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--trend-chip-tone);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.18) inset;
+  flex: 0 0 auto;
+}
+.trend-chip .trend-chip-name{
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trend-chip .trend-chip-meta{
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.trend-chip.is-selected{
+  color: #fff;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset;
+}
+.trend-chart-wrap canvas{
+  height: 340px;
+}
+@media (max-width: 720px){
+  .trend-controls{grid-template-columns: 1fr;}
+  .trend-picker-head{flex-direction: column;}
+  .trend-clear-btn{align-self: flex-start;}
+  .trend-chip-list{max-height: 240px;}
+  .trend-chart-wrap canvas{height: 52vh; min-height: 320px; max-height: 480px;}
+}
+
 /* --- Tables (stats) --- */
 .grid{
   margin-top:14px;

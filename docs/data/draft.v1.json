@@ -1,6 +1,6 @@
 {
   "schema": "draft.v1",
-  "generated_utc": "2026-03-12T00:00:00Z",
+  "generated_utc": "2026-03-12T23:00:00Z",
   "counts": {
     "tournaments": 2,
     "players": 8
@@ -8,7 +8,7 @@
   "tournaments": [
     {
       "id": 4,
-      "played_at": "2026-03-12 00:00:00",
+      "played_at": "2026-03-12 23:00:00",
       "name": "Matti's cube",
       "format": "Draft",
       "rounds": null,

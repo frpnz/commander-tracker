@@ -137,7 +137,12 @@ const errorBars = {
   const canvasBar = $("#winrateBar");
   const canvasBubble = $("#winrateBubble");
   const elMinGames = $("#fMinGames");
-  const elHeatBody = $("#pcHeatBody");
+  const elTrendPlayer = $("#trendPlayer");
+  const elTrendCommanderChips = $("#trendCommanderChips");
+  const elTrendCommanderClear = $("#trendCommanderClear");
+  const elTrendCommanderSub = $("#trendCommanderSub");
+  const elTrendHint = $("#trendHint");
+  const canvasTrend = $("#trendChart");
 
   let stats = null;
 
@@ -159,6 +164,7 @@ const errorBars = {
 
   let barChart = null;
   let bubbleChart = null;
+  let trendChart = null;
 
   const COL_TEXT_MUTED = "#aab3d3";
   const COL_TEXT_MAIN = "#e9ecf7";
@@ -187,6 +193,41 @@ const errorBars = {
     const bb = clamp(b * factor);
     const toHex = (x) => x.toString(16).padStart(2, "0");
     return `#${toHex(rr)}${toHex(gg)}${toHex(bb)}`;
+  }
+
+  function mixHex(hex, targetHex, amount) {
+    const h1 = String(hex || "").trim();
+    const h2 = String(targetHex || "").trim();
+    if (!h1.startsWith("#") || h1.length !== 7 || !h2.startsWith("#") || h2.length !== 7) return hex;
+    const c1 = [parseInt(h1.slice(1, 3), 16), parseInt(h1.slice(3, 5), 16), parseInt(h1.slice(5, 7), 16)];
+    const c2 = [parseInt(h2.slice(1, 3), 16), parseInt(h2.slice(3, 5), 16), parseInt(h2.slice(5, 7), 16)];
+    if (![...c1, ...c2].every(Number.isFinite)) return hex;
+    const t = Math.max(0, Math.min(1, Number(amount) || 0));
+    const clamp = (x) => Math.max(0, Math.min(255, Math.round(x)));
+    const mixed = c1.map((v, i) => clamp(v + (c2[i] - v) * t));
+    const toHex = (x) => x.toString(16).padStart(2, "0");
+    return `#${toHex(mixed[0])}${toHex(mixed[1])}${toHex(mixed[2])}`;
+  }
+
+  function commanderVariantColor(baseColor, idx, total) {
+    const base = String(baseColor || "").trim();
+    const n = Math.max(1, Number(total) || 1);
+    const i = Math.max(0, Number(idx) || 0);
+    if (!base.startsWith("#") || base.length !== 7) {
+      const alpha = Math.max(0.35, 0.92 - i * 0.12);
+      return pcAlpha(baseColor, alpha);
+    }
+    if (n === 1) return base;
+    const palette = [
+      mixHex(base, '#ffffff', 0.18),
+      mixHex(base, '#ffffff', 0.08),
+      base,
+      mixHex(base, '#000000', 0.10),
+      mixHex(base, '#000000', 0.20),
+      mixHex(base, '#ffffff', 0.26),
+      mixHex(base, '#000000', 0.28),
+    ];
+    return palette[i % palette.length];
   }
 
   function asNum(x, dflt = 0) {
@@ -412,9 +453,13 @@ const errorBars = {
 
 
   function fillPlayerSelect(players) {
-    if (!elPlayer) return;
     const names = Array.from(new Set(players.map((p) => p.name))).sort((a, b) => a.localeCompare(b));
-    elPlayer.innerHTML = '<option value="">Tutti i giocatori</option>' + names.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+    if (elPlayer) {
+      elPlayer.innerHTML = '<option value="">Tutti i giocatori</option>' + names.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+    }
+    if (elTrendPlayer) {
+      elTrendPlayer.innerHTML = '<option value="">Seleziona un giocatore</option>' + names.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+    }
   }
 
   function escapeHtml(s) {
@@ -668,6 +713,286 @@ const errorBars = {
     });
   }
 
+
+  function getPlayerGameRows(playerName) {
+    const games = Array.isArray(stats?.games) ? stats.games : [];
+    const rows = [];
+    for (const g of games) {
+      const playedAt = String(g?.played_at || "").slice(0, 10);
+      if (!playedAt) continue;
+      const gameId = asNum(g?.id, 0);
+      const winner = String(g?.winner_player || "");
+      const entries = Array.isArray(g?.entries) ? g.entries : [];
+      for (let idx = 0; idx < entries.length; idx += 1) {
+        const e = entries[idx] || {};
+        if (String(e.player || "") !== String(playerName)) continue;
+        rows.push({
+          playedAt,
+          gameId,
+          entryIdx: idx,
+          commander: String(e.commander || "").trim(),
+          win: winner === playerName ? 1 : 0,
+        });
+      }
+    }
+    rows.sort((a, b) => {
+      if (a.playedAt !== b.playedAt) return a.playedAt.localeCompare(b.playedAt);
+      if (a.gameId !== b.gameId) return a.gameId - b.gameId;
+      return a.entryIdx - b.entryIdx;
+    });
+    return rows;
+  }
+
+  function getEligibleCommandersForTrend(playerName) {
+    const rows = getPlayerGameRows(playerName);
+    const byCommander = new Map();
+    for (const r of rows) {
+      if (!r.commander) continue;
+      const cur = byCommander.get(r.commander) || { commander: r.commander, games: 0 };
+      cur.games += 1;
+      byCommander.set(r.commander, cur);
+    }
+    return Array.from(byCommander.values())
+      .filter((r) => r.games >= 5)
+      .sort((a, b) => (b.games - a.games) || a.commander.localeCompare(b.commander));
+  }
+
+  function getSelectedTrendCommanders() {
+    if (!elTrendCommanderChips) return [];
+    const btn = elTrendCommanderChips.querySelector('.trend-chip.is-selected');
+    const commander = btn ? (btn.dataset.commander || '') : '';
+    return commander ? [commander] : [];
+  }
+
+  function updateTrendCommanderSub(playerName, eligible) {
+    if (!elTrendCommanderSub) return;
+    if (!playerName) {
+      elTrendCommanderSub.textContent = 'Mostra il totale player finché non selezioni un commander eleggibile (minimo 5 partite).';
+      return;
+    }
+    if (!eligible.length) {
+      elTrendCommanderSub.textContent = `${playerName} non ha commander eleggibili per il focus (servono almeno 5 partite).`;
+      return;
+    }
+    elTrendCommanderSub.textContent = `${eligible.length} commander eleggibili per ${playerName}. Tocca un commander per passare dal totale player al focus dedicato.`;
+  }
+
+  function fillTrendCommanderSelect(playerName) {
+    const eligible = playerName ? getEligibleCommandersForTrend(playerName) : [];
+    const prevSelected = getSelectedTrendCommanders()[0] || '';
+    updateTrendCommanderSub(playerName, eligible);
+    if (!elTrendCommanderChips) return;
+    if (!playerName) {
+      elTrendCommanderChips.innerHTML = '<div class="trend-chip-empty">Seleziona prima un giocatore.</div>';
+      elTrendCommanderChips.classList.add('is-disabled');
+      if (elTrendCommanderClear) elTrendCommanderClear.disabled = true;
+      return;
+    }
+    if (!eligible.length) {
+      elTrendCommanderChips.innerHTML = '<div class="trend-chip-empty">Nessun commander eleggibile con almeno 5 partite.</div>';
+      elTrendCommanderChips.classList.add('is-disabled');
+      if (elTrendCommanderClear) elTrendCommanderClear.disabled = true;
+      return;
+    }
+    elTrendCommanderChips.classList.remove('is-disabled');
+    const tone = pcGet(playerName);
+    elTrendCommanderChips.innerHTML = eligible.map((item) => {
+      const isSelected = prevSelected === item.commander;
+      const selected = isSelected ? ' is-selected' : '';
+      const bg = isSelected ? pcAlpha(tone, 0.18) : 'rgba(255,255,255,.04)';
+      const border = isSelected ? pcAlpha(tone, 0.85) : 'rgba(255,255,255,.10)';
+      const swatch = `style="--trend-chip-tone:${tone}; background:${bg}; border-color:${border};"`;
+      return `<button type="button" class="trend-chip${selected}" data-commander="${escapeHtml(item.commander)}" ${swatch}><span class="trend-chip-swatch" aria-hidden="true"></span><span class="trend-chip-name">${escapeHtml(item.commander)}</span><span class="trend-chip-meta">${item.games}p</span></button>`;
+    }).join('');
+    if (elTrendCommanderClear) {
+      elTrendCommanderClear.disabled = getSelectedTrendCommanders().length === 0;
+    }
+  }
+
+  function weekStart(dateKey) {
+    const d = new Date(`${dateKey}T00:00:00Z`);
+    const day = d.getUTCDay();
+    const diff = (day + 6) % 7;
+    d.setUTCDate(d.getUTCDate() - diff);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function weeksBetweenInclusive(startKey, endKey) {
+    const out = [];
+    if (!startKey || !endKey) return out;
+    let d = new Date(`${weekStart(startKey)}T00:00:00Z`);
+    const end = new Date(`${weekStart(endKey)}T00:00:00Z`);
+    while (d <= end) {
+      out.push(d.toISOString().slice(0, 10));
+      d.setUTCDate(d.getUTCDate() + 7);
+    }
+    return out;
+  }
+
+  function buildRollingSeries(gameRows, windowSize) {
+    const rows = Array.isArray(gameRows) ? gameRows : [];
+    if (rows.length < windowSize) return null;
+    const weeklyLatest = new Map();
+    let wins = 0;
+    for (let i = 0; i < rows.length; i += 1) {
+      wins += rows[i].win;
+      if (i >= windowSize) wins -= rows[i - windowSize].win;
+      if (i < windowSize - 1) continue;
+      const last = rows[i];
+      const bucket = weekStart(last.playedAt);
+      weeklyLatest.set(bucket, {
+        value: (wins / windowSize) * 100,
+        wins,
+        total: windowSize,
+        lastGameDate: last.playedAt,
+      });
+    }
+    const weeks = weeksBetweenInclusive(rows[windowSize - 1].playedAt, rows[rows.length - 1].playedAt);
+    let carry = null;
+    const points = [];
+    for (const wk of weeks) {
+      if (weeklyLatest.has(wk)) carry = weeklyLatest.get(wk);
+      if (!carry) continue;
+      points.push({ x: wk, y: carry.value, wins: carry.wins, total: carry.total, lastGameDate: carry.lastGameDate });
+    }
+    return points.length ? points : null;
+  }
+
+  function buildTrendDatasets(playerName, selectedCommanders) {
+    const base = getPlayerGameRows(playerName);
+    const chosen = Array.isArray(selectedCommanders) ? selectedCommanders.filter(Boolean) : [];
+    const out = [];
+    if (!chosen.length) {
+      const pts = buildRollingSeries(base, 10);
+      if (pts) {
+        const color = pcGet(playerName);
+        out.push({
+          label: `${playerName} · Totale player (10)`,
+          data: pts,
+          borderColor: color,
+          backgroundColor: pcAlpha(color, 0.16),
+          borderWidth: 2,
+        });
+      }
+      return out;
+    }
+    const tone = pcGet(playerName);
+    chosen.slice(0, 1).forEach((commander) => {
+      const pts = buildRollingSeries(base.filter((r) => r.commander === commander), 5);
+      if (!pts) return;
+      out.push({
+        label: `${commander} · rolling 5`,
+        data: pts,
+        borderColor: tone,
+        backgroundColor: pcAlpha(tone, 0.16),
+        pointBackgroundColor: tone,
+        pointBorderColor: tone,
+        borderWidth: 2,
+      });
+    });
+    return out;
+  }
+
+  function renderTrendChart() {
+    if (!canvasTrend || !elTrendHint) return;
+    const playerName = elTrendPlayer ? elTrendPlayer.value : "";
+    if (!playerName) {
+      if (trendChart) {
+        trendChart.destroy();
+        trendChart = null;
+      }
+      fillTrendCommanderSelect("");
+      elTrendHint.textContent = "Nessun giocatore selezionato.";
+      return;
+    }
+
+    fillTrendCommanderSelect(playerName);
+    const selectedCommanders = getSelectedTrendCommanders();
+    const datasets = buildTrendDatasets(playerName, selectedCommanders);
+
+    if (!datasets.length) {
+      if (trendChart) {
+        trendChart.destroy();
+        trendChart = null;
+      }
+      elTrendHint.textContent = selectedCommanders.length
+        ? `Nessun commander selezionato ha almeno 5 partite per ${playerName}.`
+        : `${playerName} non ha ancora abbastanza partite per mostrare un rolling su 10.`;
+      return;
+    }
+
+    elTrendHint.textContent = selectedCommanders.length
+      ? `${playerName}: dettaglio commander selezionato (rolling 5, minimo 5 partite).`
+      : `${playerName}: totale player (rolling 10).`;
+
+    const ctx = canvasTrend.getContext("2d");
+    if (trendChart) trendChart.destroy();
+    trendChart = new Chart(ctx, {
+      type: "line",
+      data: { datasets },
+      options: {
+        ...commonOptions(),
+        maintainAspectRatio: false,
+        parsing: false,
+        elements: {
+          line: { tension: 0.18, cubicInterpolationMode: "monotone" },
+          point: {
+            radius: (ctx) => window.matchMedia('(max-width: 720px)').matches ? 0 : 2,
+            hoverRadius: window.matchMedia('(max-width: 720px)').matches ? 7 : 5,
+            hitRadius: window.matchMedia('(max-width: 720px)').matches ? 16 : 10,
+          },
+        },
+        scales: {
+          x: {
+            type: "category",
+            offset: true,
+            labels: Array.from(new Set(datasets.flatMap((ds) => ds.data.map((p) => p.x)))).sort(),
+            ticks: {
+              color: COL_TEXT_MUTED,
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: window.matchMedia('(max-width: 720px)').matches ? 5 : 8,
+              callback: (v, idx, ticks) => {
+                const label = ticks?.[idx]?.label || "";
+                if (!label) return "";
+                const short = label.slice(5);
+                return window.matchMedia('(max-width: 720px)').matches ? short.replace('-', '/') : short;
+              },
+            },
+            grid: { color: "rgba(255,255,255,0.05)" },
+            title: { display: true, text: window.matchMedia('(max-width: 720px)').matches ? "Settimane" : "Settimana", color: COL_TEXT_MUTED },
+          },
+          y: {
+            min: 0,
+            max: 100,
+            ticks: { color: COL_TEXT_MUTED, callback: (v) => `${v}%` },
+            grid: { color: "rgba(255,255,255,0.05)" },
+            title: { display: true, text: "Win rate rolling (%)", color: COL_TEXT_MUTED },
+          },
+        },
+        plugins: {
+          ...commonOptions().plugins,
+          legend: { display: false },
+          tooltip: {
+            ...commonOptions().plugins.tooltip,
+            callbacks: {
+              title: (items) => items?.[0]?.raw?.x ? `Settimana del ${items[0].raw.x}` : "",
+              label: (ctx) => {
+                const raw = ctx.raw || {};
+                const base = `${ctx.dataset.label}: ${Number(raw.y || 0).toFixed(1)}%`;
+                return `${base} · ${raw.wins}/${raw.total}`;
+              },
+              afterLabel: (ctx) => {
+                const raw = ctx.raw || {};
+                return raw.lastGameDate ? `Ultima partita utile: ${raw.lastGameDate}` : "";
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   function update() {
     const players = computePlayers();
     const chosen = elPlayer ? elPlayer.value : "";
@@ -683,6 +1008,7 @@ const errorBars = {
 
 
     renderPlayerCommanderWinrateChart(chosen || "");
+    renderTrendChart();
   }
 
   async function init() {
@@ -714,6 +1040,35 @@ const errorBars = {
       if (elMinGames) {
         elMinGames.addEventListener("input", update);
         elMinGames.addEventListener("change", update);
+      }
+      if (elTrendPlayer) {
+        elTrendPlayer.addEventListener("change", () => {
+          fillTrendCommanderSelect(elTrendPlayer.value || "");
+          update();
+        });
+      }
+      if (elTrendCommanderChips) {
+        elTrendCommanderChips.addEventListener('click', (evt) => {
+          const btn = evt.target.closest('.trend-chip');
+          if (!btn) return;
+          const wasSelected = btn.classList.contains('is-selected');
+          elTrendCommanderChips.querySelectorAll('.trend-chip.is-selected').forEach((el) => {
+            el.classList.remove('is-selected');
+          });
+          if (!wasSelected) btn.classList.add('is-selected');
+          if (elTrendCommanderClear) {
+            elTrendCommanderClear.disabled = getSelectedTrendCommanders().length === 0;
+          }
+          update();
+        });
+      }
+      if (elTrendCommanderClear) {
+        elTrendCommanderClear.addEventListener('click', () => {
+          if (!elTrendCommanderChips) return;
+          elTrendCommanderChips.querySelectorAll('.trend-chip.is-selected').forEach((el) => el.classList.remove('is-selected'));
+          elTrendCommanderClear.disabled = true;
+          update();
+        });
       }
 
       update();
