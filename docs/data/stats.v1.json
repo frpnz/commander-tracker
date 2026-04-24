@@ -1,19 +1,19 @@
 {
   "by_player": [
     {
-      "games": 70,
+      "games": 71,
       "player": "Matti",
       "wins": 21
     },
     {
       "games": 70,
-      "player": "Da",
-      "wins": 15
-    },
-    {
-      "games": 69,
       "player": "Fra",
       "wins": 20
+    },
+    {
+      "games": 70,
+      "player": "Da",
+      "wins": 15
     },
     {
       "games": 53,
@@ -26,14 +26,14 @@
       "wins": 12
     },
     {
-      "games": 38,
+      "games": 39,
       "player": "Teo",
       "wins": 7
     },
     {
-      "games": 9,
+      "games": 10,
       "player": "Ivan",
-      "wins": 6
+      "wins": 7
     },
     {
       "games": 2,
@@ -114,6 +114,13 @@
     },
     {
       "bracket": 4,
+      "commander": "Purphorose",
+      "games": 11,
+      "player": "Matti",
+      "wins": 2
+    },
+    {
+      "bracket": 4,
       "commander": "Hearthhull",
       "games": 10,
       "player": "Da",
@@ -124,13 +131,6 @@
       "commander": "Sisay",
       "games": 10,
       "player": "Da",
-      "wins": 2
-    },
-    {
-      "bracket": 4,
-      "commander": "Purphorose",
-      "games": 10,
-      "player": "Matti",
       "wins": 2
     },
     {
@@ -148,6 +148,13 @@
       "wins": 2
     },
     {
+      "bracket": 3,
+      "commander": "Pantalaza",
+      "games": 9,
+      "player": "Teo",
+      "wins": 2
+    },
+    {
       "bracket": 4,
       "commander": "Chandra",
       "games": 8,
@@ -162,11 +169,11 @@
       "wins": 2
     },
     {
-      "bracket": 3,
-      "commander": "Pantalaza",
-      "games": 8,
-      "player": "Teo",
-      "wins": 2
+      "bracket": 5,
+      "commander": "Magda",
+      "games": 7,
+      "player": "Fra",
+      "wins": 4
     },
     {
       "bracket": 3,
@@ -174,13 +181,6 @@
       "games": 7,
       "player": "Matti",
       "wins": 2
-    },
-    {
-      "bracket": 5,
-      "commander": "Magda",
-      "games": 6,
-      "player": "Fra",
-      "wins": 4
     },
     {
       "bracket": 3,
@@ -281,6 +281,13 @@
       "wins": 0
     },
     {
+      "bracket": 5,
+      "commander": "Zaxara l'esemplare",
+      "games": 2,
+      "player": "Ivan",
+      "wins": 2
+    },
+    {
       "bracket": 4,
       "commander": "Hashaton",
       "games": 2,
@@ -348,13 +355,6 @@
       "commander": "Edric",
       "games": 1,
       "player": "Fra",
-      "wins": 1
-    },
-    {
-      "bracket": 5,
-      "commander": "Zaxara l'esemplare",
-      "games": 1,
-      "player": "Ivan",
       "wins": 1
     },
     {
@@ -470,6 +470,16 @@
       "wins": 3
     },
     {
+      "b_post": 4.624018336978368,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.40205147294590415,
+      "bracket_prior": 5,
+      "commander": "Zaxara l'esemplare",
+      "cpr_z": 1.7286398031087296,
+      "games": 2,
+      "wins": 2
+    },
+    {
       "b_post": 4.253096452280865,
       "b_post_map": 4.5,
       "b_post_sd": 0.579482507581821,
@@ -540,14 +550,14 @@
       "wins": 0
     },
     {
-      "b_post": 4.511350541767062,
-      "b_post_map": 5.0,
-      "b_post_sd": 0.4747145407452115,
-      "bracket_prior": 5,
-      "commander": "Zaxara l'esemplare",
-      "cpr_z": 1.161028377065636,
-      "games": 1,
-      "wins": 1
+      "b_post": 3.4390469846859277,
+      "b_post_map": 3.5,
+      "b_post_sd": 0.6279095013674838,
+      "bracket_prior": 4,
+      "commander": "Purphorose",
+      "cpr_z": -1.1155520161663626,
+      "games": 11,
+      "wins": 2
     },
     {
       "b_post": 3.4427798108846948,
@@ -568,16 +578,6 @@
       "cpr_z": -1.0758031207150167,
       "games": 3,
       "wins": 0
-    },
-    {
-      "b_post": 3.4777483536542735,
-      "b_post_map": 3.5,
-      "b_post_sd": 0.6323026737368458,
-      "bracket_prior": 4,
-      "commander": "Purphorose",
-      "cpr_z": -1.0367828235329646,
-      "games": 10,
-      "wins": 2
     },
     {
       "b_post": 3.5580613758931032,
@@ -670,16 +670,6 @@
       "wins": 0
     },
     {
-      "b_post": 3.310167228894385,
-      "b_post_map": 3.25,
-      "b_post_sd": 0.7010007810857249,
-      "bracket_prior": 3,
-      "commander": "Pantalaza",
-      "cpr_z": 0.8827293963373503,
-      "games": 8,
-      "wins": 2
-    },
-    {
       "b_post": 4.246648005156656,
       "b_post_map": 4.25,
       "b_post_sd": 0.5009529439999488,
@@ -710,16 +700,6 @@
       "wins": 2
     },
     {
-      "b_post": 4.649112262732811,
-      "b_post_map": 5.0,
-      "b_post_sd": 0.3691681745154437,
-      "bracket_prior": 5,
-      "commander": "Magda",
-      "cpr_z": 0.7878585103883711,
-      "games": 6,
-      "wins": 4
-    },
-    {
       "b_post": 2.749518708903028,
       "b_post_map": 2.75,
       "b_post_sd": 0.7918704507506125,
@@ -728,6 +708,16 @@
       "cpr_z": -0.7778943478914802,
       "games": 2,
       "wins": 0
+    },
+    {
+      "b_post": 3.2710653125905202,
+      "b_post_map": 3.25,
+      "b_post_sd": 0.6957018204099391,
+      "bracket_prior": 3,
+      "commander": "Pantalaza",
+      "cpr_z": 0.7773732018383728,
+      "games": 9,
+      "wins": 2
     },
     {
       "b_post": 2.3539108896586423,
@@ -860,6 +850,16 @@
       "wins": 2
     },
     {
+      "b_post": 4.617360860253638,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.38444482402571384,
+      "bracket_prior": 5,
+      "commander": "Magda",
+      "cpr_z": 0.43967833112719984,
+      "games": 7,
+      "wins": 4
+    },
+    {
       "b_post": 4.127123344994748,
       "b_post_map": 4.25,
       "b_post_sd": 0.47367986346027574,
@@ -951,8 +951,8 @@
     }
   ],
   "counts": {
-    "entries": 356,
-    "games": 100
+    "entries": 360,
+    "games": 101
   },
   "filters": {
     "brackets": [
@@ -1027,6 +1027,34 @@
     ]
   },
   "games": [
+    {
+      "entries": [
+        {
+          "bracket": 5,
+          "commander": "Zaxara l'esemplare",
+          "player": "Ivan"
+        },
+        {
+          "bracket": 5,
+          "commander": "Magda",
+          "player": "Fra"
+        },
+        {
+          "bracket": 3,
+          "commander": "Pantalaza",
+          "player": "Teo"
+        },
+        {
+          "bracket": 4,
+          "commander": "Purphorose",
+          "player": "Matti"
+        }
+      ],
+      "id": 105,
+      "notes": null,
+      "played_at": "2026-04-25 01:01:00",
+      "winner_player": "Ivan"
+    },
     {
       "entries": [
         {
@@ -3608,7 +3636,7 @@
       "winner_player": "Fra"
     }
   ],
-  "generated_utc": "2026-04-25T00:51:00Z",
+  "generated_utc": "2026-04-25T01:01:00Z",
   "meta_profile": {
     "method": "delta_player_minus_avg_table_excl_player",
     "min_games_default": 3,
@@ -3621,14 +3649,24 @@
   },
   "meta_profile_by_player": [
     {
+      "games_total": 71,
+      "games_used": 71,
+      "mdi": 0.42370892018779344,
+      "mpi": 0.6725352112676056,
+      "oewr": -0.04820552880585038,
+      "oewr_used": 71,
+      "oewr_z": -0.9018165559259548,
+      "player": "Matti"
+    },
+    {
       "games_total": 70,
       "games_used": 70,
-      "mdi": 0.4345238095238095,
-      "mpi": 0.6773809523809523,
-      "oewr": -0.04647304029689566,
+      "mdi": 0.31190476190476196,
+      "mpi": 0.538095238095238,
+      "oewr": -0.0443057951510883,
       "oewr_used": 70,
-      "oewr_z": -0.8613795956250705,
-      "player": "Matti"
+      "oewr_z": -0.8269842408372057,
+      "player": "Fra"
     },
     {
       "games_total": 70,
@@ -3639,16 +3677,6 @@
       "oewr_used": 70,
       "oewr_z": -1.435985320124074,
       "player": "Da"
-    },
-    {
-      "games_total": 69,
-      "games_used": 69,
-      "mdi": 0.30193236714975846,
-      "mpi": 0.5314009661835748,
-      "oewr": -0.03948147242466123,
-      "oewr_used": 69,
-      "oewr_z": -0.7325524042685296,
-      "player": "Fra"
     },
     {
       "games_total": 53,
@@ -3671,23 +3699,23 @@
       "player": "Stanka"
     },
     {
-      "games_total": 38,
-      "games_used": 38,
-      "mdi": -0.6666666666666667,
-      "mpi": 0.7631578947368421,
-      "oewr": 0.011164340590473642,
-      "oewr_used": 38,
-      "oewr_z": 0.18758664241159373,
+      "games_total": 39,
+      "games_used": 39,
+      "mdi": -0.6923076923076924,
+      "mpi": 0.7863247863247863,
+      "oewr": 0.008925456241533073,
+      "oewr_used": 39,
+      "oewr_z": 0.1528670254213378,
       "player": "Teo"
     },
     {
-      "games_total": 9,
-      "games_used": 9,
-      "mdi": -0.14814814814814806,
-      "mpi": 0.5925925925925924,
-      "oewr": 0.43074030003860625,
-      "oewr_used": 9,
-      "oewr_z": 3.1183943637217464,
+      "games_total": 10,
+      "games_used": 10,
+      "mdi": -0.03333333333333326,
+      "mpi": 0.6333333333333332,
+      "oewr": 0.4499478637072901,
+      "oewr_used": 10,
+      "oewr_z": 3.372158293761853,
       "player": "Ivan"
     },
     {
@@ -3792,13 +3820,13 @@
     },
     {
       "commander": "Magda",
-      "games_total": 6,
-      "games_used": 6,
-      "mdi": 1.1805555555555556,
-      "mpi": 1.1805555555555556,
-      "oewr": 0.15784086276410242,
-      "oewr_used": 6,
-      "oewr_z": 0.7878585103883711,
+      "games_total": 7,
+      "games_used": 7,
+      "mdi": 1.1547619047619049,
+      "mpi": 1.1547619047619049,
+      "oewr": 0.08140873047286558,
+      "oewr_used": 7,
+      "oewr_z": 0.43967833112719984,
       "player": "Fra"
     },
     {
@@ -4045,13 +4073,13 @@
     },
     {
       "commander": "Zaxara l'esemplare",
-      "games_total": 1,
-      "games_used": 1,
+      "games_total": 2,
+      "games_used": 2,
       "mdi": 1.0,
       "mpi": 1.0,
-      "oewr": 0.5741032442483384,
-      "oewr_used": 1,
-      "oewr_z": 1.161028377065636,
+      "oewr": 0.5984595904868915,
+      "oewr_used": 2,
+      "oewr_z": 1.7286398031087296,
       "player": "Ivan"
     },
     {
@@ -4078,13 +4106,13 @@
     },
     {
       "commander": "Purphorose",
-      "games_total": 10,
-      "games_used": 10,
-      "mdi": 0.4416666666666666,
-      "mpi": 0.5083333333333332,
-      "oewr": -0.15501314627419432,
-      "oewr_used": 10,
-      "oewr_z": -1.0367828235329646,
+      "games_total": 11,
+      "games_used": 11,
+      "mdi": 0.37121212121212116,
+      "mpi": 0.49242424242424226,
+      "oewr": -0.1563282897431476,
+      "oewr_used": 11,
+      "oewr_z": -1.1155520161663626,
       "player": "Matti"
     },
     {
@@ -4232,13 +4260,13 @@
     },
     {
       "commander": "Pantalaza",
-      "games_total": 8,
-      "games_used": 8,
-      "mdi": -1.0520833333333333,
-      "mpi": 1.0520833333333333,
-      "oewr": 0.1083956713324989,
-      "oewr_used": 8,
-      "oewr_z": 0.8827293963373503,
+      "games_total": 9,
+      "games_used": 9,
+      "mdi": -1.1203703703703702,
+      "mpi": 1.1203703703703702,
+      "oewr": 0.08789035796019808,
+      "oewr_used": 9,
+      "oewr_z": 0.7773732018383728,
       "player": "Teo"
     },
     {
