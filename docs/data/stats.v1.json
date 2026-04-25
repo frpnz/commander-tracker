@@ -1,12 +1,12 @@
 {
   "by_player": [
     {
-      "games": 71,
+      "games": 72,
       "player": "Matti",
-      "wins": 21
+      "wins": 22
     },
     {
-      "games": 70,
+      "games": 71,
       "player": "Fra",
       "wins": 20
     },
@@ -26,12 +26,12 @@
       "wins": 12
     },
     {
-      "games": 39,
+      "games": 40,
       "player": "Teo",
       "wins": 7
     },
     {
-      "games": 10,
+      "games": 11,
       "player": "Ivan",
       "wins": 7
     },
@@ -204,6 +204,20 @@
       "wins": 3
     },
     {
+      "bracket": 4,
+      "commander": "Epstein",
+      "games": 4,
+      "player": "Ivan",
+      "wins": 2
+    },
+    {
+      "bracket": 4,
+      "commander": "Piedemoccio e Squee",
+      "games": 4,
+      "player": "Fra",
+      "wins": 1
+    },
+    {
       "bracket": 3,
       "commander": "Sidisi",
       "games": 4,
@@ -239,22 +253,8 @@
       "wins": 0
     },
     {
-      "bracket": 4,
-      "commander": "Epstein",
-      "games": 3,
-      "player": "Ivan",
-      "wins": 2
-    },
-    {
       "bracket": 5,
       "commander": "Marwyn",
-      "games": 3,
-      "player": "Fra",
-      "wins": 1
-    },
-    {
-      "bracket": 4,
-      "commander": "Piedemoccio e Squee",
       "games": 3,
       "player": "Fra",
       "wins": 1
@@ -286,6 +286,13 @@
       "games": 2,
       "player": "Ivan",
       "wins": 2
+    },
+    {
+      "bracket": 3,
+      "commander": "Satoru",
+      "games": 2,
+      "player": "Teo",
+      "wins": 1
     },
     {
       "bracket": 4,
@@ -359,16 +366,16 @@
     },
     {
       "bracket": 4,
-      "commander": "Vivi",
+      "commander": "Sauron",
       "games": 1,
       "player": "Matti",
       "wins": 1
     },
     {
-      "bracket": 3,
-      "commander": "Satoru",
+      "bracket": 4,
+      "commander": "Vivi",
       "games": 1,
-      "player": "Teo",
+      "player": "Matti",
       "wins": 1
     },
     {
@@ -450,16 +457,6 @@
       "wins": 1
     },
     {
-      "b_post": 3.455064214357285,
-      "b_post_map": 3.5,
-      "b_post_sd": 0.7994541329001207,
-      "bracket_prior": 3,
-      "commander": "Satoru",
-      "cpr_z": 2.539898001295512,
-      "games": 1,
-      "wins": 1
-    },
-    {
       "b_post": 3.834542037969872,
       "b_post_map": 4.0,
       "b_post_sd": 0.6642094442612235,
@@ -480,14 +477,24 @@
       "wins": 2
     },
     {
-      "b_post": 4.253096452280865,
+      "b_post": 4.1081069992424295,
       "b_post_map": 4.5,
-      "b_post_sd": 0.579482507581821,
+      "b_post_sd": 0.652802802225433,
       "bracket_prior": 4,
-      "commander": "Epstein",
-      "cpr_z": 1.5800534859489401,
-      "games": 3,
-      "wins": 2
+      "commander": "Sauron",
+      "cpr_z": 1.565033215020442,
+      "games": 1,
+      "wins": 1
+    },
+    {
+      "b_post": 3.3649299183848154,
+      "b_post_map": 3.5,
+      "b_post_sd": 0.7918845551802456,
+      "bracket_prior": 3,
+      "commander": "Satoru",
+      "cpr_z": 1.5353695493975132,
+      "games": 2,
+      "wins": 1
     },
     {
       "b_post": 4.441009860171417,
@@ -578,6 +585,16 @@
       "cpr_z": -1.0758031207150167,
       "games": 3,
       "wins": 0
+    },
+    {
+      "b_post": 4.169969778852742,
+      "b_post_map": 4.5,
+      "b_post_sd": 0.5983206350776725,
+      "bracket_prior": 4,
+      "commander": "Epstein",
+      "cpr_z": 1.0265332419020106,
+      "games": 4,
+      "wins": 2
     },
     {
       "b_post": 3.5580613758931032,
@@ -920,6 +937,16 @@
       "wins": 0
     },
     {
+      "b_post": 3.7828758606224,
+      "b_post_map": 4.0,
+      "b_post_sd": 0.691710927307807,
+      "bracket_prior": 4,
+      "commander": "Piedemoccio e Squee",
+      "cpr_z": -0.28333436458767824,
+      "games": 4,
+      "wins": 1
+    },
+    {
       "b_post": 3.8479041097402154,
       "b_post_map": 4.0,
       "b_post_sd": 0.6289569076960997,
@@ -928,16 +955,6 @@
       "cpr_z": -0.1492839564858863,
       "games": 9,
       "wins": 2
-    },
-    {
-      "b_post": 3.8794667603108897,
-      "b_post_map": 4.0,
-      "b_post_sd": 0.6868622646887976,
-      "bracket_prior": 4,
-      "commander": "Piedemoccio e Squee",
-      "cpr_z": 0.03934762445978587,
-      "games": 3,
-      "wins": 1
     },
     {
       "b_post": 3.943633157157302,
@@ -951,8 +968,8 @@
     }
   ],
   "counts": {
-    "entries": 360,
-    "games": 101
+    "entries": 364,
+    "games": 102
   },
   "filters": {
     "brackets": [
@@ -1004,6 +1021,7 @@
       "Raggadragga",
       "Rograkh & Malcolm",
       "Satoru",
+      "Sauron",
       "Sephiroth",
       "Sidisi",
       "Sigarda",
@@ -1027,6 +1045,34 @@
     ]
   },
   "games": [
+    {
+      "entries": [
+        {
+          "bracket": 4,
+          "commander": "Piedemoccio e Squee",
+          "player": "Fra"
+        },
+        {
+          "bracket": 4,
+          "commander": "Sauron",
+          "player": "Matti"
+        },
+        {
+          "bracket": 4,
+          "commander": "Epstein",
+          "player": "Ivan"
+        },
+        {
+          "bracket": 3,
+          "commander": "Satoru",
+          "player": "Teo"
+        }
+      ],
+      "id": 106,
+      "notes": null,
+      "played_at": "2026-04-25 02:27:00",
+      "winner_player": "Matti"
+    },
     {
       "entries": [
         {
@@ -3636,7 +3682,7 @@
       "winner_player": "Fra"
     }
   ],
-  "generated_utc": "2026-04-25T01:01:00Z",
+  "generated_utc": "2026-04-25T02:27:00Z",
   "meta_profile": {
     "method": "delta_player_minus_avg_table_excl_player",
     "min_games_default": 3,
@@ -3649,23 +3695,23 @@
   },
   "meta_profile_by_player": [
     {
-      "games_total": 71,
-      "games_used": 71,
-      "mdi": 0.42370892018779344,
-      "mpi": 0.6725352112676056,
-      "oewr": -0.04820552880585038,
-      "oewr_used": 71,
-      "oewr_z": -0.9018165559259548,
+      "games_total": 72,
+      "games_used": 72,
+      "mdi": 0.42245370370370366,
+      "mpi": 0.6678240740740741,
+      "oewr": -0.0376736667551784,
+      "oewr_used": 72,
+      "oewr_z": -0.7096624324200604,
       "player": "Matti"
     },
     {
-      "games_total": 70,
-      "games_used": 70,
-      "mdi": 0.31190476190476196,
-      "mpi": 0.538095238095238,
-      "oewr": -0.0443057951510883,
-      "oewr_used": 70,
-      "oewr_z": -0.8269842408372057,
+      "games_total": 71,
+      "games_used": 71,
+      "mdi": 0.31220657276995306,
+      "mpi": 0.5352112676056338,
+      "oewr": -0.04776502988357252,
+      "oewr_used": 71,
+      "oewr_z": -0.897742303780871,
       "player": "Fra"
     },
     {
@@ -3699,23 +3745,23 @@
       "player": "Stanka"
     },
     {
-      "games_total": 39,
-      "games_used": 39,
-      "mdi": -0.6923076923076924,
-      "mpi": 0.7863247863247863,
-      "oewr": 0.008925456241533073,
-      "oewr_used": 39,
-      "oewr_z": 0.1528670254213378,
+      "games_total": 40,
+      "games_used": 40,
+      "mdi": -0.7000000000000001,
+      "mpi": 0.7916666666666667,
+      "oewr": 0.005445679422304863,
+      "oewr_used": 40,
+      "oewr_z": 0.09463183109354129,
       "player": "Teo"
     },
     {
-      "games_total": 10,
-      "games_used": 10,
-      "mdi": -0.03333333333333326,
-      "mpi": 0.6333333333333332,
-      "oewr": 0.4499478637072901,
-      "oewr_used": 10,
-      "oewr_z": 3.372158293761853,
+      "games_total": 11,
+      "games_used": 11,
+      "mdi": 8.074349270001139e-17,
+      "mpi": 0.606060606060606,
+      "oewr": 0.3826879250832212,
+      "oewr_used": 11,
+      "oewr_z": 2.9869170982257334,
       "player": "Ivan"
     },
     {
@@ -3830,6 +3876,17 @@
       "player": "Fra"
     },
     {
+      "commander": "Piedemoccio e Squee",
+      "games_total": 4,
+      "games_used": 4,
+      "mdi": 0.47916666666666674,
+      "mpi": 0.47916666666666674,
+      "oewr": -0.06468246611367262,
+      "oewr_used": 4,
+      "oewr_z": -0.28333436458767824,
+      "player": "Fra"
+    },
+    {
       "commander": "Sidisi",
       "games_total": 4,
       "games_used": 4,
@@ -3860,17 +3917,6 @@
       "oewr": -0.3285199237389857,
       "oewr_used": 3,
       "oewr_z": -1.2070601050376337,
-      "player": "Fra"
-    },
-    {
-      "commander": "Piedemoccio e Squee",
-      "games_total": 3,
-      "games_used": 3,
-      "mdi": 0.5277777777777778,
-      "mpi": 0.5277777777777778,
-      "oewr": 0.010393865567592595,
-      "oewr_used": 3,
-      "oewr_z": 0.03934762445978587,
       "player": "Fra"
     },
     {
@@ -4062,13 +4108,13 @@
     },
     {
       "commander": "Epstein",
-      "games_total": 3,
-      "games_used": 3,
-      "mdi": 0.22222222222222232,
-      "mpi": 0.44444444444444436,
-      "oewr": 0.39854052461534833,
-      "oewr_used": 3,
-      "oewr_z": 1.5800534859489401,
+      "games_total": 4,
+      "games_used": 4,
+      "mdi": 0.2500000000000001,
+      "mpi": 0.41666666666666663,
+      "oewr": 0.22642752817214418,
+      "oewr_used": 4,
+      "oewr_z": 1.0265332419020106,
       "player": "Ivan"
     },
     {
@@ -4168,6 +4214,17 @@
       "oewr": -0.34498724056380625,
       "oewr_used": 1,
       "oewr_z": -0.7257326072933932,
+      "player": "Matti"
+    },
+    {
+      "commander": "Sauron",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": 0.3333333333333335,
+      "mpi": 0.3333333333333335,
+      "oewr": 0.7100885388425318,
+      "oewr_used": 1,
+      "oewr_z": 1.565033215020442,
       "player": "Matti"
     },
     {
@@ -4293,13 +4350,13 @@
     },
     {
       "commander": "Satoru",
-      "games_total": 1,
-      "games_used": 1,
-      "mdi": -0.5,
-      "mpi": 0.5,
-      "oewr": 0.8657913012910252,
-      "oewr_used": 1,
-      "oewr_z": 2.539898001295512,
+      "games_total": 2,
+      "games_used": 2,
+      "mdi": -0.75,
+      "mpi": 0.75,
+      "oewr": 0.36776284238171497,
+      "oewr_used": 2,
+      "oewr_z": 1.5353695493975132,
       "player": "Teo"
     }
   ],
