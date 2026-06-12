@@ -1029,3 +1029,45 @@ nav {
 .help-icon:hover{background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.24);}
 .help-icon:focus{outline:2px solid rgba(255,255,255,.22); outline-offset:2px;}
 
+
+/* --- Stats internal tabs and pod/cumulative additions --- */
+.stats-tabs{
+  margin-top:14px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.stats-tab{
+  appearance:none;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  border-radius:999px;
+  padding:9px 13px;
+  cursor:pointer;
+  font-size:13px;
+}
+.stats-tab:hover{color:var(--text); border-color:rgba(255,255,255,.22)}
+.stats-tab.is-active{
+  color:var(--text);
+  background:rgba(110,231,255,.12);
+  border-color:rgba(110,231,255,.38);
+}
+.stats-panel{display:none; margin-top:14px;}
+.stats-panel.is-active{display:block;}
+.pod-matrix-wrap{overflow:auto; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.025);}
+.pod-matrix{width:100%; border-collapse:collapse; min-width:680px;}
+.pod-matrix th,.pod-matrix td{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.07); text-align:right; font-size:13px; vertical-align:middle;}
+.pod-matrix th:first-child,.pod-matrix td:first-child{text-align:left; position:sticky; left:0; background:rgba(11,16,32,.92);}
+.pod-matrix th{color:var(--muted); font-weight:650;}
+.pod-matrix tr:last-child td{border-bottom:0;}
+.pod-wae{font-weight:750; font-variant-numeric:tabular-nums;}
+.pod-wae.pos{color:#b8ff6e;}
+.pod-wae.neg{color:#ff9aa8;}
+.pod-cell-sub{display:block; margin-top:2px; color:var(--muted); font-size:11px; font-variant-numeric:tabular-nums;}
+.trend-summary{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px;}
+.trend-summary-card{border:1px solid var(--border); border-radius:14px; padding:10px 12px; background:rgba(255,255,255,.035);}
+.trend-summary-label{color:var(--muted); font-size:12px;}
+.trend-summary-value{font-size:18px; font-weight:760; margin-top:3px; font-variant-numeric:tabular-nums;}
+@media (min-width: 860px){.trend-summary{grid-template-columns:repeat(5, minmax(0,1fr));}}
+@media (max-width: 640px){.stats-tabs{position:sticky; top:0; z-index:5; padding:8px 0; background:rgba(11,16,32,.86); backdrop-filter:blur(10px);} .stats-tab{font-size:12px; padding:8px 10px;} .pod-matrix{min-width:620px;}}

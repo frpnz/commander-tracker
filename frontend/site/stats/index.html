@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Commander Stats</title>
-  <link rel="stylesheet" href="../assets/style.css?v=20260209"/>
+  <link rel="stylesheet" href="../assets/style.css?v=20260612"/>
 </head>
 <body>
   <header class="topbar">
@@ -40,57 +40,85 @@
       <div class="hint" id="hint"></div>
     </section>
 
-    <section class="charts">
-      <section class="card">
-        <div class="card-head">
-          <h2 id="chartTitle">Chi vince di più</h2>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="winrateBar" aria-label="Istogramma winrate per player" role="img"></canvas>
-        </div>
-        <div class="muted" style="margin-top:8px; font-size:12px; opacity:.85;">Click su una barra per mettere a fuoco un giocatore e vedere i suoi commander.</div>
-      </section>
+    <section class="stats-tabs" aria-label="Schede statistiche Commander">
+      <button type="button" class="stats-tab is-active" data-stats-tab="overview">Overview</button>
+      <button type="button" class="stats-tab" data-stats-tab="player-detail">Player detail</button>
+      <button type="button" class="stats-tab" data-stats-tab="commander-pod">Commander by Pod</button>
+      <button type="button" class="stats-tab" data-stats-tab="cumulative">Cumulative trend</button>
+    </section>
 
-      <section class="card" id="bubbleCard">
-        <div class="card-head">
-          <h2>Efficacia vs volume</h2>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="winrateBubble" aria-label="Bubble plot winrate vs partite" role="img"></canvas>
-        </div>
-        <div class="muted" style="margin-top:8px; font-size:12px; opacity:.85;">A parità di winrate, più a destra = più partite (segnale più affidabile).</div>
+    <section class="stats-panel is-active" data-stats-panel="overview">
+      <section class="charts">
+        <section class="card">
+          <div class="card-head">
+            <h2 id="chartTitle">Chi vince di più</h2>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="winrateBar" aria-label="Istogramma winrate per player" role="img"></canvas>
+          </div>
+          <div class="muted" style="margin:8px 14px 14px; font-size:12px; opacity:.85;">Click su una barra per mettere a fuoco un giocatore e vedere i suoi commander.</div>
+        </section>
+
+        <section class="card" id="bubbleCard">
+          <div class="card-head">
+            <h2>Efficacia vs volume</h2>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="winrateBubble" aria-label="Bubble plot winrate vs partite" role="img"></canvas>
+          </div>
+          <div class="muted" style="margin:8px 14px 14px; font-size:12px; opacity:.85;">A parità di winrate, più a destra = più partite (segnale più affidabile).</div>
+        </section>
       </section>
     </section>
 
-    
+    <section class="stats-panel" data-stats-panel="player-detail">
       <section class="card" id="heatCard">
         <div class="card-head">
-          <h2>Winrate per commander (player selezionato)</h2>
+          <h2>Winrate per commander</h2>
         </div>
         <p class="muted">
           Seleziona un giocatore per vedere il winrate dei suoi commander.
         </p>
         <div class="muted" style="margin-top:-6px; font-size:12px; opacity:.85;">
-          Le barre sono colorate come il player selezionato.
-          Le barre di errore mostrano un intervallo di confidenza (95%) sul winrate: più partite → intervallo più stretto.
+          Le barre sono colorate come il player selezionato. Le barre di errore mostrano un intervallo di confidenza (95%) sul winrate: più partite → intervallo più stretto.
         </div>
         <div class="chart-card" style="margin-top:12px;">
-  <div class="muted" id="pcWinChartHint">Seleziona un giocatore per vedere il winrate per commander.</div>
-  <div class="chart-wrap" style="margin-top:10px;">
-    <canvas id="pcWinChart" height="340" aria-label="Winrate per commander del player"></canvas>
-  </div>
-</div>
+          <div class="muted" id="pcWinChartHint">Seleziona un giocatore per vedere il winrate per commander.</div>
+          <div class="chart-wrap" style="margin-top:10px;">
+            <canvas id="pcWinChart" height="340" aria-label="Winrate per commander del player"></canvas>
+          </div>
+        </div>
         <div class="muted" style="margin-top:10px; font-size:12px; opacity:.85;">
           Tip: imposta “Min partite” per ridurre rumore da campioni piccoli. Su mobile la lista è pensata per scorrere in verticale.
         </div>
       </section>
+    </section>
 
+    <section class="stats-panel" data-stats-panel="commander-pod">
+      <section class="card" id="podCard">
+        <div class="card-head">
+          <h2>Commander by Pod</h2>
+        </div>
+        <p class="muted">
+          Analisi dei commander del player selezionato in funzione del numero di giocatori al tavolo. La metrica principale è WAE: vittorie sopra/sotto l'atteso, dove l'atteso neutro è 1 / numero player.
+        </p>
+        <div class="muted" id="podHint" style="margin-top:8px; font-size:12px; opacity:.9;">Seleziona un giocatore per vedere la matrice commander × pod size.</div>
+        <div class="pod-matrix-wrap" id="podMatrix" style="margin-top:12px;"></div>
+        <div class="chart-wrap" style="margin-top:10px; min-height:340px;">
+          <canvas id="podChart" aria-label="Commander by pod size"></canvas>
+        </div>
+        <div class="muted" style="margin-top:10px; font-size:12px; opacity:.85;">
+          Nelle celle: WAE = wins - expected wins. Nel tooltip/grafico trovi anche winrate reale, winrate atteso e record vittorie/partite.
+        </div>
+      </section>
+    </section>
 
+    <section class="stats-panel" data-stats-panel="cumulative">
       <section class="card" id="trendCard">
         <div class="card-head">
-          <h2>Andamento rolling nel tempo</h2>
+          <h2>Cumulative trend</h2>
         </div>
-        <p class="muted">Seleziona un giocatore per vedere il rolling win rate nel tempo. Il totale player usa una finestra di 10 partite; il focus commander usa una finestra minima di 5 partite.</p>
+        <p class="muted">Seleziona un giocatore per vedere la cumulata delle vittorie sopra l'atteso. Se scegli un commander, il grafico si concentra solo sulle sue partite.</p>
         <div class="filters-row trend-controls" style="margin-top:12px; gap:16px; align-items:flex-start; flex-wrap:wrap;">
           <label>
             Giocatore
@@ -102,7 +130,7 @@
             <div class="trend-picker-head">
               <div>
                 <div class="trend-picker-label" id="trendCommanderLabel">Commander del player</div>
-                <div class="trend-picker-sub" id="trendCommanderSub">Mostra il totale player finché non selezioni almeno un commander eleggibile (minimo 5 partite).</div>
+                <div class="trend-picker-sub" id="trendCommanderSub">Mostra il totale player finché non selezioni un commander eleggibile.</div>
               </div>
               <button type="button" class="trend-clear-btn" id="trendCommanderClear" disabled>Pulisci</button>
             </div>
@@ -110,14 +138,13 @@
           </div>
         </div>
         <div class="muted" id="trendHint" style="margin-top:10px; font-size:12px; opacity:.9;">Nessun giocatore selezionato.</div>
+        <div class="trend-summary" id="trendSummary" style="margin-top:12px;"></div>
         <div class="chart-wrap trend-chart-wrap" style="margin-top:12px; min-height:360px;">
-          <canvas id="trendChart" aria-label="Andamento rolling win rate nel tempo"></canvas>
+          <canvas id="trendChart" aria-label="Cumulative wins above expected"></canvas>
         </div>
-        <div class="muted" style="margin-top:10px; font-size:12px; opacity:.85;">La serie è resa meno spezzata aggregando per settimana e usando una linea continua con smoothing leggero. Se non selezioni commander, viene mostrato il totale del player. Nella scelta commander compaiono solo i commander eleggibili (almeno 5 partite per il player) e se ne può vedere uno alla volta.</div>
+        <div class="muted" style="margin-top:10px; font-size:12px; opacity:.85;">Linea sopra 0 = sopra atteso rispetto al pod size; sotto 0 = sotto atteso. L'atteso neutro di ogni partita è 1 diviso il numero di player al tavolo.</div>
       </section>
-
-
-    <!-- Tabelle rimosse: manteniamo solo i grafici -->
+    </section>
 
     <footer class="footer">
       <span>Static site per GitHub Pages · dati da SQLite</span>
@@ -127,7 +154,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="../assets/player-color-overrides.js"></script>
   <script src="../assets/player-colors.js?v=20260204"></script>
-  <script src="../assets/stats.js?v=20260331"></script>
+  <script src="../assets/stats.js?v=20260612"></script>
 
   <script src="../assets/nav-items.js?v=20260223"></script>
   <script src="../assets/nav.js?v=20260223"></script>

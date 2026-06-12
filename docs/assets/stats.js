@@ -143,6 +143,10 @@ const errorBars = {
   const elTrendCommanderSub = $("#trendCommanderSub");
   const elTrendHint = $("#trendHint");
   const canvasTrend = $("#trendChart");
+  const canvasPod = $("#podChart");
+  const elPodHint = $("#podHint");
+  const elPodMatrix = $("#podMatrix");
+  const elTrendSummary = $("#trendSummary");
 
   let stats = null;
 
@@ -165,11 +169,31 @@ const errorBars = {
   let barChart = null;
   let bubbleChart = null;
   let trendChart = null;
+  let podChart = null;
 
   const COL_TEXT_MUTED = "#aab3d3";
   const COL_TEXT_MAIN = "#e9ecf7";
+  const POD_SIZE_COLORS = {
+    3: "#4e79a7",
+    4: "#f28e2b",
+    5: "#59a14f",
+    6: "#e15759",
+  };
   // Default cap for percent-like plots (used as a safety net only)
   const MAX_Y_PLOTS = 100
+
+  function fmtPct(x, digits = 1) {
+    const n = Number(x);
+    if (!Number.isFinite(n)) return "—";
+    return `${n.toFixed(digits)}%`;
+  }
+
+  function fmtSigned(x, digits = 1) {
+    const n = Number(x);
+    if (!Number.isFinite(n)) return "—";
+    const sign = n > 0 ? "+" : "";
+    return `${sign}${n.toFixed(digits)}`;
+  }
 
   function pcGet(name) {
     return (window.PlayerColors && window.PlayerColors.get) ? window.PlayerColors.get(name) : "#9CA3AF";
@@ -177,6 +201,11 @@ const errorBars = {
 
   function pcAlpha(color, alpha) {
     return (window.PlayerColors && window.PlayerColors.withAlpha) ? window.PlayerColors.withAlpha(color, alpha) : color;
+  }
+
+  function podSizeColor(podSize) {
+    const n = Number(podSize);
+    return POD_SIZE_COLORS[n] || "#9c755f";
   }
 
   // Darken a #RRGGBB color by multiplying RGB channels by `factor` (0..1).
@@ -714,6 +743,155 @@ const errorBars = {
   }
 
 
+  function computeCommanderPodRows(playerName, minGames) {
+    const games = Array.isArray(stats?.games) ? stats.games : [];
+    const byKey = new Map();
+    for (const g of games) {
+      const winner = String(g?.winner_player || "");
+      const entries = Array.isArray(g?.entries) ? g.entries : [];
+      const podSize = entries.length;
+      if (!podSize) continue;
+      const expected = 1 / podSize;
+      for (const e of entries) {
+        if (String(e?.player || "") !== String(playerName)) continue;
+        const commander = String(e?.commander || "").trim();
+        if (!commander) continue;
+        const key = `${commander}||${podSize}`;
+        const cur = byKey.get(key) || { commander, podSize, games: 0, wins: 0, expectedWins: 0 };
+        cur.games += 1;
+        cur.wins += winner === playerName ? 1 : 0;
+        cur.expectedWins += expected;
+        byKey.set(key, cur);
+      }
+    }
+    const minN = Math.max(1, parseInt(minGames || "1", 10));
+    return Array.from(byKey.values())
+      .filter((r) => r.games >= minN)
+      .map((r) => {
+        const rawWr = r.games > 0 ? (100 * r.wins) / r.games : 0;
+        const expectedWr = r.games > 0 ? (100 * r.expectedWins) / r.games : 0;
+        const winsAboveExpected = r.wins - r.expectedWins;
+        return {
+          ...r,
+          rawWr,
+          expectedWr,
+          deltaWr: rawWr - expectedWr,
+          winsAboveExpected,
+        };
+      })
+      .sort((a, b) => a.commander.localeCompare(b.commander) || a.podSize - b.podSize);
+  }
+
+  function renderPodMatrix(playerName) {
+    if (!elPodMatrix || !elPodHint) return;
+    const minGames = elMinGames ? Math.max(1, parseInt(elMinGames.value || "1", 10)) : 1;
+    if (!playerName) {
+      elPodMatrix.innerHTML = "";
+      elPodHint.textContent = "Seleziona un giocatore per vedere la matrice commander × pod size.";
+      if (podChart) { podChart.destroy(); podChart = null; }
+      return;
+    }
+
+    const rows = computeCommanderPodRows(playerName, minGames);
+    if (!rows.length) {
+      elPodMatrix.innerHTML = "";
+      elPodHint.textContent = `Nessun dato con almeno ${minGames} partite per commander/pod size.`;
+      if (podChart) { podChart.destroy(); podChart = null; }
+      return;
+    }
+
+    elPodHint.textContent = `${playerName}: ${rows.length} combinazioni commander/pod size con almeno ${minGames} partite.`;
+    const podSizes = Array.from(new Set(rows.map((r) => r.podSize))).sort((a, b) => a - b);
+    const commanders = Array.from(new Set(rows.map((r) => r.commander))).sort((a, b) => a.localeCompare(b));
+    const byKey = new Map(rows.map((r) => [`${r.commander}||${r.podSize}`, r]));
+
+    const head = `<tr><th>Commander</th><th>Tot</th>${podSizes.map((n) => `<th>${n}p</th>`).join("")}</tr>`;
+    const body = commanders.map((commander) => {
+      const cRows = rows.filter((r) => r.commander === commander);
+      const totalGames = cRows.reduce((a, r) => a + r.games, 0);
+      const totalWins = cRows.reduce((a, r) => a + r.wins, 0);
+      const totalExpected = cRows.reduce((a, r) => a + r.expectedWins, 0);
+      const totalWae = totalWins - totalExpected;
+      const tClass = totalWae > 0.0001 ? "pos" : (totalWae < -0.0001 ? "neg" : "");
+      const cells = podSizes.map((pod) => {
+        const r = byKey.get(`${commander}||${pod}`);
+        if (!r) return '<td class="muted">—</td>';
+        const cls = r.winsAboveExpected > 0.0001 ? "pos" : (r.winsAboveExpected < -0.0001 ? "neg" : "");
+        return `<td title="${escapeHtml(commander)} · ${pod} player: ${r.wins}/${r.games}, WR ${fmtPct(r.rawWr)}, atteso ${fmtPct(r.expectedWr)}"><span class="pod-wae ${cls}">${fmtSigned(r.winsAboveExpected, 1)}</span><span class="pod-cell-sub">${r.wins}/${r.games} · ${fmtPct(r.rawWr, 0)}</span></td>`;
+      }).join("");
+      return `<tr><td>${escapeHtml(commander)}</td><td><span class="pod-wae ${tClass}">${fmtSigned(totalWae, 1)}</span><span class="pod-cell-sub">${totalWins}/${totalGames}</span></td>${cells}</tr>`;
+    }).join("");
+    elPodMatrix.innerHTML = `<table class="pod-matrix">${head}${body}</table>`;
+
+    renderPodChart(playerName, rows, podSizes);
+  }
+
+  function renderPodChart(playerName, rows, podSizes) {
+    if (!canvasPod) return;
+    if (podChart) { podChart.destroy(); podChart = null; }
+    const byCommander = new Map();
+    for (const r of rows) {
+      const cur = byCommander.get(r.commander) || { commander: r.commander, games: 0, absWae: 0 };
+      cur.games += r.games;
+      cur.absWae += Math.abs(r.winsAboveExpected);
+      byCommander.set(r.commander, cur);
+    }
+    const topCommanders = Array.from(byCommander.values())
+      .sort((a, b) => (b.games - a.games) || (b.absWae - a.absWae) || a.commander.localeCompare(b.commander))
+      .slice(0, 10)
+      .map((r) => r.commander);
+    if (!topCommanders.length) return;
+
+    const byKey = new Map(rows.map((r) => [`${r.commander}||${r.podSize}`, r]));
+    const datasets = podSizes.map((pod) => {
+      const color = podSizeColor(pod);
+      return {
+        label: `${pod} player`,
+        data: topCommanders.map((c) => {
+          const r = byKey.get(`${c}||${pod}`);
+          return r ? Number(r.winsAboveExpected.toFixed(3)) : null;
+        }),
+        backgroundColor: pcAlpha(color, 0.82),
+        borderColor: color,
+        borderWidth: 1,
+        _podSize: pod,
+      };
+    });
+
+    podChart = new Chart(canvasPod.getContext("2d"), {
+      type: "bar",
+      data: { labels: topCommanders, datasets },
+      options: {
+        ...commonOptions(),
+        scales: {
+          x: { ticks: { color: COL_TEXT_MUTED, maxRotation: 35, minRotation: 0 }, grid: { display: false } },
+          y: {
+            ticks: { color: COL_TEXT_MUTED, callback: (v) => fmtSigned(v, 1) },
+            grid: { color: "rgba(255,255,255,0.05)" },
+            title: { display: true, text: "Wins Above Expected", color: COL_TEXT_MUTED },
+          },
+        },
+        plugins: {
+          ...commonOptions().plugins,
+          legend: { display: true, labels: { color: COL_TEXT_MUTED } },
+          tooltip: {
+            ...commonOptions().plugins.tooltip,
+            callbacks: {
+              label: (ctx) => {
+                const commander = ctx.chart.data.labels[ctx.dataIndex];
+                const pod = ctx.dataset._podSize;
+                const r = byKey.get(`${commander}||${pod}`);
+                if (!r) return `${ctx.dataset.label}: —`;
+                return `${ctx.dataset.label}: WAE ${fmtSigned(r.winsAboveExpected, 1)} · ${r.wins}/${r.games} · WR ${fmtPct(r.rawWr)} · atteso ${fmtPct(r.expectedWr)}`;
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+
   function getPlayerGameRows(playerName) {
     const games = Array.isArray(stats?.games) ? stats.games : [];
     const rows = [];
@@ -731,6 +909,8 @@ const errorBars = {
           gameId,
           entryIdx: idx,
           commander: String(e.commander || "").trim(),
+          podSize: entries.length,
+          expected: entries.length > 0 ? 1 / entries.length : 0,
           win: winner === playerName ? 1 : 0,
         });
       }
@@ -753,7 +933,7 @@ const errorBars = {
       byCommander.set(r.commander, cur);
     }
     return Array.from(byCommander.values())
-      .filter((r) => r.games >= 5)
+      .filter((r) => r.games >= 1)
       .sort((a, b) => (b.games - a.games) || a.commander.localeCompare(b.commander));
   }
 
@@ -767,11 +947,11 @@ const errorBars = {
   function updateTrendCommanderSub(playerName, eligible) {
     if (!elTrendCommanderSub) return;
     if (!playerName) {
-      elTrendCommanderSub.textContent = 'Mostra il totale player finché non selezioni un commander eleggibile (minimo 5 partite).';
+      elTrendCommanderSub.textContent = 'Mostra il totale player finché non selezioni un commander.';
       return;
     }
     if (!eligible.length) {
-      elTrendCommanderSub.textContent = `${playerName} non ha commander eleggibili per il focus (servono almeno 5 partite).`;
+      elTrendCommanderSub.textContent = `${playerName} non ha ancora commander disponibili per il focus.`;
       return;
     }
     elTrendCommanderSub.textContent = `${eligible.length} commander eleggibili per ${playerName}. Tocca un commander per passare dal totale player al focus dedicato.`;
@@ -789,7 +969,7 @@ const errorBars = {
       return;
     }
     if (!eligible.length) {
-      elTrendCommanderChips.innerHTML = '<div class="trend-chip-empty">Nessun commander eleggibile con almeno 5 partite.</div>';
+      elTrendCommanderChips.innerHTML = '<div class="trend-chip-empty">Nessun commander disponibile.</div>';
       elTrendCommanderChips.classList.add('is-disabled');
       if (elTrendCommanderClear) elTrendCommanderClear.disabled = true;
       return;
@@ -829,69 +1009,90 @@ const errorBars = {
     return out;
   }
 
-  function buildRollingSeries(gameRows, windowSize) {
+  function buildCumulativeSeries(gameRows) {
     const rows = Array.isArray(gameRows) ? gameRows : [];
-    if (rows.length < windowSize) return null;
-    const weeklyLatest = new Map();
+    if (!rows.length) return null;
     let wins = 0;
+    let expectedWins = 0;
+    let cumulativeDelta = 0;
+    const points = [];
     for (let i = 0; i < rows.length; i += 1) {
-      wins += rows[i].win;
-      if (i >= windowSize) wins -= rows[i - windowSize].win;
-      if (i < windowSize - 1) continue;
-      const last = rows[i];
-      const bucket = weekStart(last.playedAt);
-      weeklyLatest.set(bucket, {
-        value: (wins / windowSize) * 100,
+      const r = rows[i];
+      const expected = Number.isFinite(Number(r.expected)) ? Number(r.expected) : 0;
+      wins += r.win;
+      expectedWins += expected;
+      cumulativeDelta += r.win - expected;
+      points.push({
+        x: String(i + 1),
+        y: Number(cumulativeDelta.toFixed(3)),
         wins,
-        total: windowSize,
-        lastGameDate: last.playedAt,
+        expectedWins: Number(expectedWins.toFixed(3)),
+        games: i + 1,
+        playedAt: r.playedAt,
+        commander: r.commander,
+        podSize: r.podSize,
+        actual: r.win,
+        expected,
       });
     }
-    const weeks = weeksBetweenInclusive(rows[windowSize - 1].playedAt, rows[rows.length - 1].playedAt);
-    let carry = null;
-    const points = [];
-    for (const wk of weeks) {
-      if (weeklyLatest.has(wk)) carry = weeklyLatest.get(wk);
-      if (!carry) continue;
-      points.push({ x: wk, y: carry.value, wins: carry.wins, total: carry.total, lastGameDate: carry.lastGameDate });
-    }
-    return points.length ? points : null;
+    return points;
   }
+
+  function summarizeCumulativeRows(rows) {
+    const n = rows.length;
+    const wins = rows.reduce((a, r) => a + (r.win ? 1 : 0), 0);
+    const expectedWins = rows.reduce((a, r) => a + (Number(r.expected) || 0), 0);
+    const wae = wins - expectedWins;
+    return {
+      games: n,
+      wins,
+      expectedWins,
+      winsAboveExpected: wae,
+      rawWr: n > 0 ? (100 * wins) / n : 0,
+      expectedWr: n > 0 ? (100 * expectedWins) / n : 0,
+    };
+  }
+
+  function renderTrendSummary(rows) {
+    if (!elTrendSummary) return;
+    if (!rows.length) {
+      elTrendSummary.innerHTML = "";
+      return;
+    }
+    const s = summarizeCumulativeRows(rows);
+    const cards = [
+      ["Partite", String(s.games)],
+      ["Vittorie", String(s.wins)],
+      ["Expected wins", s.expectedWins.toFixed(1)],
+      ["Wins above expected", fmtSigned(s.winsAboveExpected, 1)],
+      ["WR vs atteso", `${fmtPct(s.rawWr)} / ${fmtPct(s.expectedWr)}`],
+    ];
+    elTrendSummary.innerHTML = cards.map(([label, value]) => `<div class="trend-summary-card"><div class="trend-summary-label">${label}</div><div class="trend-summary-value">${value}</div></div>`).join("");
+  }
+
 
   function buildTrendDatasets(playerName, selectedCommanders) {
     const base = getPlayerGameRows(playerName);
     const chosen = Array.isArray(selectedCommanders) ? selectedCommanders.filter(Boolean) : [];
-    const out = [];
-    if (!chosen.length) {
-      const pts = buildRollingSeries(base, 10);
-      if (pts) {
-        const color = pcGet(playerName);
-        out.push({
-          label: `${playerName} · Totale player (10)`,
-          data: pts,
-          borderColor: color,
-          backgroundColor: pcAlpha(color, 0.16),
-          borderWidth: 2,
-        });
-      }
-      return out;
-    }
-    const tone = pcGet(playerName);
-    chosen.slice(0, 1).forEach((commander) => {
-      const pts = buildRollingSeries(base.filter((r) => r.commander === commander), 5);
-      if (!pts) return;
-      out.push({
-        label: `${commander} · rolling 5`,
+    const targetRows = chosen.length ? base.filter((r) => r.commander === chosen[0]) : base;
+    const pts = buildCumulativeSeries(targetRows);
+    if (!pts) return { datasets: [], rows: targetRows };
+    const color = pcGet(playerName);
+    const label = chosen.length ? `${chosen[0]} · cumulata WAE` : `${playerName} · cumulata WAE`;
+    return {
+      rows: targetRows,
+      datasets: [{
+        label,
         data: pts,
-        borderColor: tone,
-        backgroundColor: pcAlpha(tone, 0.16),
-        pointBackgroundColor: tone,
-        pointBorderColor: tone,
+        borderColor: color,
+        backgroundColor: pcAlpha(color, 0.16),
+        pointBackgroundColor: color,
+        pointBorderColor: color,
         borderWidth: 2,
-      });
-    });
-    return out;
+      }],
+    };
   }
+
 
   function renderTrendChart() {
     if (!canvasTrend || !elTrendHint) return;
@@ -901,6 +1102,7 @@ const errorBars = {
         trendChart.destroy();
         trendChart = null;
       }
+      renderTrendSummary([]);
       fillTrendCommanderSelect("");
       elTrendHint.textContent = "Nessun giocatore selezionato.";
       return;
@@ -908,22 +1110,31 @@ const errorBars = {
 
     fillTrendCommanderSelect(playerName);
     const selectedCommanders = getSelectedTrendCommanders();
-    const datasets = buildTrendDatasets(playerName, selectedCommanders);
+    const built = buildTrendDatasets(playerName, selectedCommanders);
+    const datasets = built.datasets || [];
+    const targetRows = built.rows || [];
 
     if (!datasets.length) {
       if (trendChart) {
         trendChart.destroy();
         trendChart = null;
       }
+      renderTrendSummary([]);
       elTrendHint.textContent = selectedCommanders.length
-        ? `Nessun commander selezionato ha almeno 5 partite per ${playerName}.`
-        : `${playerName} non ha ancora abbastanza partite per mostrare un rolling su 10.`;
+        ? `Nessuna partita disponibile per il commander selezionato.`
+        : `${playerName} non ha ancora partite disponibili per la cumulata.`;
       return;
     }
 
+    renderTrendSummary(targetRows);
     elTrendHint.textContent = selectedCommanders.length
-      ? `${playerName}: dettaglio commander selezionato (rolling 5, minimo 5 partite).`
-      : `${playerName}: totale player (rolling 10).`;
+      ? `${playerName}: cumulata del commander selezionato.`
+      : `${playerName}: cumulata totale player.`;
+
+    const allY = datasets.flatMap((ds) => ds.data.map((p) => Number(p.y) || 0));
+    const yMin = Math.min(0, ...allY);
+    const yMax = Math.max(0, ...allY);
+    const pad = Math.max(0.5, (yMax - yMin) * 0.15);
 
     const ctx = canvasTrend.getContext("2d");
     if (trendChart) trendChart.destroy();
@@ -935,7 +1146,7 @@ const errorBars = {
         maintainAspectRatio: false,
         parsing: false,
         elements: {
-          line: { tension: 0.18, cubicInterpolationMode: "monotone" },
+          line: { tension: 0.12, cubicInterpolationMode: "monotone" },
           point: {
             radius: (ctx) => window.matchMedia('(max-width: 720px)').matches ? 0 : 2,
             hoverRadius: window.matchMedia('(max-width: 720px)').matches ? 7 : 5,
@@ -946,28 +1157,22 @@ const errorBars = {
           x: {
             type: "category",
             offset: true,
-            labels: Array.from(new Set(datasets.flatMap((ds) => ds.data.map((p) => p.x)))).sort(),
+            labels: datasets[0].data.map((p) => p.x),
             ticks: {
               color: COL_TEXT_MUTED,
               maxRotation: 0,
               autoSkip: true,
               maxTicksLimit: window.matchMedia('(max-width: 720px)').matches ? 5 : 8,
-              callback: (v, idx, ticks) => {
-                const label = ticks?.[idx]?.label || "";
-                if (!label) return "";
-                const short = label.slice(5);
-                return window.matchMedia('(max-width: 720px)').matches ? short.replace('-', '/') : short;
-              },
             },
             grid: { color: "rgba(255,255,255,0.05)" },
-            title: { display: true, text: window.matchMedia('(max-width: 720px)').matches ? "Settimane" : "Settimana", color: COL_TEXT_MUTED },
+            title: { display: true, text: "Partita progressiva", color: COL_TEXT_MUTED },
           },
           y: {
-            min: 0,
-            max: 100,
-            ticks: { color: COL_TEXT_MUTED, callback: (v) => `${v}%` },
+            min: yMin - pad,
+            max: yMax + pad,
+            ticks: { color: COL_TEXT_MUTED, callback: (v) => fmtSigned(v, 1) },
             grid: { color: "rgba(255,255,255,0.05)" },
-            title: { display: true, text: "Win rate rolling (%)", color: COL_TEXT_MUTED },
+            title: { display: true, text: "Wins Above Expected cumulato", color: COL_TEXT_MUTED },
           },
         },
         plugins: {
@@ -976,15 +1181,18 @@ const errorBars = {
           tooltip: {
             ...commonOptions().plugins.tooltip,
             callbacks: {
-              title: (items) => items?.[0]?.raw?.x ? `Settimana del ${items[0].raw.x}` : "",
+              title: (items) => {
+                const raw = items?.[0]?.raw || {};
+                return raw.playedAt ? `Partita #${raw.games} · ${raw.playedAt}` : `Partita #${raw.games || ""}`;
+              },
               label: (ctx) => {
                 const raw = ctx.raw || {};
-                const base = `${ctx.dataset.label}: ${Number(raw.y || 0).toFixed(1)}%`;
-                return `${base} · ${raw.wins}/${raw.total}`;
+                return `${ctx.dataset.label}: ${fmtSigned(raw.y, 1)} WAE`;
               },
               afterLabel: (ctx) => {
                 const raw = ctx.raw || {};
-                return raw.lastGameDate ? `Ultima partita utile: ${raw.lastGameDate}` : "";
+                const commander = raw.commander ? ` · ${raw.commander}` : "";
+                return `Record cumulato: ${raw.wins}/${raw.games} · Expected wins: ${Number(raw.expectedWins || 0).toFixed(1)} · Pod: ${raw.podSize || "—"}${commander}`;
               },
             },
           },
@@ -992,6 +1200,7 @@ const errorBars = {
       },
     });
   }
+
 
   function update() {
     const players = computePlayers();
@@ -1008,6 +1217,7 @@ const errorBars = {
 
 
     renderPlayerCommanderWinrateChart(chosen || "");
+    renderPodMatrix(chosen || "");
     renderTrendChart();
   }
 
@@ -1070,6 +1280,19 @@ const errorBars = {
           update();
         });
       }
+
+      document.querySelectorAll('[data-stats-tab]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.statsTab;
+          document.querySelectorAll('[data-stats-tab]').forEach((b) => b.classList.toggle('is-active', b === btn));
+          document.querySelectorAll('[data-stats-panel]').forEach((panel) => panel.classList.toggle('is-active', panel.dataset.statsPanel === key));
+          setTimeout(() => {
+            [barChart, bubbleChart, window.__pcWinChart, podChart, trendChart].forEach((chart) => {
+              if (chart && chart.resize) chart.resize();
+            });
+          }, 0);
+        });
+      });
 
       update();
     } catch (e) {
