@@ -64,18 +64,18 @@
       "wins": 9
     },
     {
+      "bracket": 4,
+      "commander": "Abigale",
+      "games": 26,
+      "player": "Fra",
+      "wins": 9
+    },
+    {
       "bracket": 3,
       "commander": "Hylda",
       "games": 26,
       "player": "Teo",
       "wins": 4
-    },
-    {
-      "bracket": 4,
-      "commander": "Abigale",
-      "games": 25,
-      "player": "Fra",
-      "wins": 9
     },
     {
       "bracket": 5,
@@ -101,7 +101,7 @@
     {
       "bracket": 4,
       "commander": "Glabbro",
-      "games": 18,
+      "games": 17,
       "player": "Fra",
       "wins": 6
     },
@@ -552,16 +552,6 @@
       "wins": 0
     },
     {
-      "b_post": 4.398580835032114,
-      "b_post_map": 4.5,
-      "b_post_sd": 0.40909732331314,
-      "bracket_prior": 4,
-      "commander": "Abigale",
-      "cpr_z": 1.267812009159419,
-      "games": 25,
-      "wins": 9
-    },
-    {
       "b_post": 4.240594939213282,
       "b_post_map": 4.5,
       "b_post_sd": 0.575302417608378,
@@ -640,6 +630,16 @@
       "cpr_z": -1.0758031207150167,
       "games": 3,
       "wins": 0
+    },
+    {
+      "b_post": 4.335045591544318,
+      "b_post_map": 4.5,
+      "b_post_sd": 0.4194304729397114,
+      "bracket_prior": 4,
+      "commander": "Abigale",
+      "cpr_z": 1.0492089592760419,
+      "games": 26,
+      "wins": 9
     },
     {
       "b_post": 3.5580613758931032,
@@ -982,6 +982,16 @@
       "wins": 2
     },
     {
+      "b_post": 4.054592223954193,
+      "b_post_map": 4.0,
+      "b_post_sd": 0.5035563899429681,
+      "bracket_prior": 4,
+      "commander": "Glabbro",
+      "cpr_z": 0.24592824011660244,
+      "games": 17,
+      "wins": 6
+    },
+    {
       "b_post": 3.8451873154161906,
       "b_post_map": 4.0,
       "b_post_sd": 0.5921958490779121,
@@ -1030,16 +1040,6 @@
       "cpr_z": 0.08480592329417905,
       "games": 12,
       "wins": 2
-    },
-    {
-      "b_post": 3.972642777382776,
-      "b_post_map": 4.0,
-      "b_post_sd": 0.5061583643507696,
-      "bracket_prior": 4,
-      "commander": "Glabbro",
-      "cpr_z": 0.030023717300557768,
-      "games": 18,
-      "wins": 6
     },
     {
       "b_post": 3.943633157157302,
@@ -1144,7 +1144,7 @@
         },
         {
           "bracket": 4,
-          "commander": "Glabbro",
+          "commander": "Abigale",
           "player": "Fra"
         },
         {
@@ -4605,24 +4605,24 @@
     },
     {
       "commander": "Abigale",
-      "games_total": 25,
-      "games_used": 25,
-      "mdi": 0.023333333333333376,
-      "mpi": 0.30999999999999994,
-      "oewr": 0.10830276696316415,
-      "oewr_used": 25,
-      "oewr_z": 1.267812009159419,
+      "games_total": 26,
+      "games_used": 26,
+      "mdi": 0.041666666666666706,
+      "mpi": 0.31730769230769224,
+      "oewr": 0.08843438790045942,
+      "oewr_used": 26,
+      "oewr_z": 1.0492089592760419,
       "player": "Fra"
     },
     {
       "commander": "Glabbro",
-      "games_total": 18,
-      "games_used": 18,
-      "mdi": 0.375,
-      "mpi": 0.375,
-      "oewr": 0.0032730069940528875,
-      "oewr_used": 18,
-      "oewr_z": 0.030023717300557768,
+      "games_total": 17,
+      "games_used": 17,
+      "mdi": 0.36764705882352944,
+      "mpi": 0.36764705882352944,
+      "oewr": 0.027481718503535955,
+      "oewr_used": 17,
+      "oewr_z": 0.24592824011660244,
       "player": "Fra"
     },
     {
