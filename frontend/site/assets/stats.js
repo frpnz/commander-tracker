@@ -146,6 +146,7 @@ const errorBars = {
   const canvasPod = $("#podChart");
   const elPodHint = $("#podHint");
   const elPodMatrix = $("#podMatrix");
+  const elPodCards = $("#podCards");
   const elTrendSummary = $("#trendSummary");
 
   let stats = null;
@@ -787,6 +788,7 @@ const errorBars = {
     const minGames = elMinGames ? Math.max(1, parseInt(elMinGames.value || "1", 10)) : 1;
     if (!playerName) {
       elPodMatrix.innerHTML = "";
+      if (elPodCards) elPodCards.innerHTML = "";
       elPodHint.textContent = "Seleziona un giocatore per vedere la matrice commander × pod size.";
       if (podChart) { podChart.destroy(); podChart = null; }
       return;
@@ -795,6 +797,7 @@ const errorBars = {
     const rows = computeCommanderPodRows(playerName, minGames);
     if (!rows.length) {
       elPodMatrix.innerHTML = "";
+      if (elPodCards) elPodCards.innerHTML = "";
       elPodHint.textContent = `Nessun dato con almeno ${minGames} partite per commander/pod size.`;
       if (podChart) { podChart.destroy(); podChart = null; }
       return;
@@ -822,9 +825,35 @@ const errorBars = {
       return `<tr><td>${escapeHtml(commander)}</td><td><span class="pod-wae ${tClass}">${fmtSigned(totalWae, 1)}</span><span class="pod-cell-sub">${totalWins}/${totalGames}</span></td>${cells}</tr>`;
     }).join("");
     elPodMatrix.innerHTML = `<table class="pod-matrix">${head}${body}</table>`;
+    renderPodCards(commanders, podSizes, rows, byKey);
 
     renderPodChart(playerName, rows, podSizes);
   }
+
+  function renderPodCards(commanders, podSizes, rows, byKey) {
+    if (!elPodCards) return;
+    const cards = commanders.map((commander) => {
+      const cRows = rows.filter((r) => r.commander === commander);
+      const totalGames = cRows.reduce((a, r) => a + r.games, 0);
+      const totalWins = cRows.reduce((a, r) => a + r.wins, 0);
+      const totalExpected = cRows.reduce((a, r) => a + r.expectedWins, 0);
+      const totalWae = totalWins - totalExpected;
+      const tClass = totalWae > 0.0001 ? "pos" : (totalWae < -0.0001 ? "neg" : "");
+      const best = cRows.slice().sort((a, b) => (b.winsAboveExpected - a.winsAboveExpected) || (b.games - a.games))[0];
+      const bestLabel = best ? `${best.podSize}p` : "—";
+      const podRows = podSizes.map((pod) => {
+        const r = byKey.get(`${commander}||${pod}`);
+        if (!r) {
+          return `<div class="pod-card-row is-empty"><span>${pod} player</span><span>—</span></div>`;
+        }
+        const cls = r.winsAboveExpected > 0.0001 ? "pos" : (r.winsAboveExpected < -0.0001 ? "neg" : "");
+        return `<div class="pod-card-row"><span>${pod} player</span><span><strong class="pod-wae ${cls}">${fmtSigned(r.winsAboveExpected, 1)}</strong><small>${r.wins}/${r.games} · WR ${fmtPct(r.rawWr, 0)} · exp ${fmtPct(r.expectedWr, 0)}</small></span></div>`;
+      }).join("");
+      return `<article class="pod-card"><div class="pod-card-head"><div><h3>${escapeHtml(commander)}</h3><p>${totalGames} partite · best ${bestLabel}</p></div><div class="pod-card-total"><span class="pod-wae ${tClass}">${fmtSigned(totalWae, 1)}</span><small>${totalWins}/${totalGames}</small></div></div><div class="pod-card-rows">${podRows}</div></article>`;
+    }).join("");
+    elPodCards.innerHTML = cards;
+  }
+
 
   function renderPodChart(playerName, rows, podSizes) {
     if (!canvasPod) return;

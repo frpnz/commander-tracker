@@ -1056,6 +1056,20 @@ nav {
 .stats-panel{display:none; margin-top:14px;}
 .stats-panel.is-active{display:block;}
 .pod-matrix-wrap{overflow:auto; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.025);}
+.pod-cards{display:none;}
+.pod-card{border:1px solid var(--border); border-radius:14px; padding:12px; background:rgba(255,255,255,.035);}
+.pod-card-head{display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:10px;}
+.pod-card h3{margin:0; font-size:15px; line-height:1.25;}
+.pod-card p{margin:4px 0 0; color:var(--muted); font-size:12px;}
+.pod-card-total{text-align:right; min-width:68px;}
+.pod-card-total small{display:block; margin-top:3px; color:var(--muted); font-size:11px;}
+.pod-card-rows{display:grid; gap:7px;}
+.pod-card-row{display:flex; justify-content:space-between; gap:12px; align-items:center; border-top:1px solid rgba(255,255,255,.07); padding-top:7px; color:var(--muted); font-size:12px;}
+.pod-card-row > span:first-child{white-space:nowrap;}
+.pod-card-row > span:last-child{text-align:right; color:var(--text);}
+.pod-card-row small{display:block; margin-top:2px; color:var(--muted); font-size:11px; font-variant-numeric:tabular-nums;}
+.pod-card-row.is-empty > span:last-child{color:var(--muted);}
+
 .pod-matrix{width:100%; border-collapse:collapse; min-width:680px;}
 .pod-matrix th,.pod-matrix td{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.07); text-align:right; font-size:13px; vertical-align:middle;}
 .pod-matrix th:first-child,.pod-matrix td:first-child{text-align:left; position:sticky; left:0; background:rgba(11,16,32,.92);}
@@ -1070,4 +1084,4 @@ nav {
 .trend-summary-label{color:var(--muted); font-size:12px;}
 .trend-summary-value{font-size:18px; font-weight:760; margin-top:3px; font-variant-numeric:tabular-nums;}
 @media (min-width: 860px){.trend-summary{grid-template-columns:repeat(5, minmax(0,1fr));}}
-@media (max-width: 640px){.stats-tabs{position:sticky; top:0; z-index:5; padding:8px 0; background:rgba(11,16,32,.86); backdrop-filter:blur(10px);} .stats-tab{font-size:12px; padding:8px 10px;} .pod-matrix{min-width:620px;}}
+@media (max-width: 640px){.stats-tabs{position:sticky; top:0; z-index:5; padding:8px 0; background:rgba(11,16,32,.86); backdrop-filter:blur(10px);} .stats-tab{font-size:12px; padding:8px 10px;} .pod-matrix-wrap{display:none;} .pod-cards{display:grid; gap:12px;} #podCard .chart-wrap{min-height:300px;}}
