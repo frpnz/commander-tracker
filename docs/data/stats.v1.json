@@ -43,7 +43,7 @@
   ],
   "by_player_commander": [
     {
-      "bracket": 3,
+      "bracket": 4,
       "commander": "Hashaton",
       "games": 45,
       "player": "Da",
@@ -489,13 +489,33 @@
       "wins": 1
     },
     {
-      "b_post": 4.6709286180268395,
+      "b_post": 4.683008176607994,
       "b_post_map": 5.0,
-      "b_post_sd": 0.3667655693373082,
+      "b_post_sd": 0.3585794948023028,
       "bracket_prior": 5,
       "commander": "Zaxara l'esemplare",
-      "cpr_z": 1.7945930293175196,
+      "cpr_z": 1.8776303095257676,
       "games": 3,
+      "wins": 3
+    },
+    {
+      "b_post": 3.394450250518657,
+      "b_post_map": 3.5,
+      "b_post_sd": 0.7988295563879166,
+      "bracket_prior": 3,
+      "commander": "Skullbriar, the Walking Grave",
+      "cpr_z": 1.7959791002382146,
+      "games": 1,
+      "wins": 1
+    },
+    {
+      "b_post": 3.5922866096693533,
+      "b_post_map": 3.75,
+      "b_post_sd": 0.6574423327042445,
+      "bracket_prior": 3,
+      "commander": "Galtha",
+      "cpr_z": 1.6060623204994537,
+      "games": 9,
       "wins": 3
     },
     {
@@ -509,54 +529,44 @@
       "wins": 1
     },
     {
-      "b_post": 3.300729187619691,
-      "b_post_map": 3.25,
-      "b_post_sd": 0.7475333657392801,
-      "bracket_prior": 4,
-      "commander": "Meria",
-      "cpr_z": -1.5472767759165136,
-      "games": 4,
-      "wins": 0
-    },
-    {
-      "b_post": 3.5465462081253976,
-      "b_post_map": 3.5,
-      "b_post_sd": 0.6577972374603978,
-      "bracket_prior": 3,
-      "commander": "Galtha",
-      "cpr_z": 1.4603610364055566,
-      "games": 9,
-      "wins": 3
-    },
-    {
-      "b_post": 3.3432528957203105,
-      "b_post_map": 3.5,
-      "b_post_sd": 0.799738166726788,
-      "bracket_prior": 3,
-      "commander": "Skullbriar, the Walking Grave",
-      "cpr_z": 1.4142135623730951,
-      "games": 1,
-      "wins": 1
-    },
-    {
-      "b_post": 4.376924232134031,
-      "b_post_map": 4.5,
-      "b_post_sd": 0.48678647069460573,
+      "b_post": 4.398378381387514,
+      "b_post_map": 4.75,
+      "b_post_sd": 0.47896704469613466,
       "bracket_prior": 4,
       "commander": "Raggadragga",
-      "cpr_z": 1.412215653301438,
+      "cpr_z": 1.5049269391165216,
       "games": 8,
       "wins": 5
     },
     {
-      "b_post": 4.3813285509240245,
-      "b_post_map": 4.5,
-      "b_post_sd": 0.40432693955152543,
-      "bracket_prior": 5,
-      "commander": "Vivi",
-      "cpr_z": -1.2634342615470993,
-      "games": 25,
-      "wins": 9
+      "b_post": 3.482005663709771,
+      "b_post_map": 3.5,
+      "b_post_sd": 0.3965005040427583,
+      "bracket_prior": 4,
+      "commander": "Hashaton",
+      "cpr_z": -1.4005587275251823,
+      "games": 45,
+      "wins": 12
+    },
+    {
+      "b_post": 3.3846909272554195,
+      "b_post_map": 3.5,
+      "b_post_sd": 0.748716857814827,
+      "bracket_prior": 4,
+      "commander": "Meria",
+      "cpr_z": -1.3314577338716393,
+      "games": 4,
+      "wins": 0
+    },
+    {
+      "b_post": 3.463764822575674,
+      "b_post_map": 3.5,
+      "b_post_sd": 0.6598110746554241,
+      "bracket_prior": 3,
+      "commander": "Satoru",
+      "cpr_z": 1.2103469955738997,
+      "games": 9,
+      "wins": 3
     },
     {
       "b_post": 4.220306181327117,
@@ -569,6 +579,16 @@
       "wins": 0
     },
     {
+      "b_post": 4.362500854193022,
+      "b_post_map": 4.5,
+      "b_post_sd": 0.4141747036712489,
+      "bracket_prior": 4,
+      "commander": "Abigale",
+      "cpr_z": 1.1434093790038824,
+      "games": 26,
+      "wins": 9
+    },
+    {
       "b_post": 4.259718225879734,
       "b_post_map": 4.5,
       "b_post_sd": 0.569361000749053,
@@ -577,6 +597,16 @@
       "cpr_z": -1.101804729110004,
       "games": 3,
       "wins": 1
+    },
+    {
+      "b_post": 4.429716366790625,
+      "b_post_map": 4.5,
+      "b_post_sd": 0.39382976371029943,
+      "bracket_prior": 5,
+      "commander": "Vivi",
+      "cpr_z": -1.1010132694279253,
+      "games": 25,
+      "wins": 9
     },
     {
       "b_post": 3.4427798108846948,
@@ -629,26 +659,6 @@
       "wins": 1
     },
     {
-      "b_post": 4.318136835873596,
-      "b_post_map": 4.5,
-      "b_post_sd": 0.4225133251768369,
-      "bracket_prior": 4,
-      "commander": "Abigale",
-      "cpr_z": 0.993348303104678,
-      "games": 26,
-      "wins": 9
-    },
-    {
-      "b_post": 3.5054898878379817,
-      "b_post_map": 3.5,
-      "b_post_sd": 0.6277829763596986,
-      "bracket_prior": 4,
-      "commander": "Purphorose",
-      "cpr_z": -0.9640065319223707,
-      "games": 11,
-      "wins": 2
-    },
-    {
       "b_post": 3.6324907272479123,
       "b_post_map": 3.75,
       "b_post_sd": 0.7650315006256473,
@@ -669,14 +679,34 @@
       "wins": 0
     },
     {
-      "b_post": 3.5961787297472396,
-      "b_post_map": 3.75,
-      "b_post_sd": 0.7588266687771268,
+      "b_post": 3.5160889481310256,
+      "b_post_map": 3.5,
+      "b_post_sd": 0.6281560326037291,
       "bracket_prior": 4,
-      "commander": "Derevi",
-      "cpr_z": -0.9133124350433584,
-      "games": 2,
-      "wins": 0
+      "commander": "Purphorose",
+      "cpr_z": -0.9401574450941625,
+      "games": 11,
+      "wins": 2
+    },
+    {
+      "b_post": 4.291481290015275,
+      "b_post_map": 4.5,
+      "b_post_sd": 0.4577992579486134,
+      "bracket_prior": 4,
+      "commander": "Elas",
+      "cpr_z": 0.9246405880388522,
+      "games": 18,
+      "wins": 7
+    },
+    {
+      "b_post": 4.694873420454629,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.3359275176414998,
+      "bracket_prior": 5,
+      "commander": "Magda",
+      "cpr_z": 0.8876787975160505,
+      "games": 8,
+      "wins": 5
     },
     {
       "b_post": 3.24850113897337,
@@ -689,43 +719,73 @@
       "wins": 1
     },
     {
-      "b_post": 3.283105197410547,
-      "b_post_map": 3.25,
-      "b_post_sd": 0.4065373650201916,
-      "bracket_prior": 3,
-      "commander": "Hashaton",
-      "cpr_z": 0.8554892892502494,
-      "games": 45,
-      "wins": 12
-    },
-    {
-      "b_post": 4.687296785928759,
-      "b_post_map": 5.0,
-      "b_post_sd": 0.34027782479928204,
-      "bracket_prior": 5,
-      "commander": "Magda",
-      "cpr_z": 0.8183295617792219,
-      "games": 8,
-      "wins": 5
-    },
-    {
-      "b_post": 4.2937770085436995,
-      "b_post_map": 4.75,
-      "b_post_sd": 0.5831888592188276,
-      "bracket_prior": 5,
-      "commander": "Rograkh & Malcolm",
-      "cpr_z": -0.8032495393369359,
-      "games": 1,
+      "b_post": 3.6118859478207517,
+      "b_post_map": 3.75,
+      "b_post_sd": 0.7584073482185724,
+      "bracket_prior": 4,
+      "commander": "Derevi",
+      "cpr_z": -0.8676784017121383,
+      "games": 2,
       "wins": 0
     },
     {
-      "b_post": 2.749518708903028,
-      "b_post_map": 2.75,
-      "b_post_sd": 0.7918704507506125,
+      "b_post": 3.3097193071895186,
+      "b_post_map": 3.25,
+      "b_post_sd": 0.6350308597414254,
       "bracket_prior": 3,
-      "commander": "Karona",
-      "cpr_z": -0.7778943478914802,
-      "games": 2,
+      "commander": "Pantalaza",
+      "cpr_z": 0.8407299816114534,
+      "games": 14,
+      "wins": 3
+    },
+    {
+      "b_post": 4.255078852976475,
+      "b_post_map": 4.25,
+      "b_post_sd": 0.4763129549863023,
+      "bracket_prior": 4,
+      "commander": "Kruphix",
+      "cpr_z": 0.8362501159056855,
+      "games": 17,
+      "wins": 6
+    },
+    {
+      "b_post": 4.481030469718447,
+      "b_post_map": 5.0,
+      "b_post_sd": 0.48983361397747704,
+      "bracket_prior": 5,
+      "commander": "Yuriko",
+      "cpr_z": 0.8069854286862168,
+      "games": 1,
+      "wins": 1
+    },
+    {
+      "b_post": 2.350017217072216,
+      "b_post_map": 2.25,
+      "b_post_sd": 0.7258723720064277,
+      "bracket_prior": 2,
+      "commander": "Ognis",
+      "cpr_z": 0.7886819158578833,
+      "games": 5,
+      "wins": 1
+    },
+    {
+      "b_post": 4.246826976775018,
+      "b_post_map": 4.25,
+      "b_post_sd": 0.43311615048663554,
+      "bracket_prior": 4,
+      "commander": "Halana",
+      "cpr_z": 0.7688864594610716,
+      "games": 27,
+      "wins": 9
+    },
+    {
+      "b_post": 4.300622691680613,
+      "b_post_map": 4.75,
+      "b_post_sd": 0.5809295480679179,
+      "bracket_prior": 5,
+      "commander": "Rograkh & Malcolm",
+      "cpr_z": -0.7459123488206352,
+      "games": 1,
       "wins": 0
     },
     {
@@ -739,36 +799,6 @@
       "wins": 2
     },
     {
-      "b_post": 4.232595420139612,
-      "b_post_map": 4.25,
-      "b_post_sd": 0.46797760093376145,
-      "bracket_prior": 4,
-      "commander": "Elas",
-      "cpr_z": 0.7365008032280902,
-      "games": 18,
-      "wins": 7
-    },
-    {
-      "b_post": 3.267438568076293,
-      "b_post_map": 3.25,
-      "b_post_sd": 0.6325436394837541,
-      "bracket_prior": 3,
-      "commander": "Pantalaza",
-      "cpr_z": 0.7329292831427947,
-      "games": 14,
-      "wins": 3
-    },
-    {
-      "b_post": 3.620170195180366,
-      "b_post_map": 3.75,
-      "b_post_sd": 0.6478330614648982,
-      "bracket_prior": 4,
-      "commander": "Epstein",
-      "cpr_z": -0.7326556744175898,
-      "games": 8,
-      "wins": 2
-    },
-    {
       "b_post": 1.9595425541834846,
       "b_post_map": 1.75,
       "b_post_sd": 0.654018665752079,
@@ -779,44 +809,14 @@
       "wins": 0
     },
     {
-      "b_post": 4.214148426013056,
-      "b_post_map": 4.25,
-      "b_post_sd": 0.4827344950622084,
-      "bracket_prior": 4,
-      "commander": "Kruphix",
-      "cpr_z": 0.7060068955769075,
-      "games": 17,
-      "wins": 6
-    },
-    {
-      "b_post": 4.21641305981885,
-      "b_post_map": 4.25,
-      "b_post_sd": 0.4358224494244045,
-      "bracket_prior": 4,
-      "commander": "Halana",
-      "cpr_z": 0.6771665882360242,
-      "games": 27,
-      "wins": 9
-    },
-    {
-      "b_post": 2.804408901857262,
+      "b_post": 2.776444362368978,
       "b_post_map": 2.75,
-      "b_post_sd": 0.8020701233279549,
+      "b_post_sd": 0.7967224470688267,
       "bracket_prior": 3,
-      "commander": "Anti-Venom",
-      "cpr_z": -0.6480008440437917,
+      "commander": "Karona",
+      "cpr_z": -0.7132133103540892,
       "games": 2,
       "wins": 0
-    },
-    {
-      "b_post": 3.250569905079111,
-      "b_post_map": 3.25,
-      "b_post_sd": 0.663696405871384,
-      "bracket_prior": 3,
-      "commander": "Satoru",
-      "cpr_z": 0.6409039510927436,
-      "games": 9,
-      "wins": 3
     },
     {
       "b_post": 3.70653974328332,
@@ -829,16 +829,6 @@
       "wins": 0
     },
     {
-      "b_post": 4.458543726294461,
-      "b_post_map": 5.0,
-      "b_post_sd": 0.5015301003970714,
-      "bracket_prior": 5,
-      "commander": "Yuriko",
-      "cpr_z": 0.6354471150216287,
-      "games": 1,
-      "wins": 1
-    },
-    {
       "b_post": 2.2820261682265843,
       "b_post_map": 2.25,
       "b_post_sd": 0.712631870110894,
@@ -847,16 +837,6 @@
       "cpr_z": 0.6284230420759367,
       "games": 4,
       "wins": 1
-    },
-    {
-      "b_post": 2.8193259243796507,
-      "b_post_map": 2.75,
-      "b_post_sd": 0.8049075623134291,
-      "bracket_prior": 3,
-      "commander": "Balrog",
-      "cpr_z": -0.61222006293749,
-      "games": 2,
-      "wins": 0
     },
     {
       "b_post": 3.7270936127513883,
@@ -873,20 +853,40 @@
       "b_post_map": 2.75,
       "b_post_sd": 0.8075594998523841,
       "bracket_prior": 3,
+      "commander": "Balrog",
+      "cpr_z": -0.5817325754011936,
+      "games": 2,
+      "wins": 0
+    },
+    {
+      "b_post": 2.8324757632166273,
+      "b_post_map": 2.75,
+      "b_post_sd": 0.8075594998523841,
+      "bracket_prior": 3,
       "commander": "Flubs",
       "cpr_z": -0.5817325754011936,
       "games": 2,
       "wins": 0
     },
     {
-      "b_post": 2.295198928322601,
-      "b_post_map": 2.25,
-      "b_post_sd": 0.7109384910029664,
-      "bracket_prior": 2,
-      "commander": "Ognis",
-      "cpr_z": 0.5671589561160401,
+      "b_post": 2.8344679788188234,
+      "b_post_map": 2.75,
+      "b_post_sd": 0.8079738813105279,
+      "bracket_prior": 3,
+      "commander": "Anti-Venom",
+      "cpr_z": -0.5771977645787072,
+      "games": 2,
+      "wins": 0
+    },
+    {
+      "b_post": 3.2131212809319036,
+      "b_post_map": 3.25,
+      "b_post_sd": 0.7134867899700977,
+      "bracket_prior": 3,
+      "commander": "Neyali",
+      "cpr_z": 0.5748880261604926,
       "games": 5,
-      "wins": 1
+      "wins": 2
     },
     {
       "b_post": 2.8421309706413234,
@@ -899,32 +899,52 @@
       "wins": 0
     },
     {
-      "b_post": 2.864152575304569,
-      "b_post_map": 2.75,
-      "b_post_sd": 0.8182910347404386,
-      "bracket_prior": 3,
-      "commander": "Delney",
-      "cpr_z": -0.5567993524353163,
-      "games": 1,
-      "wins": 0
-    },
-    {
-      "b_post": 3.1688592321800946,
+      "b_post": 3.195735914755871,
       "b_post_map": 3.25,
-      "b_post_sd": 0.6989061683180231,
+      "b_post_sd": 0.7013654070210601,
       "bracket_prior": 3,
       "commander": "Piru",
-      "cpr_z": 0.4826289929756633,
+      "cpr_z": 0.5522075861605872,
       "games": 7,
       "wins": 2
     },
     {
-      "b_post": 3.749919635974432,
+      "b_post": 3.1483851093866755,
+      "b_post_map": 3.25,
+      "b_post_sd": 0.7664472905198279,
+      "bracket_prior": 3,
+      "commander": "Arabella",
+      "cpr_z": 0.5124022318868989,
+      "games": 4,
+      "wins": 1
+    },
+    {
+      "b_post": 4.150385304163958,
+      "b_post_map": 4.25,
+      "b_post_sd": 0.4699608292977623,
+      "bracket_prior": 4,
+      "commander": "Sephiroth",
+      "cpr_z": 0.49955120911296674,
+      "games": 21,
+      "wins": 7
+    },
+    {
+      "b_post": 2.891443088745808,
+      "b_post_map": 3.0,
+      "b_post_sd": 0.8227093838336466,
+      "bracket_prior": 3,
+      "commander": "Delney",
+      "cpr_z": -0.4739878501170792,
+      "games": 1,
+      "wins": 0
+    },
+    {
+      "b_post": 3.755841875016777,
       "b_post_map": 4.0,
-      "b_post_sd": 0.7554962235180939,
+      "b_post_sd": 0.7551642416202321,
       "bracket_prior": 4,
       "commander": "Phelddagrif",
-      "cpr_z": -0.46250372595287753,
+      "cpr_z": -0.43745599559587645,
       "games": 1,
       "wins": 0
     },
@@ -939,24 +959,14 @@
       "wins": 0
     },
     {
-      "b_post": 3.7356504331129887,
+      "b_post": 3.7432422636850857,
       "b_post_map": 3.75,
-      "b_post_sd": 0.6964078393726301,
+      "b_post_sd": 0.6394108235399394,
       "bracket_prior": 4,
-      "commander": "Braids",
-      "cpr_z": -0.42577429051193894,
-      "games": 4,
-      "wins": 1
-    },
-    {
-      "b_post": 4.120207580546976,
-      "b_post_map": 4.25,
-      "b_post_sd": 0.47287205144729655,
-      "bracket_prior": 4,
-      "commander": "Sephiroth",
-      "cpr_z": 0.4136693467373738,
-      "games": 21,
-      "wins": 7
+      "commander": "Epstein",
+      "cpr_z": -0.42624629251704305,
+      "games": 8,
+      "wins": 2
     },
     {
       "b_post": 2.9120328135394864,
@@ -969,16 +979,6 @@
       "wins": 0
     },
     {
-      "b_post": 3.1093402627256013,
-      "b_post_map": 3.25,
-      "b_post_sd": 0.7628553696349019,
-      "bracket_prior": 3,
-      "commander": "Arabella",
-      "cpr_z": 0.3851699274325908,
-      "games": 4,
-      "wins": 1
-    },
-    {
       "b_post": 3.781013520445073,
       "b_post_map": 3.75,
       "b_post_sd": 0.5913320150955743,
@@ -987,16 +987,6 @@
       "cpr_z": -0.3641426782611759,
       "games": 12,
       "wins": 3
-    },
-    {
-      "b_post": 2.8497171314683856,
-      "b_post_map": 2.75,
-      "b_post_sd": 0.739082501828275,
-      "bracket_prior": 3,
-      "commander": "Sidisi",
-      "cpr_z": -0.32861771797855177,
-      "games": 4,
-      "wins": 1
     },
     {
       "b_post": 2.123763744289964,
@@ -1009,6 +999,16 @@
       "wins": 0
     },
     {
+      "b_post": 3.7771809396974687,
+      "b_post_map": 3.75,
+      "b_post_sd": 0.6911278727013918,
+      "bracket_prior": 4,
+      "commander": "Braids",
+      "cpr_z": -0.29992922679253614,
+      "games": 4,
+      "wins": 1
+    },
+    {
       "b_post": 3.7828758606224,
       "b_post_map": 4.0,
       "b_post_sd": 0.691710927307807,
@@ -1019,52 +1019,52 @@
       "wins": 1
     },
     {
-      "b_post": 2.8556178987694167,
-      "b_post_map": 3.0,
-      "b_post_sd": 0.5207883579341115,
-      "bracket_prior": 3,
-      "commander": "Hylda",
-      "cpr_z": -0.24667996868698502,
-      "games": 27,
-      "wins": 5
-    },
-    {
-      "b_post": 3.8311162995518897,
+      "b_post": 4.0211890650569835,
       "b_post_map": 4.0,
-      "b_post_sd": 0.585597871926873,
-      "bracket_prior": 4,
-      "commander": "Sigarda",
-      "cpr_z": -0.23727551262012114,
-      "games": 13,
-      "wins": 3
-    },
-    {
-      "b_post": 2.9003215140427105,
-      "b_post_map": 3.0,
-      "b_post_sd": 0.705936084874794,
-      "bracket_prior": 3,
-      "commander": "Neyali",
-      "cpr_z": -0.21779961326200042,
-      "games": 5,
-      "wins": 2
-    },
-    {
-      "b_post": 3.881158875385433,
-      "b_post_map": 4.0,
-      "b_post_sd": 0.5116549583721898,
+      "b_post_sd": 0.5026929399984075,
       "bracket_prior": 4,
       "commander": "Glabbro",
-      "cpr_z": -0.20360518075707418,
+      "cpr_z": 0.1581552499444611,
       "games": 18,
       "wins": 6
     },
     {
-      "b_post": 2.87659202191405,
+      "b_post": 2.895334410238594,
       "b_post_map": 3.0,
-      "b_post_sd": 0.7220833270612587,
+      "b_post_sd": 0.5228479951582311,
+      "bracket_prior": 3,
+      "commander": "Hylda",
+      "cpr_z": -0.1522672493366847,
+      "games": 27,
+      "wins": 5
+    },
+    {
+      "b_post": 2.929900873918104,
+      "b_post_map": 3.0,
+      "b_post_sd": 0.746819218295923,
+      "bracket_prior": 3,
+      "commander": "Sidisi",
+      "cpr_z": -0.1231497123169485,
+      "games": 4,
+      "wins": 1
+    },
+    {
+      "b_post": 3.880014386781747,
+      "b_post_map": 4.0,
+      "b_post_sd": 0.58347588201963,
+      "bracket_prior": 4,
+      "commander": "Sigarda",
+      "cpr_z": -0.11377689563865617,
+      "games": 13,
+      "wins": 3
+    },
+    {
+      "b_post": 2.915512373816383,
+      "b_post_map": 3.0,
+      "b_post_sd": 0.7267660587718651,
       "bracket_prior": 3,
       "commander": "The Scarab God",
-      "cpr_z": -0.20320212197687532,
+      "cpr_z": -0.1081725303102436,
       "games": 8,
       "wins": 1
     },
@@ -1210,7 +1210,7 @@
           "player": "Ivan"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         }
@@ -1228,7 +1228,7 @@
           "player": "Ivan"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1251,7 +1251,7 @@
           "player": "Ivan"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1269,7 +1269,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1287,7 +1287,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1310,7 +1310,7 @@
           "player": "Fra"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1328,7 +1328,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1361,7 +1361,7 @@
           "player": "Teo"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         }
@@ -1374,7 +1374,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1397,7 +1397,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1420,7 +1420,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1453,7 +1453,7 @@
           "player": "Ivan"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         }
@@ -1471,7 +1471,7 @@
           "player": "Teo"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1489,7 +1489,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1512,7 +1512,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1553,7 +1553,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1571,7 +1571,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1589,7 +1589,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1607,7 +1607,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1699,7 +1699,7 @@
           "player": "Fra"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1732,7 +1732,7 @@
           "player": "Stanka"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1760,7 +1760,7 @@
           "player": "Stanka"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1788,7 +1788,7 @@
           "player": "Stanka"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1816,7 +1816,7 @@
           "player": "Stanka"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1867,7 +1867,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1900,7 +1900,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1933,7 +1933,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -1976,7 +1976,7 @@
           "player": "Stanka"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         }
@@ -1994,7 +1994,7 @@
           "player": "Giamma"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -2022,7 +2022,7 @@
           "player": "Giamma"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -2213,7 +2213,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -2284,7 +2284,7 @@
           "player": "Matti"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -2345,7 +2345,7 @@
           "player": "Matti"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -2557,7 +2557,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -2628,7 +2628,7 @@
           "player": "Stanka"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         }
@@ -2646,7 +2646,7 @@
           "player": "Matti"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -2812,7 +2812,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -2960,7 +2960,7 @@
           "player": "Fra"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         }
@@ -2978,7 +2978,7 @@
           "player": "Giamma"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -3001,7 +3001,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -3062,7 +3062,7 @@
           "player": "Stanka"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         }
@@ -3075,7 +3075,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -3113,7 +3113,7 @@
           "player": "Fra"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -3151,7 +3151,7 @@
           "player": "Matti"
         },
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -3169,7 +3169,7 @@
     {
       "entries": [
         {
-          "bracket": 3,
+          "bracket": 4,
           "commander": "Hashaton",
           "player": "Da"
         },
@@ -4694,71 +4694,71 @@
     {
       "games_total": 102,
       "games_used": 102,
-      "mdi": -0.18872549019607843,
-      "mpi": 0.45833333333333326,
-      "oewr": -0.0029077313196463187,
+      "mdi": 0.25245098039215685,
+      "mpi": 0.38480392156862747,
+      "oewr": -0.06662011688665077,
       "oewr_used": 102,
-      "oewr_z": -0.06901142234617498,
+      "oewr_z": -1.4896705701719917,
       "player": "Da"
     },
     {
       "games_total": 94,
       "games_used": 94,
-      "mdi": 0.3129432624113475,
-      "mpi": 0.5186170212765958,
-      "oewr": -0.030290793200656065,
+      "mdi": 0.1968085106382979,
+      "mpi": 0.4450354609929078,
+      "oewr": -0.010383916191115202,
       "oewr_used": 94,
-      "oewr_z": -0.6522706426799068,
+      "oewr_z": -0.22662088555651033,
       "player": "Fra"
     },
     {
       "games_total": 74,
       "games_used": 74,
-      "mdi": 0.4042792792792792,
-      "mpi": 0.6722972972972975,
-      "oewr": -0.0414305886810072,
+      "mdi": 0.3378378378378378,
+      "mpi": 0.6463963963963963,
+      "oewr": -0.031682256383526085,
       "oewr_used": 74,
-      "oewr_z": -0.7899700662530964,
+      "oewr_z": -0.6069577633348244,
       "player": "Matti"
     },
     {
       "games_total": 67,
       "games_used": 67,
-      "mdi": -0.05970149253731338,
-      "mpi": 0.3731343283582088,
-      "oewr": 0.05386125446967817,
+      "mdi": -0.14800995024875616,
+      "mpi": 0.38930348258706454,
+      "oewr": 0.06240229671015911,
       "oewr_used": 67,
-      "oewr_z": 1.0297810222546382,
+      "oewr_z": 1.2088889739308724,
       "player": "Giamma"
     },
     {
       "games_total": 62,
       "games_used": 62,
-      "mdi": -0.6747311827956989,
-      "mpi": 0.7338709677419355,
-      "oewr": 0.021323502168947846,
+      "mdi": -0.8239247311827956,
+      "mpi": 0.8830645161290321,
+      "oewr": 0.03874477210785237,
       "oewr_used": 62,
-      "oewr_z": 0.44443097540222476,
+      "oewr_z": 0.8309870972848862,
       "player": "Teo"
     },
     {
       "games_total": 61,
       "games_used": 61,
-      "mdi": -0.1844262295081967,
-      "mpi": 0.4412568306010928,
-      "oewr": -0.026172518933901767,
+      "mdi": -0.35928961748633875,
+      "mpi": 0.5095628415300546,
+      "oewr": -0.0013945645890031798,
       "oewr_used": 61,
-      "oewr_z": -0.4718912409861154,
+      "oewr_z": -0.025715696384127983,
       "player": "Stanka"
     },
     {
       "games_total": 20,
       "games_used": 20,
-      "mdi": 0.7333333333333334,
-      "mpi": 0.7666666666666667,
-      "oewr": 0.13391862333848942,
+      "mdi": 0.5666666666666668,
+      "mpi": 0.6000000000000001,
+      "oewr": 0.1710294492165339,
       "oewr_used": 20,
-      "oewr_z": 1.2804161765884745,
+      "oewr_z": 1.6320766939346127,
       "player": "Ivan"
     },
     {
@@ -4777,11 +4777,11 @@
       "commander": "Hashaton",
       "games_total": 45,
       "games_used": 45,
-      "mdi": -0.612962962962963,
-      "mpi": 0.6351851851851852,
-      "oewr": 0.04988782532573367,
+      "mdi": 0.38703703703703707,
+      "mpi": 0.4685185185185185,
+      "oewr": -0.09452691529280971,
       "oewr_used": 45,
-      "oewr_z": 0.8554892892502494,
+      "oewr_z": -1.4005587275251823,
       "player": "Da"
     },
     {
@@ -4843,55 +4843,33 @@
       "commander": "Abigale",
       "games_total": 26,
       "games_used": 26,
-      "mdi": 0.092948717948718,
-      "mpi": 0.3173076923076924,
-      "oewr": 0.0839786030605464,
+      "mdi": 0.0032051282051282623,
+      "mpi": 0.27884615384615385,
+      "oewr": 0.0957828907466337,
       "oewr_used": 26,
-      "oewr_z": 0.993348303104678,
+      "oewr_z": 1.1434093790038824,
       "player": "Fra"
     },
     {
       "commander": "Glabbro",
       "games_total": 18,
       "games_used": 18,
-      "mdi": 0.5462962962962963,
-      "mpi": 0.5462962962962963,
-      "oewr": -0.022494198860141743,
+      "mdi": 0.31944444444444453,
+      "mpi": 0.31944444444444453,
+      "oewr": 0.01707196045237817,
       "oewr_used": 18,
-      "oewr_z": -0.20360518075707418,
+      "oewr_z": 0.1581552499444611,
       "player": "Fra"
     },
     {
       "commander": "Magda",
       "games_total": 8,
       "games_used": 8,
-      "mdi": 1.1979166666666667,
-      "mpi": 1.1979166666666667,
-      "oewr": 0.14194266645976,
+      "mdi": 1.125,
+      "mpi": 1.125,
+      "oewr": 0.1534817935783928,
       "oewr_used": 8,
-      "oewr_z": 0.8183295617792219,
-      "player": "Fra"
-    },
-    {
-      "commander": "Meria",
-      "games_total": 4,
-      "games_used": 4,
-      "mdi": 0.6875,
-      "mpi": 0.6875,
-      "oewr": -0.3584590221567421,
-      "oewr_used": 4,
-      "oewr_z": -1.5472767759165136,
-      "player": "Fra"
-    },
-    {
-      "commander": "Braids",
-      "games_total": 4,
-      "games_used": 4,
-      "mdi": 0.5000000000000001,
-      "mpi": 0.5000000000000001,
-      "oewr": -0.09910555019031778,
-      "oewr_used": 4,
-      "oewr_z": -0.42577429051193894,
+      "oewr_z": 0.8876787975160505,
       "player": "Fra"
     },
     {
@@ -4906,14 +4884,36 @@
       "player": "Fra"
     },
     {
+      "commander": "Meria",
+      "games_total": 4,
+      "games_used": 4,
+      "mdi": 0.41666666666666663,
+      "mpi": 0.41666666666666663,
+      "oewr": -0.3006920786361498,
+      "oewr_used": 4,
+      "oewr_z": -1.3314577338716393,
+      "player": "Fra"
+    },
+    {
+      "commander": "Braids",
+      "games_total": 4,
+      "games_used": 4,
+      "mdi": 0.3750000000000001,
+      "mpi": 0.3750000000000001,
+      "oewr": -0.06950236803489102,
+      "oewr_used": 4,
+      "oewr_z": -0.29992922679253614,
+      "player": "Fra"
+    },
+    {
       "commander": "Sidisi",
       "games_total": 4,
       "games_used": 4,
-      "mdi": 0.125,
-      "mpi": 0.375,
-      "oewr": -0.07580156717247136,
+      "mdi": -0.08333333333333337,
+      "mpi": 0.33333333333333337,
+      "oewr": -0.027104351388618317,
       "oewr_used": 4,
-      "oewr_z": -0.32861771797855177,
+      "oewr_z": -0.1231497123169485,
       "player": "Fra"
     },
     {
@@ -4972,14 +4972,14 @@
       "player": "Fra"
     },
     {
-      "commander": "Derevi",
+      "commander": "Balrog",
       "games_total": 2,
       "games_used": 2,
-      "mdi": 0.5416666666666667,
-      "mpi": 0.5416666666666667,
-      "oewr": -0.294299206547003,
+      "mdi": -0.5833333333333333,
+      "mpi": 0.5833333333333333,
+      "oewr": -0.14461072907258432,
       "oewr_used": 2,
-      "oewr_z": -0.9133124350433584,
+      "oewr_z": -0.5817325754011936,
       "player": "Fra"
     },
     {
@@ -4994,25 +4994,25 @@
       "player": "Fra"
     },
     {
-      "commander": "Balrog",
+      "commander": "Derevi",
       "games_total": 2,
       "games_used": 2,
-      "mdi": -0.45833333333333326,
-      "mpi": 0.45833333333333326,
-      "oewr": -0.15782068585519854,
+      "mdi": 0.41666666666666674,
+      "mpi": 0.41666666666666674,
+      "oewr": -0.27320499204354576,
       "oewr_used": 2,
-      "oewr_z": -0.61222006293749,
+      "oewr_z": -0.8676784017121383,
       "player": "Fra"
     },
     {
       "commander": "Rograkh & Malcolm",
       "games_total": 1,
       "games_used": 1,
-      "mdi": 1.25,
-      "mpi": 1.25,
-      "oewr": -0.39217479353857276,
+      "mdi": 1.0,
+      "mpi": 1.0,
+      "oewr": -0.35748555090318695,
       "oewr_used": 1,
-      "oewr_z": -0.8032495393369359,
+      "oewr_z": -0.7459123488206352,
       "player": "Fra"
     },
     {
@@ -5038,6 +5038,17 @@
       "player": "Fra"
     },
     {
+      "commander": "Skullbriar, the Walking Grave",
+      "games_total": 1,
+      "games_used": 1,
+      "mdi": -0.5,
+      "mpi": 0.5,
+      "oewr": 0.7633439086444331,
+      "oewr_used": 1,
+      "oewr_z": 1.7959791002382146,
+      "player": "Fra"
+    },
+    {
       "commander": "Baba",
       "games_total": 1,
       "games_used": 1,
@@ -5052,55 +5063,44 @@
       "commander": "Phelddagrif",
       "games_total": 1,
       "games_used": 1,
-      "mdi": 0.0,
-      "mpi": 0.0,
-      "oewr": -0.17621549373357218,
+      "mdi": -0.25,
+      "mpi": 0.25,
+      "oewr": -0.16062861227420328,
       "oewr_used": 1,
-      "oewr_z": -0.46250372595287753,
-      "player": "Fra"
-    },
-    {
-      "commander": "Skullbriar, the Walking Grave",
-      "games_total": 1,
-      "games_used": 1,
-      "mdi": 0.0,
-      "mpi": 0.0,
-      "oewr": 0.6666666666666667,
-      "oewr_used": 1,
-      "oewr_z": 1.4142135623730951,
+      "oewr_z": -0.43745599559587645,
       "player": "Fra"
     },
     {
       "commander": "Halana",
       "games_total": 27,
       "games_used": 27,
-      "mdi": 0.25617283950617287,
-      "mpi": 0.3364197530864197,
-      "oewr": 0.056556880149350224,
+      "mdi": 0.16975308641975315,
+      "mpi": 0.3672839506172839,
+      "oewr": 0.06352660976408299,
       "oewr_used": 27,
-      "oewr_z": 0.6771665882360242,
+      "oewr_z": 0.7688864594610716,
       "player": "Giamma"
     },
     {
       "commander": "Kruphix",
       "games_total": 17,
       "games_used": 17,
-      "mdi": 0.12745098039215694,
-      "mpi": 0.1666666666666667,
-      "oewr": 0.07609219458288101,
+      "mdi": 0.014705882352941202,
+      "mpi": 0.08333333333333333,
+      "oewr": 0.08874773500915807,
       "oewr_used": 17,
-      "oewr_z": 0.7060068955769075,
+      "oewr_z": 0.8362501159056855,
       "player": "Giamma"
     },
     {
       "commander": "Galtha",
       "games_total": 9,
       "games_used": 9,
-      "mdi": -0.7037037037037037,
-      "mpi": 0.7037037037037037,
-      "oewr": 0.17591572103409278,
+      "mdi": -0.8148148148148147,
+      "mpi": 0.8148148148148147,
+      "oewr": 0.18789581122437557,
       "oewr_used": 9,
-      "oewr_z": 1.4603610364055566,
+      "oewr_z": 1.6060623204994537,
       "player": "Giamma"
     },
     {
@@ -5129,99 +5129,99 @@
       "commander": "Anti-Venom",
       "games_total": 2,
       "games_used": 2,
-      "mdi": -0.5,
-      "mpi": 0.5,
-      "oewr": -0.1731902537594866,
+      "mdi": -0.8333333333333333,
+      "mpi": 0.8333333333333333,
+      "oewr": -0.14263918798189454,
       "oewr_used": 2,
-      "oewr_z": -0.6480008440437917,
+      "oewr_z": -0.5771977645787072,
       "player": "Giamma"
-    },
-    {
-      "commander": "Epstein",
-      "games_total": 8,
-      "games_used": 8,
-      "mdi": 0.5416666666666667,
-      "mpi": 0.625,
-      "oewr": -0.12053310004193632,
-      "oewr_used": 8,
-      "oewr_z": -0.7326556744175898,
-      "player": "Ivan"
     },
     {
       "commander": "Raggadragga",
       "games_total": 8,
       "games_used": 8,
-      "mdi": 0.5416666666666667,
-      "mpi": 0.5416666666666667,
-      "oewr": 0.23380369096533532,
+      "mdi": 0.47916666666666674,
+      "mpi": 0.47916666666666674,
+      "oewr": 0.24860528204304871,
       "oewr_used": 8,
-      "oewr_z": 1.412215653301438,
+      "oewr_z": 1.5049269391165216,
+      "player": "Ivan"
+    },
+    {
+      "commander": "Epstein",
+      "games_total": 8,
+      "games_used": 8,
+      "mdi": 0.3125000000000001,
+      "mpi": 0.39583333333333337,
+      "oewr": -0.06924385438300391,
+      "oewr_used": 8,
+      "oewr_z": -0.42624629251704305,
       "player": "Ivan"
     },
     {
       "commander": "Zaxara l'esemplare",
       "games_total": 3,
       "games_used": 3,
-      "mdi": 1.3333333333333333,
-      "mpi": 1.3333333333333333,
-      "oewr": 0.49485448672606314,
+      "mdi": 1.1666666666666667,
+      "mpi": 1.1666666666666667,
+      "oewr": 0.5304361240040169,
       "oewr_used": 3,
-      "oewr_z": 1.7945930293175196,
+      "oewr_z": 1.8776303095257676,
       "player": "Ivan"
     },
     {
       "commander": "Yuriko",
       "games_total": 1,
       "games_used": 1,
-      "mdi": 2.0,
-      "mpi": 2.0,
-      "oewr": 0.2876442792044066,
+      "mdi": 1.5,
+      "mpi": 1.5,
+      "oewr": 0.39438919103826786,
       "oewr_used": 1,
-      "oewr_z": 0.6354471150216287,
+      "oewr_z": 0.8069854286862168,
       "player": "Ivan"
     },
     {
       "commander": "Vivi",
       "games_total": 25,
       "games_used": 25,
-      "mdi": 1.1166666666666665,
-      "mpi": 1.143333333333333,
-      "oewr": -0.12232514516347087,
+      "mdi": 1.0233333333333334,
+      "mpi": 1.07,
+      "oewr": -0.1067795326964294,
       "oewr_used": 25,
-      "oewr_z": -1.2634342615470993,
+      "oewr_z": -1.1010132694279253,
       "player": "Matti"
     },
     {
       "commander": "Sephiroth",
       "games_total": 21,
       "games_used": 21,
-      "mdi": 0.3492063492063493,
-      "mpi": 0.3492063492063493,
-      "oewr": 0.040678393820753944,
+      "mdi": 0.2817460317460318,
+      "mpi": 0.31349206349206354,
+      "oewr": 0.048732712639878516,
       "oewr_used": 21,
-      "oewr_z": 0.4136693467373738,
+      "oewr_z": 0.49955120911296674,
       "player": "Matti"
     },
     {
       "commander": "Purphorose",
       "games_total": 11,
       "games_used": 11,
-      "mdi": 0.2651515151515152,
-      "mpi": 0.38636363636363635,
-      "oewr": -0.13374372034661386,
+      "mdi": 0.2424242424242425,
+      "mpi": 0.3636363636363636,
+      "oewr": -0.12990840861871256,
       "oewr_used": 11,
-      "oewr_z": -0.9640065319223707,
+      "oewr_z": -0.9401574450941625,
       "player": "Matti"
     },
     {
       "commander": "Piru",
       "games_total": 7,
       "games_used": 7,
-      "mdi": -0.4642857142857143,
-      "mpi": 0.4642857142857143,
-      "oewr": 0.07322982490669719,
+      "mdi": -0.5476190476190476,
+      "mpi": 0.5476190476190476,
+      "oewr": 0.08219766807981348,
       "oewr_used": 7,
-      "oewr_z": 0.4826289929756633,
+      "oewr_z": 0.5522075861605872,
       "player": "Matti"
     },
     {
@@ -5250,11 +5250,11 @@
       "commander": "Karona",
       "games_total": 2,
       "games_used": 2,
-      "mdi": 0.0,
-      "mpi": 0.0,
-      "oewr": -0.23195484826014723,
+      "mdi": -0.16666666666666674,
+      "mpi": 0.16666666666666674,
+      "oewr": -0.20263872230153696,
       "oewr_used": 2,
-      "oewr_z": -0.7778943478914802,
+      "oewr_z": -0.7132133103540892,
       "player": "Matti"
     },
     {
@@ -5294,11 +5294,11 @@
       "commander": "Elas",
       "games_total": 18,
       "games_used": 18,
-      "mdi": 0.25,
-      "mpi": 0.3611111111111111,
-      "oewr": 0.07919501473514651,
+      "mdi": 0.12962962962962965,
+      "mpi": 0.26851851851851855,
+      "oewr": 0.09786140498345688,
       "oewr_used": 18,
-      "oewr_z": 0.7365008032280902,
+      "oewr_z": 0.9246405880388522,
       "player": "Stanka"
     },
     {
@@ -5316,33 +5316,33 @@
       "commander": "Sigarda",
       "games_total": 13,
       "games_used": 13,
-      "mdi": 0.03846153846153856,
-      "mpi": 0.21794871794871795,
-      "oewr": -0.02870447278937344,
+      "mdi": -0.10897435897435889,
+      "mpi": 0.1602564102564102,
+      "oewr": -0.013491036287315235,
       "oewr_used": 13,
-      "oewr_z": -0.23727551262012114,
+      "oewr_z": -0.11377689563865617,
       "player": "Stanka"
     },
     {
       "commander": "Ognis",
       "games_total": 5,
       "games_used": 5,
-      "mdi": -1.1666666666666667,
-      "mpi": 1.1666666666666667,
-      "oewr": 0.08141890137557509,
+      "mdi": -1.4833333333333332,
+      "mpi": 1.4833333333333332,
+      "oewr": 0.10369391220602489,
       "oewr_used": 5,
-      "oewr_z": 0.5671589561160401,
+      "oewr_z": 0.7886819158578833,
       "player": "Stanka"
     },
     {
       "commander": "Neyali",
       "games_total": 5,
       "games_used": 5,
-      "mdi": -0.1,
-      "mpi": 0.1,
-      "oewr": -0.04733121827111336,
+      "mdi": -1.0,
+      "mpi": 1.0,
+      "oewr": 0.11528962036895371,
       "oewr_used": 5,
-      "oewr_z": -0.21779961326200042,
+      "oewr_z": 0.5748880261604926,
       "player": "Stanka"
     },
     {
@@ -5371,66 +5371,66 @@
       "commander": "Delney",
       "games_total": 1,
       "games_used": 1,
-      "mdi": -0.5,
-      "mpi": 0.5,
-      "oewr": -0.2366560913555668,
+      "mdi": -1.0,
+      "mpi": 1.0,
+      "oewr": -0.18344982266568147,
       "oewr_used": 1,
-      "oewr_z": -0.5567993524353163,
+      "oewr_z": -0.4739878501170792,
       "player": "Stanka"
     },
     {
       "commander": "Hylda",
       "games_total": 27,
       "games_used": 27,
-      "mdi": -0.5185185185185185,
-      "mpi": 0.6296296296296297,
-      "oewr": -0.018538960038877006,
+      "mdi": -0.5864197530864197,
+      "mpi": 0.6975308641975307,
+      "oewr": -0.011280671345682858,
       "oewr_used": 27,
-      "oewr_z": -0.24667996868698502,
+      "oewr_z": -0.1522672493366847,
       "player": "Teo"
     },
     {
       "commander": "Pantalaza",
       "games_total": 14,
       "games_used": 14,
-      "mdi": -1.023809523809524,
-      "mpi": 1.023809523809524,
-      "oewr": 0.06820769161029676,
+      "mdi": -1.136904761904762,
+      "mpi": 1.136904761904762,
+      "oewr": 0.07642131378252055,
       "oewr_used": 14,
-      "oewr_z": 0.7329292831427947,
+      "oewr_z": 0.8407299816114534,
       "player": "Teo"
     },
     {
       "commander": "Satoru",
       "games_total": 9,
       "games_used": 9,
-      "mdi": -0.5555555555555556,
-      "mpi": 0.5555555555555556,
-      "oewr": 0.08632266127748782,
+      "mdi": -1.0277777777777777,
+      "mpi": 1.0277777777777777,
+      "oewr": 0.15208841772772033,
       "oewr_used": 9,
-      "oewr_z": 0.6409039510927436,
+      "oewr_z": 1.2103469955738997,
       "player": "Teo"
     },
     {
       "commander": "The Scarab God",
       "games_total": 8,
       "games_used": 8,
-      "mdi": -0.8020833333333334,
-      "mpi": 0.8854166666666666,
-      "oewr": -0.02523654450186772,
+      "mdi": -0.90625,
+      "mpi": 0.9895833333333333,
+      "oewr": -0.013032014404680315,
       "oewr_used": 8,
-      "oewr_z": -0.20320212197687532,
+      "oewr_z": -0.1081725303102436,
       "player": "Teo"
     },
     {
       "commander": "Arabella",
       "games_total": 4,
       "games_used": 4,
-      "mdi": -0.5208333333333333,
-      "mpi": 0.5208333333333333,
-      "oewr": 0.07317244437446059,
+      "mdi": -0.7083333333333333,
+      "mpi": 0.7083333333333333,
+      "oewr": 0.09307898993823907,
       "oewr_used": 4,
-      "oewr_z": 0.3851699274325908,
+      "oewr_z": 0.5124022318868989,
       "player": "Teo"
     }
   ],
