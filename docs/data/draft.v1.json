@@ -1,11 +1,22 @@
 {
   "schema": "draft.v1",
-  "generated_utc": "2026-05-14T20:00:00Z",
+  "generated_utc": "2026-06-29T12:59:00Z",
   "counts": {
-    "tournaments": 3,
+    "tournaments": 4,
     "players": 8
   },
   "tournaments": [
+    {
+      "id": 7,
+      "played_at": "2026-06-29 12:59:00",
+      "name": "Marvel Super Heroes",
+      "format": "Draft",
+      "rounds": null,
+      "notes": "",
+      "standings": [],
+      "playoffs": null,
+      "podium": null
+    },
     {
       "id": 6,
       "played_at": "2026-05-14 20:00:00",
