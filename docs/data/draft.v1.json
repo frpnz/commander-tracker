@@ -1,21 +1,63 @@
 {
   "schema": "draft.v1",
-  "generated_utc": "2026-06-29T12:59:00Z",
+  "generated_utc": "2026-06-29T22:10:00Z",
   "counts": {
     "tournaments": 4,
     "players": 8
   },
   "tournaments": [
     {
-      "id": 7,
-      "played_at": "2026-06-29 12:59:00",
-      "name": "Marvel Super Heroes",
+      "id": 9,
+      "played_at": "2026-06-29 22:10:00",
+      "name": "Marvel Super Heroes - multiplayer draft",
       "format": "Draft",
       "rounds": null,
       "notes": "",
-      "standings": [],
+      "standings": [
+        {
+          "player": "Giamma",
+          "record": {
+            "w": 2,
+            "l": 1,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.6666666666666666,
+          "via_pct": 33.0,
+          "rank": 1
+        },
+        {
+          "player": "Fra",
+          "record": {
+            "w": 1,
+            "l": 2,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.3333333333333333,
+          "via_pct": 50.0,
+          "rank": 2
+        },
+        {
+          "player": "Da",
+          "record": {
+            "w": 0,
+            "l": 3,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.0,
+          "via_pct": 50.0,
+          "rank": 3
+        }
+      ],
       "playoffs": null,
-      "podium": null
+      "podium": {
+        "gold": "Giamma",
+        "silver": "Fra",
+        "bronze": "Da",
+        "method": "standings"
+      }
     },
     {
       "id": 6,
@@ -357,6 +399,23 @@
       "podium_total": 1
     },
     {
+      "player": "Giamma",
+      "tournaments": 4,
+      "matches": 17,
+      "wins": 10,
+      "losses": 7,
+      "draws": 0,
+      "match_win_pct": 0.5882352941176471,
+      "via_avg": 48.027499999999996,
+      "via_n": 4,
+      "best_rank": 1,
+      "avg_rank": 2.25,
+      "podium_gold": 1,
+      "podium_silver": 2,
+      "podium_bronze": 0,
+      "podium_total": 3
+    },
+    {
       "player": "Stanka",
       "tournaments": 3,
       "matches": 12,
@@ -372,23 +431,6 @@
       "podium_silver": 0,
       "podium_bronze": 0,
       "podium_total": 1
-    },
-    {
-      "player": "Giamma",
-      "tournaments": 3,
-      "matches": 14,
-      "wins": 8,
-      "losses": 6,
-      "draws": 0,
-      "match_win_pct": 0.5714285714285714,
-      "via_avg": 53.03666666666667,
-      "via_n": 3,
-      "best_rank": 2,
-      "avg_rank": 2.6666666666666665,
-      "podium_gold": 0,
-      "podium_silver": 2,
-      "podium_bronze": 0,
-      "podium_total": 2
     },
     {
       "player": "Teo",
@@ -408,23 +450,6 @@
       "podium_total": 2
     },
     {
-      "player": "Da",
-      "tournaments": 3,
-      "matches": 12,
-      "wins": 5,
-      "losses": 6,
-      "draws": 1,
-      "match_win_pct": 0.4583333333333333,
-      "via_avg": 65.42666666666666,
-      "via_n": 3,
-      "best_rank": 3,
-      "avg_rank": 5.0,
-      "podium_gold": 0,
-      "podium_silver": 0,
-      "podium_bronze": 1,
-      "podium_total": 1
-    },
-    {
       "player": "Lori",
       "tournaments": 3,
       "matches": 12,
@@ -442,21 +467,38 @@
       "podium_total": 0
     },
     {
-      "player": "Fra",
-      "tournaments": 3,
-      "matches": 13,
-      "wins": 4,
+      "player": "Da",
+      "tournaments": 4,
+      "matches": 15,
+      "wins": 5,
       "losses": 9,
-      "draws": 0,
-      "match_win_pct": 0.3076923076923077,
-      "via_avg": 56.95666666666667,
-      "via_n": 3,
-      "best_rank": 4,
-      "avg_rank": 6.0,
+      "draws": 1,
+      "match_win_pct": 0.36666666666666664,
+      "via_avg": 61.56999999999999,
+      "via_n": 4,
+      "best_rank": 3,
+      "avg_rank": 4.5,
       "podium_gold": 0,
       "podium_silver": 0,
+      "podium_bronze": 2,
+      "podium_total": 2
+    },
+    {
+      "player": "Fra",
+      "tournaments": 4,
+      "matches": 16,
+      "wins": 5,
+      "losses": 11,
+      "draws": 0,
+      "match_win_pct": 0.3125,
+      "via_avg": 55.217499999999994,
+      "via_n": 4,
+      "best_rank": 2,
+      "avg_rank": 5.0,
+      "podium_gold": 0,
+      "podium_silver": 1,
       "podium_bronze": 0,
-      "podium_total": 0
+      "podium_total": 1
     }
   ]
 }
