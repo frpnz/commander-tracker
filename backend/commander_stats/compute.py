@@ -51,7 +51,88 @@ def _deterministic_generated_utc(conn: sqlite3.Connection) -> str:
             max_played_at = row[0]
     return _iso_utc_from_sqlite_dt(max_played_at or "")
 
-def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) -> Dict[str, Any]:
+
+def _pod_sizes(conn: sqlite3.Connection) -> List[int]:
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT pod_size
+        FROM (
+            SELECT g.id AS game_id, COUNT(ge.id) AS pod_size
+            FROM game g
+            JOIN gameentry ge ON ge.game_id = g.id
+            GROUP BY g.id
+        ) x
+        GROUP BY pod_size
+        ORDER BY pod_size ASC
+        """
+    )
+    out: List[int] = []
+    for r in cur.fetchall():
+        try:
+            v = int(r["pod_size"])
+        except Exception:
+            try:
+                v = int(r[0])
+            except Exception:
+                continue
+        if v > 0:
+            out.append(v)
+    return out
+
+
+def _filtered_connection_by_pod_size(conn: sqlite3.Connection, pod_size: int) -> sqlite3.Connection:
+    """Return an in-memory copy containing only games with the requested player count."""
+    mem = sqlite3.connect(":memory:")
+    mem.row_factory = sqlite3.Row
+    conn.backup(mem)
+    cur = mem.cursor()
+    cur.execute("PRAGMA foreign_keys = OFF;")
+    cur.execute(
+        """
+        CREATE TEMP TABLE _keep_game_ids AS
+        SELECT g.id AS id
+        FROM game g
+        JOIN gameentry ge ON ge.game_id = g.id
+        GROUP BY g.id
+        HAVING COUNT(ge.id) = ?
+        """,
+        (int(pod_size),),
+    )
+    cur.execute("DELETE FROM gameentry WHERE game_id NOT IN (SELECT id FROM _keep_game_ids);")
+    cur.execute("DELETE FROM game WHERE id NOT IN (SELECT id FROM _keep_game_ids);")
+    cur.execute("DROP TABLE _keep_game_ids;")
+    mem.commit()
+    return mem
+
+
+
+
+def _filtered_connection_by_multiplayer_only(conn: sqlite3.Connection) -> sqlite3.Connection:
+    """Return an in-memory copy containing only multiplayer games (3+ players)."""
+    mem = sqlite3.connect(":memory:")
+    mem.row_factory = sqlite3.Row
+    conn.backup(mem)
+    cur = mem.cursor()
+    cur.execute("PRAGMA foreign_keys = OFF;")
+    cur.execute(
+        """
+        CREATE TEMP TABLE _keep_game_ids AS
+        SELECT g.id AS id
+        FROM game g
+        JOIN gameentry ge ON ge.game_id = g.id
+        GROUP BY g.id
+        HAVING COUNT(ge.id) >= 3
+        """
+    )
+    cur.execute("DELETE FROM gameentry WHERE game_id NOT IN (SELECT id FROM _keep_game_ids);")
+    cur.execute("DELETE FROM game WHERE id NOT IN (SELECT id FROM _keep_game_ids);")
+    cur.execute("DROP TABLE _keep_game_ids;")
+    mem.commit()
+    return mem
+
+
+def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *, include_player_count_splits: bool = True) -> Dict[str, Any]:
     """Compute aggregations used by the static frontend.
 
     Output contract (stats.v1.json):
@@ -63,6 +144,8 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
       - by_player_commander: [{player:str, commander:str, bracket:str|None, games:int, wins:int}]
     """
     cur = conn.cursor()
+
+    pod_sizes = _pod_sizes(conn)
 
     # --- Games list (for the static frontend) ---
     # Export a compact denormalized view of games + entries so the frontend can
@@ -97,6 +180,7 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
                 "notes": r.get("notes"),
                 "winner_player": r.get("winner_player"),
                 "entries": [],
+                "pod_size": 0,
             }
             games_detail_map[gid] = g
         g["entries"].append(
@@ -116,6 +200,7 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
         seen.add(gid)
         g = games_detail_map.get(gid)
         if g:
+            g["pod_size"] = len(g.get("entries") or [])
             games_detail.append(g)
 
     # --- Weighted winrate (delta winner bracket vs avg table bracket excluding winner) ---
@@ -854,11 +939,11 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
         )
     )
 
-    return {
+    payload = {
             "version": "v1",
             "generated_utc": generated_utc,
             "counts": {"games": n_games, "entries": n_entries},
-            "filters": {"players": players, "commanders": commanders, "brackets": brackets},
+            "filters": {"players": players, "commanders": commanders, "brackets": brackets, "pod_sizes": pod_sizes},
             # Full games list (new in v1 output, backward compatible)
             "games": games_detail,
             "by_player": by_player,
@@ -874,3 +959,33 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None) ->
             "meta_profile_by_player": meta_profile_by_player,
             "meta_profile_by_player_commander": meta_profile_by_player_commander,
         }
+
+    if include_player_count_splits:
+        by_player_count: Dict[str, Dict[str, Any]] = {}
+
+        # Special aggregate used by the frontend filter: all multiplayer Commander
+        # pods, excluding 1v1/two-player games. Keep it next to numeric splits so
+        # every page can switch datasets without recalculating metrics client-side.
+        sub_multi = _filtered_connection_by_multiplayer_only(conn)
+        try:
+            by_player_count["multiplayer"] = compute_stats(
+                sub_multi,
+                generated_utc=generated_utc,
+                include_player_count_splits=False,
+            )
+        finally:
+            sub_multi.close()
+
+        for pod_size in pod_sizes:
+            sub = _filtered_connection_by_pod_size(conn, pod_size)
+            try:
+                by_player_count[str(pod_size)] = compute_stats(
+                    sub,
+                    generated_utc=generated_utc,
+                    include_player_count_splits=False,
+                )
+            finally:
+                sub.close()
+        payload["by_player_count"] = by_player_count
+
+    return payload

@@ -336,6 +336,8 @@ function escapeHtml(s) {
 async function init() {
     const minSel = document.getElementById("minGames");
     const playerSel = document.getElementById("playerPick");
+    const podSizeSel = document.getElementById("podSizePick");
+    let allStats = null;
     let stats = null;
     setupInfoPopovers();
 
@@ -352,40 +354,73 @@ function getPeriodLabel(games){
   return (min&&max)?`${min} → ${max}`:null;
 }
 
+function podSizeOptionsFrom(data) {
+  const fromFilters = Array.isArray(data?.filters?.pod_sizes) ? data.filters.pod_sizes : [];
+  const fromSplits = data?.by_player_count ? Object.keys(data.by_player_count) : [];
+  return Array.from(new Set([...fromFilters, ...fromSplits]
+    .map((v) => Number(v))
+    .filter((v) => Number.isFinite(v) && v > 0)))
+    .sort((a, b) => a - b);
+}
+
+function fillPodSizeSelect(data) {
+  if (!podSizeSel) return;
+  const prev = podSizeSel.value || "";
+  const opts = podSizeOptionsFrom(data);
+  podSizeSel.innerHTML = '<option value="">Tutti</option><option value="multiplayer">Multiplayer only</option>' + opts.map((n) => `<option value="${n}">${n} player</option>`).join("");
+  if (prev === "multiplayer" || (prev && opts.includes(Number(prev)))) podSizeSel.value = prev;
+}
+
+function activeStats() {
+  const key = podSizeSel ? String(podSizeSel.value || "") : "";
+  return key && allStats?.by_player_count?.[key] ? allStats.by_player_count[key] : allStats;
+}
+
+function updateMeta() {
+  const elMeta = document.getElementById("meta");
+  if (!elMeta || !stats) return;
+  const games = stats?.counts?.games;
+  const period = getPeriodLabel(stats?.games);
+  const gen = stats?.generated_utc;
+  const parts = [];
+  if (period) parts.push(`Periodo: ${period}`);
+  if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
+  if (gen) parts.push(`Gen: ${gen}`);
+  const summary = parts.join(" · ");
+  elMeta.dataset.summary = summary;
+  elMeta.textContent = "";
+  elMeta.style.display = "none";
+}
+
     const res = await fetch("../data/stats.v1.json", { cache: "no-cache" });
-    stats = await res.json();
+    allStats = await res.json();
+    fillPodSizeSelect(allStats);
+    stats = activeStats();
 
 
-    const elMeta = document.getElementById("meta");
-    if (elMeta) {
-      const games = stats?.counts?.games;
-      const period = getPeriodLabel(stats?.games);
-      const gen = stats?.generated_utc;
-      const parts = [];
-      if (period) parts.push(`Periodo: ${period}`);
-      if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
-      if (gen) parts.push(`Gen: ${gen}`);
-      // Mantieni il riepilogo nei dati ma non mostrarlo in UI
-      const summary = parts.join(" · ");
-      elMeta.dataset.summary = summary;
-      elMeta.textContent = "";
-      elMeta.style.display = "none";
+    function refreshControlsForActiveStats() {
+      stats = activeStats();
+      updateMeta();
+      const prevPlayer = playerSel ? playerSel.value : "";
+      const players = (stats?.filters?.players || []).slice().sort((a,b)=>String(a).localeCompare(String(b)));
+      populatePlayerPick(players);
+      if (playerSel && prevPlayer && Array.from(playerSel.options).some((o) => o.value === prevPlayer)) playerSel.value = prevPlayer;
     }
 
-    const players = (stats?.filters?.players || []).slice().sort((a,b)=>String(a).localeCompare(String(b)));
-    populatePlayerPick(players);
-
-    const playerToCmd = buildPlayerToCommanders(stats);
-
     function rerender() {
+      stats = activeStats();
+      updateMeta();
       const minGames = Number(minSel?.value || 3);
       const focusPlayer = playerSel?.value || "";
+      const playerToCmd = buildPlayerToCommanders(stats);
       renderTable(stats, minGames, focusPlayer, playerToCmd);
     }
 
     if (minSel) minSel.addEventListener("change", rerender);
     if (playerSel) playerSel.addEventListener("change", rerender);
+    if (podSizeSel) podSizeSel.addEventListener("change", () => { refreshControlsForActiveStats(); rerender(); });
 
+    refreshControlsForActiveStats();
     rerender();
   }
 

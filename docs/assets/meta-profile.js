@@ -9,9 +9,12 @@
   "use strict";
 
   const elMeta = document.getElementById("meta");
+  const elPodSize = document.getElementById("fPodSize");
+  const elHint = document.getElementById("hint");
   const canvas = document.getElementById("mdiMpiPlayers");
 
   let chart = null;
+  let allStats = null;
   let stats = null;
 
 function _dateKey(s){ return (s||"").slice(0,10); }
@@ -25,6 +28,59 @@ function getPeriodLabel(games){
     if(max===null || d>max) max=d;
   }
   return (min&&max)?`${min} → ${max}`:null;
+}
+
+function podSizeOptionsFrom(data) {
+  const fromFilters = Array.isArray(data?.filters?.pod_sizes) ? data.filters.pod_sizes : [];
+  const fromSplits = data?.by_player_count ? Object.keys(data.by_player_count) : [];
+  return Array.from(new Set([...fromFilters, ...fromSplits]
+    .map((v) => Number(v))
+    .filter((v) => Number.isFinite(v) && v > 0)))
+    .sort((a, b) => a - b);
+}
+
+function fillPodSizeSelect(data) {
+  if (!elPodSize) return;
+  const prev = elPodSize.value || "";
+  const opts = podSizeOptionsFrom(data);
+  elPodSize.innerHTML = '<option value="">Tutti</option><option value="multiplayer">Multiplayer only</option>' + opts.map((n) => `<option value="${n}">${n} player</option>`).join("");
+  if (prev === "multiplayer" || (prev && opts.includes(Number(prev)))) elPodSize.value = prev;
+}
+
+function refreshActiveStats() {
+  const key = elPodSize ? String(elPodSize.value || "") : "";
+  stats = key && allStats?.by_player_count?.[key] ? allStats.by_player_count[key] : allStats;
+}
+
+function podSizeLabel() {
+  const v = elPodSize ? elPodSize.value : "";
+  return v === "multiplayer" ? "multiplayer only" : (v ? `${v} player` : "tutti i pod");
+}
+
+function updateMetaSummary() {
+  if (!elMeta || !stats) return;
+  const games = stats?.counts?.games;
+  const entries = stats?.counts?.entries;
+  const period = getPeriodLabel(stats?.games);
+  const gen = stats?.generated_utc;
+  const parts = [];
+  if (period) parts.push(`Periodo: ${period}`);
+  if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
+  if (Number.isFinite(entries)) parts.push(`Entries: ${entries}`);
+  if (gen) parts.push(`Gen: ${String(gen).replace("T", " ").replace("Z", " UTC")}`);
+  const summary = parts.join(" · ");
+  elMeta.dataset.summary = summary;
+  elMeta.textContent = "";
+  elMeta.style.display = "none";
+}
+
+function updateView() {
+  refreshActiveStats();
+  updateMetaSummary();
+  if (elHint) elHint.textContent = `Filtro attivo: ${podSizeLabel()}.`;
+  const points = stats?.meta_profile_by_player || [];
+  const bracketInfo = getBracketRange(stats);
+  render(points, bracketInfo);
 }
 
   function pcGet(name) {
@@ -67,7 +123,10 @@ function getPeriodLabel(games){
     const tools = cardEl.querySelector(".head-tools");
     if (!tools) return;
 
+    const existingBtn = tools.querySelector(".btn-ico[data-chart-action='fullscreen']");
+    if (existingBtn) existingBtn.remove();
     const btn = document.createElement("button");
+    btn.dataset.chartAction = "fullscreen";
     btn.className = "btn-ico";
     btn.type = "button";
     btn.title = "Fullscreen";
@@ -362,29 +421,10 @@ window.addEventListener("resize", () => {
   async function init() {
     try {
       const res = await fetch("../data/stats.v1.json", { cache: "no-cache" });
-      stats = await res.json();
-
-      
-if (elMeta) {
-  const games = stats?.counts?.games;
-  const entries = stats?.counts?.entries;
-  const period = getPeriodLabel(stats?.games);
-  const gen = stats?.generated_utc;
-  const parts = [];
-  if (period) parts.push(`Periodo: ${period}`);
-  if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
-  if (Number.isFinite(entries)) parts.push(`Entries: ${entries}`);
-  if (gen) parts.push(`Gen: ${String(gen).replace("T", " ").replace("Z", " UTC")}`);
-  // Mantieni il riepilogo nei dati ma non mostrarlo in UI
-  const summary = parts.join(" · ");
-  elMeta.dataset.summary = summary;
-  elMeta.textContent = "";
-  elMeta.style.display = "none";
-}
-
-      const points = stats.meta_profile_by_player || [];
-      const bracketInfo = getBracketRange(stats);
-      render(points, bracketInfo);
+      allStats = await res.json();
+      fillPodSizeSelect(allStats);
+      if (elPodSize) elPodSize.addEventListener("change", updateView);
+      updateView();
 } catch (e) {
       console.error("Errore caricamento profilo:", e);
     }

@@ -32,6 +32,35 @@ function setOptions(sel, values, { keepValue = true } = {}) {
   if (keepValue && prev && sel.value !== prev) sel.value = "";
 }
 
+function podSizeOptionsFrom(data) {
+  const fromFilters = Array.isArray(data && data.filters && data.filters.pod_sizes) ? data.filters.pod_sizes : [];
+  const fromSplits = data && data.by_player_count ? Object.keys(data.by_player_count) : [];
+  return Array.from(new Set([...fromFilters, ...fromSplits]
+    .map((v) => Number(v))
+    .filter((v) => Number.isFinite(v) && v > 0)))
+    .sort((a, b) => a - b);
+}
+
+function fillPodSizeSelect(data) {
+  const sel = $("#fPodSize");
+  if (!sel) return;
+  const prev = sel.value || "";
+  const opts = podSizeOptionsFrom(data);
+  sel.innerHTML = '<option value="">Tutti</option><option value="multiplayer">Multiplayer only</option>' + opts.map((n) => `<option value="${n}">${n} player</option>`).join("");
+  if (prev === "multiplayer" || (prev && opts.includes(Number(prev)))) sel.value = prev;
+}
+
+function selectDataForPodSize(allData) {
+  const v = $("#fPodSize") && $("#fPodSize").value ? $("#fPodSize").value : "";
+  if (!v) return allData;
+  return (allData.by_player_count && allData.by_player_count[String(v)]) ? allData.by_player_count[String(v)] : allData;
+}
+
+function podSizeLabel() {
+  const v = $("#fPodSize") && $("#fPodSize").value ? $("#fPodSize").value : "";
+  return v === "multiplayer" ? "multiplayer only" : (v ? `${v} player` : "tutti i pod");
+}
+
 function fmtDate(s) {
   if (!s) return "";
   // If it's ISO-like, keep it readable; otherwise return as-is.
@@ -86,7 +115,7 @@ function renderListTable(data, state) {
   const tableWrap = $("#listTableWrap");
   const tbody = $("#tList tbody");
   tbody.innerHTML = "";
-  const hasSelection = Boolean(state.player || state.commander || state.bracket);
+  const hasSelection = Boolean(state.player || state.commander || state.bracket || state.podSize);
   if (!hasSelection) {
     if (gate) {
       gate.style.display = "";
@@ -149,12 +178,20 @@ function renderListTable(data, state) {
   if (state.player) hintParts.push(`player: ${state.player}`);
   if (state.commander) hintParts.push(`commander: ${state.commander}`);
   if (state.bracket) hintParts.push(`bracket: ${state.bracket}`);
+  if (state.podSize) hintParts.push(`numero player: ${state.podSize === "multiplayer" ? "multiplayer only" : state.podSize}`);
   $("#hint").textContent = hintParts.length ? `Filtro attivo → ${hintParts.join(" · ")}` : "";
 }
 
 function gameMatchesFilters(g, state) {
   if (!g) return false;
   const entries = Array.isArray(g.entries) ? g.entries : [];
+  if (state.podSize) {
+    if (state.podSize === "multiplayer") {
+      if (entries.length < 3) return false;
+    } else if (entries.length !== Number(state.podSize)) {
+      return false;
+    }
+  }
   if (state.player) {
     if (!entries.some((e) => e && e.player === state.player)) return false;
   }
@@ -257,15 +294,20 @@ function buildState() {
     player: $("#fPlayer") && $("#fPlayer").value ? $("#fPlayer").value : "",
     commander: $("#fCommander") && $("#fCommander").value ? $("#fCommander").value : "",
     bracket: $("#fBracket") && $("#fBracket").value ? $("#fBracket").value : "",
+    podSize: $("#fPodSize") && $("#fPodSize").value ? $("#fPodSize").value : "",
   };
 }
 
 async function main() {
   const res = await fetch(statsJsonUrl(), { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
-  const data = await res.json();
+  const allData = await res.json();
+  fillPodSizeSelect(allData);
+  let data = selectDataForPodSize(allData);
 
-  const games = (data.counts && data.counts.games !== undefined && data.counts.games !== null) ? data.counts.games : 0;
+  const updateMeta = () => {
+    data = selectDataForPodSize(allData);
+    const games = (data.counts && data.counts.games !== undefined && data.counts.games !== null) ? data.counts.games : 0;
   const entries = (data.counts && data.counts.entries !== undefined && data.counts.entries !== null) ? data.counts.entries : 0;
   const gen = data.generated_utc ? data.generated_utc : "";
   const period = getPeriodLabel(data?.games);
@@ -275,12 +317,16 @@ async function main() {
   if (period) parts.push(`periodo ${period}`);
   if (gen) parts.push(`gen ${gen}`);
   $("#meta").textContent = parts.join(" · ");
+  };
+  updateMeta();
 
   setOptions($("#fPlayer"), (data.filters && data.filters.players) ? data.filters.players : []);
   buildCommanderOptions(data, "");
   buildBracketOptions(data, "", "");
 
   const rerender = () => {
+    data = selectDataForPodSize(allData);
+    updateMeta();
     const state = buildState();
     renderListTable(data, state);
     renderRecentGames(data, state);
@@ -299,6 +345,21 @@ async function main() {
   });
 
   $("#fBracket").addEventListener("change", rerender);
+  if ($("#fPodSize")) {
+    $("#fPodSize").addEventListener("change", () => {
+      data = selectDataForPodSize(allData);
+      const prevPlayer = $("#fPlayer") ? $("#fPlayer").value : "";
+      const prevCommander = $("#fCommander") ? $("#fCommander").value : "";
+      const prevBracket = $("#fBracket") ? $("#fBracket").value : "";
+      setOptions($("#fPlayer"), (data.filters && data.filters.players) ? data.filters.players : []);
+      if ($("#fPlayer") && prevPlayer && Array.from($("#fPlayer").options).some((o) => o.value === prevPlayer)) $("#fPlayer").value = prevPlayer;
+      buildCommanderOptions(data, $("#fPlayer").value);
+      if ($("#fCommander") && prevCommander && Array.from($("#fCommander").options).some((o) => o.value === prevCommander)) $("#fCommander").value = prevCommander;
+      buildBracketOptions(data, $("#fPlayer").value, $("#fCommander").value);
+      if ($("#fBracket") && prevBracket && Array.from($("#fBracket").options).some((o) => o.value === prevBracket)) $("#fBracket").value = prevBracket;
+      rerender();
+    });
+  }
   $("#fRecentN").addEventListener("change", rerender);
 
   $("#btnReset").addEventListener("click", () => {
@@ -307,6 +368,9 @@ async function main() {
     $("#fCommander").value = "";
     buildBracketOptions(data, "", "");
     $("#fBracket").value = "";
+    if ($("#fPodSize")) $("#fPodSize").value = "";
+    data = selectDataForPodSize(allData);
+    setOptions($("#fPlayer"), (data.filters && data.filters.players) ? data.filters.players : []);
     $("#fRecentN").value = "3";
     rerender();
   });

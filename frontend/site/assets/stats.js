@@ -133,6 +133,7 @@ const errorBars = {
 
   const elMeta = $("#meta");
   const elPlayer = $("#fPlayer");
+  const elPodSize = $("#fPodSize");
   const elHint = $("#hint");
   const canvasBar = $("#winrateBar");
   const canvasBubble = $("#winrateBubble");
@@ -149,6 +150,7 @@ const errorBars = {
   const elPodCards = $("#podCards");
   const elTrendSummary = $("#trendSummary");
 
+  let allStats = null;
   let stats = null;
 
   function _dateKey(s) {
@@ -202,6 +204,40 @@ const errorBars = {
 
   function pcAlpha(color, alpha) {
     return (window.PlayerColors && window.PlayerColors.withAlpha) ? window.PlayerColors.withAlpha(color, alpha) : color;
+  }
+
+  function podSizeOptionsFrom(data) {
+    const fromFilters = Array.isArray(data?.filters?.pod_sizes) ? data.filters.pod_sizes : [];
+    const fromSplits = data?.by_player_count ? Object.keys(data.by_player_count) : [];
+    return Array.from(new Set([...fromFilters, ...fromSplits]
+      .map((v) => Number(v))
+      .filter((v) => Number.isFinite(v) && v > 0)))
+      .sort((a, b) => a - b);
+  }
+
+  function fillPodSizeSelect(sel, data) {
+    if (!sel) return;
+    const prev = sel.value || "";
+    const opts = podSizeOptionsFrom(data);
+    sel.innerHTML = '<option value="">Tutti</option><option value="multiplayer">Multiplayer only</option>' + opts.map((n) => `<option value="${n}">${n} player</option>`).join("");
+    if (prev === "multiplayer" || (prev && opts.includes(Number(prev)))) sel.value = prev;
+  }
+
+  function selectedStatsForPodSize(value) {
+    if (!allStats) return null;
+    const key = String(value || "");
+    if (!key) return allStats;
+    const byCount = allStats.by_player_count || {};
+    return byCount[key] || allStats;
+  }
+
+  function refreshActiveStats() {
+    stats = selectedStatsForPodSize(elPodSize ? elPodSize.value : "") || allStats;
+  }
+
+  function podSizeLabel() {
+    const v = elPodSize ? elPodSize.value : "";
+    return v === "multiplayer" ? "multiplayer only" : (v ? `${v} player` : "tutti i pod");
   }
 
   function podSizeColor(podSize) {
@@ -1232,13 +1268,14 @@ const errorBars = {
 
 
   function update() {
+    refreshActiveStats();
     const players = computePlayers();
     const chosen = elPlayer ? elPlayer.value : "";
 
     if (elHint) {
       elHint.textContent = chosen
-          ? `Stai visualizzando: ${chosen} (focus sui commander)`
-          : "Stai visualizzando: Tutti i giocatori";
+          ? `Stai visualizzando: ${chosen} (focus sui commander) · ${podSizeLabel()}`
+          : `Stai visualizzando: Tutti i giocatori · ${podSizeLabel()}`;
     }
 
     renderBar(players, chosen || null);
@@ -1253,7 +1290,9 @@ const errorBars = {
   async function init() {
     try {
       const res = await fetch("../data/stats.v1.json", { cache: "no-cache" });
-      stats = await res.json();
+      allStats = await res.json();
+      fillPodSizeSelect(elPodSize, allStats);
+      refreshActiveStats();
 
       if (elMeta && stats?.generated_utc) {
         const games = stats?.counts?.games;
@@ -1276,6 +1315,19 @@ const errorBars = {
       fillPlayerSelect(players);
 
       if (elPlayer) elPlayer.addEventListener("change", update);
+      if (elPodSize) {
+        elPodSize.addEventListener("change", () => {
+          const prevPlayer = elPlayer ? elPlayer.value : "";
+          const prevTrendPlayer = elTrendPlayer ? elTrendPlayer.value : "";
+          refreshActiveStats();
+          const playersNow = computePlayers();
+          fillPlayerSelect(playersNow);
+          if (elPlayer && prevPlayer && Array.from(elPlayer.options).some((o) => o.value === prevPlayer)) elPlayer.value = prevPlayer;
+          if (elTrendPlayer && prevTrendPlayer && Array.from(elTrendPlayer.options).some((o) => o.value === prevTrendPlayer)) elTrendPlayer.value = prevTrendPlayer;
+          if (elTrendCommanderChips) elTrendCommanderChips.querySelectorAll('.trend-chip.is-selected').forEach((el) => el.classList.remove('is-selected'));
+          update();
+        });
+      }
       if (elMinGames) {
         elMinGames.addEventListener("input", update);
         elMinGames.addEventListener("change", update);
