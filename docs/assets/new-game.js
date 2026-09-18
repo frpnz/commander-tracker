@@ -339,8 +339,15 @@
     clearStatus();
     const entry = validateEntry(inPlayer.value, inCommander.value, inBracket.value);
 
-    // Allow the same player to appear multiple times (e.g., multiple commanders).
-    // Winner selection is by player name, so all rows for that player will show 🏆.
+    // One player identity maps to one seat in a Commander game.
+    // Keep this aligned with the backend/import invariant.
+    const playerKey = entry.player.toLocaleLowerCase("it");
+    const duplicateIndex = entries.findIndex((e, idx) =>
+      idx !== editingIndex && normalizeName(e.player).toLocaleLowerCase("it") === playerKey
+    );
+    if (duplicateIndex >= 0) {
+      throw new Error(`Player già presente nella partita: ${entry.player}`);
+    }
 
     if (editingIndex != null) {
       entries[editingIndex] = entry;
@@ -424,7 +431,13 @@
       throw new Error("Il vincitore deve essere uno dei player inseriti.");
     }
 
-    // Duplicates are allowed (same player can appear multiple times with different commanders).
+    // Defensive final check: one player identity maps to one seat.
+    const seenPlayers = new Set();
+    for (const e of entries) {
+      const key = normalizeName(e.player).toLocaleLowerCase("it");
+      if (seenPlayers.has(key)) throw new Error(`Player duplicato: ${e.player}`);
+      seenPlayers.add(key);
+    }
 
     return {
       version: "game.v1",

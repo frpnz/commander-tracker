@@ -28,6 +28,7 @@ import re
 import sqlite3
 import urllib.parse
 from datetime import datetime
+from contextlib import closing
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from draft_stats.db import connect, ensure_schema
@@ -365,7 +366,7 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, "text/html", page("404", nav() + "<p>Not found.</p>"))
 
     def _get_players(self, qs: dict[str, str]) -> None:
-        with db() as conn:
+        with closing(db()) as conn:
             players = [
                 r["player"]
                 for r in conn.execute(
@@ -423,7 +424,7 @@ class Handler(BaseHTTPRequestHandler):
                 + urllib.parse.quote("Il nuovo nome è uguale al vecchio (ignorando maiuscole/minuscole)")
             )
 
-        with db() as conn:
+        with closing(db()) as conn:
             conn.execute("BEGIN")
             cur = conn.cursor()
             # Standings
@@ -460,6 +461,7 @@ class Handler(BaseHTTPRequestHandler):
         rows = conn.execute(
             "SELECT id, played_at, name, format, rounds FROM tournament ORDER BY played_at DESC, id DESC"
         ).fetchall()
+        conn.close()
 
         flash = render_flash(qs)
         items = []
@@ -509,6 +511,7 @@ class Handler(BaseHTTPRequestHandler):
             (tid,),
         ).fetchone()
         if not t:
+            conn.close()
             return self._redirect("/draft/tournaments?kind=err&msg=" + urllib.parse.quote("Torneo non trovato"))
 
         rows = conn.execute(
@@ -545,6 +548,7 @@ class Handler(BaseHTTPRequestHandler):
             """,
             (tid,),
         ).fetchall()
+        conn.close()
 
         po_lines: list[str] = []
         po_edit_lines: list[str] = []
@@ -667,6 +671,7 @@ class Handler(BaseHTTPRequestHandler):
             (played_at_iso, name, fmt, rounds, notes, tid),
         )
         conn.commit()
+        conn.close()
         self._redirect(f"/draft/tournament?id={tid}&kind=ok&msg=" + urllib.parse.quote("Torneo aggiornato"))
 
     def _post_replace_standings(self, form: dict[str, str]) -> None:
@@ -691,6 +696,7 @@ class Handler(BaseHTTPRequestHandler):
                 (tid, r["player"], r["w"], r["l"], r["d"], r["via_pct"]),
             )
         conn.commit()
+        conn.close()
         self._redirect(f"/draft/tournament?id={tid}&kind=ok&msg=" + urllib.parse.quote("Standings aggiornati"))
 
     def _post_replace_playoffs(self, form: dict[str, str]) -> None:
@@ -715,6 +721,7 @@ class Handler(BaseHTTPRequestHandler):
                 (tid, m["stage"], m["player_a"], m["player_b"], m["winner"]),
             )
         conn.commit()
+        conn.close()
         self._redirect(f"/draft/tournament?id={tid}&kind=ok&msg=" + urllib.parse.quote("Playoff aggiornati"))
 
     def _get_import(self, qs: dict[str, str]) -> None:
@@ -722,6 +729,7 @@ class Handler(BaseHTTPRequestHandler):
         tournaments = conn.execute(
             "SELECT id, name, played_at FROM tournament ORDER BY played_at DESC, id DESC LIMIT 50"
         ).fetchall()
+        conn.close()
 
         options = [f"<option value='{int(t['id'])}'>{esc(t['played_at'])} — {esc(t['name'])}</option>" for t in tournaments]
 
@@ -780,6 +788,7 @@ class Handler(BaseHTTPRequestHandler):
         )
         conn.commit()
         tid = cur.lastrowid
+        conn.close()
         self._redirect(f"/draft/tournament?id={tid}")
 
     def _post_delete_tournament(self, form: dict[str, str]) -> None:
@@ -787,6 +796,7 @@ class Handler(BaseHTTPRequestHandler):
         conn = db()
         conn.execute("DELETE FROM tournament WHERE id = ?", (tid,))
         conn.commit()
+        conn.close()
         self._redirect("/draft/tournaments?kind=ok&msg=" + urllib.parse.quote("Torneo eliminato"))
 
     def _post_import(self, form: dict[str, str]) -> None:
@@ -823,6 +833,7 @@ class Handler(BaseHTTPRequestHandler):
                 (tid, m["stage"], m["player_a"], m["player_b"], m["winner"]),
             )
         conn.commit()
+        conn.close()
 
         self._redirect(
             "/draft/tournament?id="
@@ -835,7 +846,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def run() -> None:
-    with db():
+    with closing(db()):
         pass
     server = HTTPServer((HOST, PORT), Handler)
     print(f"Draft admin listening on http://{HOST}:{PORT} (DB={DB_PATH})")

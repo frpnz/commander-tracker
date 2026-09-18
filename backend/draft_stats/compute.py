@@ -22,6 +22,13 @@ def _parse_dt(s: str) -> datetime:
 
 def compute_draft(db_path: str) -> dict[str, Any]:
     conn = connect(db_path)
+    try:
+        return _compute_draft_conn(conn)
+    finally:
+        conn.close()
+
+
+def _compute_draft_conn(conn) -> dict[str, Any]:
     ensure_schema(conn)
 
     tournaments_rows = conn.execute(

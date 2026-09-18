@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+import sys
 from pathlib import Path
 
 from .db import connect
 from .compute import compute_stats
 from .site import copy_static_site
+from .validation import DatabaseValidationError, assert_exportable
 
 # Keep in sync with frontend/site/assets/player-colors.js
 _COLOR_PALETTE = [
@@ -36,6 +39,22 @@ def _build_player_color_overrides(commander_players: list[str], draft_players: l
         out[k] = _COLOR_PALETTE[i % len(_COLOR_PALETTE)]
     return out
 
+def _canonicalize_json_numbers(value):
+    """Stabilize insignificant floating-point noise in exported JSON."""
+    if isinstance(value, bool) or value is None or isinstance(value, (str, int)):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError(f"Non-finite float in export: {value!r}")
+        out = float(f"{value:.14g}")
+        return 0.0 if out == 0.0 else out
+    if isinstance(value, list):
+        return [_canonicalize_json_numbers(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _canonicalize_json_numbers(v) for k, v in value.items()}
+    return value
+
+
 def _write_player_color_overrides_js(overrides: dict[str, str], out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     # JS file consumed by frontend: defines window.PLAYER_COLOR_OVERRIDES
@@ -56,6 +75,16 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--draft-db", default=None, help="Optional path to draft_tracker.sqlite. If set, also writes docs/data/draft.v1.json")
     ap.add_argument("--docs", default="docs", help="Output docs directory (default: docs)")
     ap.add_argument("--site", default=None, help="Path to frontend/site (default: <repo>/frontend/site)")
+    ap.add_argument(
+        "--strict-duplicates",
+        action="store_true",
+        help="Fail export on every duplicate player, including configured legacy exceptions.",
+    )
+    ap.add_argument(
+        "--validation-exceptions",
+        default=None,
+        help="JSON file with legacy validation exceptions (default: data/validation_exceptions.json).",
+    )
     return ap
 
 def main(argv: list[str] | None = None) -> int:
@@ -74,10 +103,38 @@ def main(argv: list[str] | None = None) -> int:
 
     db_path = Path(args.db).resolve()
 
+    exceptions_path = (
+        Path(args.validation_exceptions).resolve()
+        if args.validation_exceptions
+        else (repo_root / "data" / "validation_exceptions.json")
+    )
+    allowed_duplicate_game_ids: set[int] = set()
+    if exceptions_path.exists():
+        try:
+            raw_exceptions = json.loads(exceptions_path.read_text(encoding="utf-8"))
+            allowed_duplicate_game_ids = {
+                int(v) for v in (raw_exceptions.get("duplicate_player_game_ids") or [])
+            }
+        except Exception as exc:
+            raise SystemExit(f"File eccezioni validazione non valido: {exceptions_path}: {exc}")
+
     conn = connect(str(db_path))
     try:
+        try:
+            issues = assert_exportable(
+                conn,
+                duplicate_players_are_errors=args.strict_duplicates,
+                allowed_duplicate_game_ids=allowed_duplicate_game_ids,
+            )
+        except DatabaseValidationError as exc:
+            details = "\n".join(f"  - [{i.code}] {i.message}" for i in exc.issues)
+            raise SystemExit("Commander DB non esportabile:\n" + details)
+        for issue in issues:
+            if issue.severity == "warning":
+                print(f"WARNING [{issue.code}] {issue.message}", file=sys.stderr)
+
         # generated_utc is computed deterministically from DB content when omitted
-        stats = compute_stats(conn, generated_utc=None)
+        stats = _canonicalize_json_numbers(compute_stats(conn, generated_utc=None))
     finally:
         conn.close()
 

@@ -1,4 +1,400 @@
 {
+  "$defs": {
+    "stats_payload_no_splits": {
+      "additionalProperties": false,
+      "properties": {
+        "by_player": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "games": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "player": {
+                "type": "string"
+              },
+              "wins": {
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "player",
+              "games",
+              "wins"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "by_player_commander": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "bracket": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "commander": {
+                "type": "string"
+              },
+              "games": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "player": {
+                "type": "string"
+              },
+              "wins": {
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "player",
+              "commander",
+              "bracket",
+              "games",
+              "wins"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "commander_calibration": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "b_post": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "b_post_map": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "b_post_sd": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "bracket_prior": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "commander": {
+                "type": "string"
+              },
+              "cpr_z": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "games": {
+                "type": "integer"
+              },
+              "wins": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "commander",
+              "bracket_prior",
+              "b_post",
+              "games",
+              "wins",
+              "cpr_z"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "counts": {
+          "additionalProperties": false,
+          "properties": {
+            "entries": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "games": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "games",
+            "entries"
+          ],
+          "type": "object"
+        },
+        "filters": {
+          "additionalProperties": false,
+          "properties": {
+            "brackets": {
+              "items": {
+                "maximum": 5,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "commanders": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "players": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "pod_sizes": {
+              "items": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "players",
+            "commanders",
+            "brackets",
+            "pod_sizes"
+          ],
+          "type": "object"
+        },
+        "games": {
+          "description": "Denormalized games list used by the static frontend (latest games view).",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "entries": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bracket": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "commander": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "player": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "player",
+                    "commander",
+                    "bracket"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "id": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "notes": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "played_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "pod_size": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "winner_player": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "played_at",
+              "winner_player",
+              "notes",
+              "entries",
+              "pod_size"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "generated_utc": {
+          "description": "UTC timestamp in ISO-8601, ends with Z",
+          "type": "string"
+        },
+        "meta_profile": {
+          "type": "object"
+        },
+        "meta_profile_by_player": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "games_total": {
+                "type": "integer"
+              },
+              "games_used": {
+                "type": "integer"
+              },
+              "mdi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "mpi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "oewr": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "oewr_used": {
+                "type": "integer"
+              },
+              "oewr_z": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "player": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "player",
+              "games_total",
+              "games_used",
+              "oewr_used",
+              "mdi",
+              "mpi",
+              "oewr",
+              "oewr_z"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "meta_profile_by_player_commander": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "commander": {
+                "type": "string"
+              },
+              "games_total": {
+                "type": "integer"
+              },
+              "games_used": {
+                "type": "integer"
+              },
+              "mdi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "mpi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "oewr": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "oewr_used": {
+                "type": "integer"
+              },
+              "oewr_z": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "player": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "player",
+              "commander",
+              "games_total",
+              "games_used",
+              "oewr_used",
+              "mdi",
+              "mpi",
+              "oewr",
+              "oewr_z"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "version": {
+          "const": "v1"
+        }
+      },
+      "required": [
+        "version",
+        "generated_utc",
+        "counts",
+        "filters",
+        "by_player",
+        "by_player_commander",
+        "meta_profile",
+        "meta_profile_by_player",
+        "meta_profile_by_player_commander",
+        "commander_calibration",
+        "games"
+      ],
+      "type": "object"
+    }
+  },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
@@ -33,7 +429,7 @@
         "properties": {
           "bracket": {
             "type": [
-              "string",
+              "integer",
               "null"
             ]
           },
@@ -63,6 +459,72 @@
       },
       "type": "array"
     },
+    "by_player_count": {
+      "additionalProperties": {
+        "$ref": "#/$defs/stats_payload_no_splits"
+      },
+      "description": "Precomputed stats payloads by pod size plus the multiplayer aggregate.",
+      "propertyNames": {
+        "pattern": "^(multiplayer|[1-9][0-9]*)$"
+      },
+      "type": "object"
+    },
+    "commander_calibration": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "b_post": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "b_post_map": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "b_post_sd": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "bracket_prior": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "commander": {
+            "type": "string"
+          },
+          "cpr_z": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "games": {
+            "type": "integer"
+          },
+          "wins": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "commander",
+          "bracket_prior",
+          "b_post",
+          "games",
+          "wins",
+          "cpr_z"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
     "counts": {
       "additionalProperties": false,
       "properties": {
@@ -86,7 +548,9 @@
       "properties": {
         "brackets": {
           "items": {
-            "type": "string"
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer"
           },
           "type": "array"
         },
@@ -101,12 +565,21 @@
             "type": "string"
           },
           "type": "array"
+        },
+        "pod_sizes": {
+          "items": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
         "players",
         "commanders",
-        "brackets"
+        "brackets",
+        "pod_sizes"
       ],
       "type": "object"
     },
@@ -121,7 +594,7 @@
               "properties": {
                 "bracket": {
                   "type": [
-                    "string",
+                    "integer",
                     "null"
                   ]
                 },
@@ -163,6 +636,10 @@
               "null"
             ]
           },
+          "pod_size": {
+            "minimum": 0,
+            "type": "integer"
+          },
           "winner_player": {
             "type": [
               "string",
@@ -175,7 +652,8 @@
           "played_at",
           "winner_player",
           "notes",
-          "entries"
+          "entries",
+          "pod_size"
         ],
         "type": "object"
       },
@@ -304,62 +782,6 @@
     },
     "version": {
       "const": "v1"
-    },
-    "commander_calibration": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "commander": {
-            "type": "string"
-          },
-          "bracket_prior": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          },
-          "b_post": {
-            "type": [
-              "number",
-              "null"
-            ]
-          },
-    "b_post_sd": {
-      "type": [
-        "number",
-        "null"
-      ]
-    },
-    "b_post_map": {
-      "type": [
-        "number",
-        "null"
-      ]
-    },
-          "games": {
-            "type": "integer"
-          },
-          "wins": {
-            "type": "integer"
-          },
-          "cpr_z": {
-            "type": [
-              "number",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "commander",
-          "bracket_prior",
-          "b_post",
-          "games",
-          "wins",
-          "cpr_z"
-        ]
-      }
     }
   },
   "required": [
@@ -372,7 +794,9 @@
     "meta_profile",
     "meta_profile_by_player",
     "meta_profile_by_player_commander",
-    "commander_calibration"
+    "commander_calibration",
+    "games",
+    "by_player_count"
   ],
   "title": "Commander Tracker Stats v1",
   "type": "object"

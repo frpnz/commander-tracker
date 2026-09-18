@@ -203,15 +203,7 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *,
             g["pod_size"] = len(g.get("entries") or [])
             games_detail.append(g)
 
-    # --- Weighted winrate (delta winner bracket vs avg table bracket excluding winner) ---
-    # Delta: Δ = b_winner - avg(brackets_other_players)
-    # (the average is computed excluding the winner).
-    # Weight: w(Δ)=clip(exp(-k*Δ), w_min, w_max)
-    # Chosen to be visible but not excessive.
-    K = 0.30
-    W_MIN = 0.70
-    W_MAX = 1.40
-
+    # Numeric bracket helper shared by meta-profile and calibration metrics.
     def _to_float_bracket(v):
         if v is None or v == "":
             return None
@@ -220,14 +212,7 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *,
         except Exception:
             return None
 
-    def _clip(x: float, lo: float, hi: float) -> float:
-        return lo if x < lo else hi if x > hi else x
-
-    def _weight(delta: float) -> float:
-        return _clip(math.exp(-K * delta), W_MIN, W_MAX)
-
-    # We compute weighted aggregations by iterating per game to have access to
-    # the winner and the full table brackets.
+    # Build a per-game view used by the context-aware metrics below.
     cur.execute(
         """
         SELECT
@@ -258,23 +243,6 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *,
                 "bracket": r.get("bracket"),
             }
         )
-
-    # Aggregation maps
-    by_player_w: Dict[str, Dict[str, Any]] = {}
-    by_pair_w: Dict[Tuple[str, str, Any], Dict[str, Any]] = {}
-
-    # --- Meta Wins: Winning Bracket Delta (WBD) ---
-    # For each win, measure how far above/below the winner's bracket is compared
-    # to the average bracket of the *other* players at the table.
-    #
-    #   d = b_winner - avg(brackets_others)
-    #   WBD(player) = mean(d over that player's wins)
-    #   WBD(commander) = mean(d over that commander's wins)
-    #
-    # We only include a win in WBD if we can compute both b_winner and the
-    # average of other players' brackets (numeric, excluding winner).
-    wbd_by_player: Dict[str, Dict[str, Any]] = {}
-    wbd_by_player_commander: Dict[Tuple[str, str], Dict[str, Any]] = {}
 
     # --- Meta Profile: Meta Deviation Index (MDI) + Meta Pressure Index (MPI) ---
     # Independent of outcome, for each player and game:
@@ -315,61 +283,6 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *,
     for g in games.values():
         winner = g.get("winner")
         entries = g.get("entries") or []
-
-        # Winner bracket
-        bw = None
-        for e in entries:
-            if e.get("player") == winner:
-                bw = _to_float_bracket(e.get("bracket"))
-                break
-
-        # Average bracket excluding winner (only numeric brackets)
-        others: List[float] = []
-        for e in entries:
-            if e.get("player") == winner:
-                continue
-            bb = _to_float_bracket(e.get("bracket"))
-            if bb is not None:
-                others.append(bb)
-
-        avg_other = None
-        delta_val = None
-        if bw is None or not others:
-            w = 1.0
-        else:
-            avg_other = sum(others) / len(others)
-            delta_val = float(bw) - float(avg_other)
-            w = _weight(delta_val)
-
-        # --- Meta Wins (WBD) aggregation ---
-        # Only the winner contributes, and only if we can compute delta.
-        if winner:
-            winner_commander = ""
-            for e in entries:
-                if e.get("player") == winner:
-                    winner_commander = e.get("commander") or ""
-                    break
-
-            # By player
-            curw = wbd_by_player.get(winner)
-            if curw is None:
-                curw = {"player": winner, "wins_total": 0, "wins_used": 0, "wbd_sum": 0.0}
-                wbd_by_player[winner] = curw
-            curw["wins_total"] += 1
-            if delta_val is not None:
-                curw["wins_used"] += 1
-                curw["wbd_sum"] += float(delta_val)
-
-            # By player + commander
-            keyc = (winner, winner_commander)
-            curc = wbd_by_player_commander.get(keyc)
-            if curc is None:
-                curc = {"player": winner, "commander": winner_commander, "wins_total": 0, "wins_used": 0, "wbd_sum": 0.0}
-                wbd_by_player_commander[keyc] = curc
-            curc["wins_total"] += 1
-            if delta_val is not None:
-                curc["wins_used"] += 1
-                curc["wbd_sum"] += float(delta_val)
 
         # --- Meta Profile (MDI/MPI) aggregation ---
         # Every player contributes (independent of outcome). We compute deltas
@@ -514,54 +427,6 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *,
                         calib_occurrences[c] = occ
                     occ.append((p, float(actual), dict(br_by_player)))
 
-        for e in entries:
-            p = e.get("player") or ""
-            c = e.get("commander") or ""
-            b = e.get("bracket")
-
-            # By player
-            curp = by_player_w.get(p)
-            if curp is None:
-                curp = {"player": p, "wins": 0, "games": 0, "wins_w": 0.0, "games_w": 0.0}
-                by_player_w[p] = curp
-            curp["games"] += 1
-            curp["games_w"] += w
-            if p == winner:
-                curp["wins"] += 1
-                curp["wins_w"] += w
-
-            # By player + commander + bracket
-            key = (p, c, b)
-            curpc = by_pair_w.get(key)
-            if curpc is None:
-                curpc = {"player": p, "commander": c, "bracket": b, "wins": 0, "games": 0, "wins_w": 0.0, "games_w": 0.0}
-                by_pair_w[key] = curpc
-            curpc["games"] += 1
-            curpc["games_w"] += w
-            if p == winner:
-                curpc["wins"] += 1
-                curpc["wins_w"] += w
-
-    # Convert to lists and sort (similar to unweighted)
-    by_player_weighted = list(by_player_w.values())
-    by_player_weighted.sort(
-        key=lambda r: (
-            -float(r.get("games_w") or 0.0),
-            -float(r.get("wins_w") or 0.0),
-            str(r.get("player") or ""),
-        )
-    )
-
-    by_player_commander_weighted = list(by_pair_w.values())
-    by_player_commander_weighted.sort(
-        key=lambda r: (
-            -float(r.get("games_w") or 0.0),
-            -float(r.get("wins_w") or 0.0),
-            str(r.get("player") or ""),
-            str(r.get("commander") or ""),
-        )
-    )
-
     # By player
     cur.execute("""
         SELECT
@@ -590,86 +455,8 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *,
     """)
     by_player_commander = _rows_to_dicts(cur.fetchall())
 
-    # --- Meta Wins (global): bracket -> wins / win_rate ---
-    # We aggregate by bracket (not per-player) to keep it "meta".
-    # This is useful to visualize correlation/trend between bracket (1-5)
-    # and win rate.
-    cur.execute(
-        """
-        SELECT
-            ge.bracket AS bracket,
-            COUNT(*) AS games,
-            SUM(CASE WHEN g.winner_player = ge.player THEN 1 ELSE 0 END) AS wins
-        FROM gameentry ge
-        JOIN game g ON g.id = ge.game_id
-        WHERE ge.bracket IS NOT NULL
-        GROUP BY ge.bracket
-        ORDER BY ge.bracket ASC
-        """
-    )
-    _bb = _rows_to_dicts(cur.fetchall())
-    meta_wins_by_bracket = []
-    for r in _bb:
-        try:
-            b = int(r.get("bracket"))
-        except Exception:
-            # Skip non-numeric brackets
-            continue
-        games_n = int(r.get("games") or 0)
-        wins_n = int(r.get("wins") or 0)
-        win_rate = (wins_n / games_n) if games_n > 0 else None
-        meta_wins_by_bracket.append(
-            {
-                "bracket": b,
-                "games": games_n,
-                "wins": wins_n,
-                "win_rate": win_rate,
-            }
-        )
+    # Distinct filter values
 
-    
-    # Commander win rate by (fixed) bracket (global, not by player)
-    # Each point represents a commander; bracket is expected to be numeric (1..5).
-    cur.execute(
-        """
-        SELECT
-            ge.commander AS commander,
-            ge.bracket   AS bracket,
-            COUNT(*)     AS games,
-            SUM(CASE WHEN g.winner_player = ge.player THEN 1 ELSE 0 END) AS wins
-        FROM gameentry ge
-        JOIN game g ON g.id = ge.game_id
-        WHERE ge.commander IS NOT NULL AND ge.commander != ''
-          AND ge.bracket IS NOT NULL
-        GROUP BY ge.commander, ge.bracket
-        HAVING COUNT(*) >= 3
-        ORDER BY ge.bracket ASC, ge.commander ASC
-        """
-    )
-    _cb = _rows_to_dicts(cur.fetchall())
-    meta_wins_commander_winrate = []
-    for r in _cb:
-        commander = (r.get("commander") or "").strip()
-        try:
-            b = int(r.get("bracket"))
-        except Exception:
-            continue
-        games_n = int(r.get("games") or 0)
-        wins_n = int(r.get("wins") or 0)
-        if not commander or games_n <= 0:
-            continue
-        win_rate = wins_n / games_n
-        meta_wins_commander_winrate.append(
-            {
-                "commander": commander,
-                "bracket": b,
-                "games": games_n,
-                "wins": wins_n,
-                "win_rate": win_rate,
-            }
-        )
-
-# Distinct filter values
     cur.execute("SELECT DISTINCT player FROM gameentry ORDER BY player ASC;")
     players = [r["player"] for r in cur.fetchall()]
 
@@ -688,53 +475,6 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *,
 
     if generated_utc is None:
         generated_utc = _deterministic_generated_utc(conn)
-
-    # Finalize meta wins outputs (WBD)
-    meta_wins_by_player = []
-    for r in wbd_by_player.values():
-        used = int(r.get("wins_used") or 0)
-        wbd = (float(r.get("wbd_sum") or 0.0) / used) if used > 0 else None
-        meta_wins_by_player.append(
-            {
-                "player": r.get("player") or "",
-                "wins_total": int(r.get("wins_total") or 0),
-                "wins_used": used,
-                "wbd": wbd,
-            }
-        )
-    meta_wins_by_player.sort(
-        key=lambda r: (
-            # Put players with no usable wins at the bottom
-            1 if r.get("wbd") is None else 0,
-            -abs(float(r.get("wbd") or 0.0)),
-            -int(r.get("wins_used") or 0),
-            str(r.get("player") or ""),
-        )
-    )
-
-    meta_wins_by_player_commander = []
-    for r in wbd_by_player_commander.values():
-        used = int(r.get("wins_used") or 0)
-        wbd = (float(r.get("wbd_sum") or 0.0) / used) if used > 0 else None
-        meta_wins_by_player_commander.append(
-            {
-                "player": r.get("player") or "",
-                "commander": r.get("commander") or "",
-                "wins_total": int(r.get("wins_total") or 0),
-                "wins_used": used,
-                "wbd": wbd,
-            }
-        )
-    meta_wins_by_player_commander.sort(
-        key=lambda r: (
-            str(r.get("player") or ""),
-            # put usable first
-            1 if r.get("wbd") is None else 0,
-            -int(r.get("wins_used") or 0),
-            -abs(float(r.get("wbd") or 0.0)),
-            str(r.get("commander") or ""),
-        )
-    )
 
     # Finalize meta profile outputs (MDI/MPI)
     meta_profile_by_player = []

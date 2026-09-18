@@ -41,12 +41,15 @@ backend/
   export_draft.py              # Export standalone dati Draft
   admin_stdlib.py              # Admin locale Commander, solo standard library
   admin_draft_stdlib.py        # Admin locale Draft, solo standard library
+  validate_db.py               # Validator invarianti DB Commander
   stats.v1.schema.json         # Schema JSON dati Commander
 
   commander_stats/
-    cli.py                     # CLI Commander/export sito
+    cli.py                     # CLI Commander/export sito + validation gate
     compute.py                 # Calcolo statistiche Commander
     db.py                      # Accesso SQLite Commander
+    ingest.py                  # Inserimento batch atomico
+    validation.py              # Invarianti DB e payload game.v1
     site.py                    # Copia frontend + scrittura JSON/schema
 
   draft_stats/
@@ -57,6 +60,10 @@ backend/
 data/
   commander_tracker.sqlite     # Database Commander
   draft_tracker.sqlite         # Database Draft
+  validation_exceptions.json   # Eccezioni legacy esplicite del validator
+
+tests/
+  test_hardening.py            # Regressione invarianti, transazioni, schema ed export
 
 frontend/site/
   index.html                   # Home
@@ -144,10 +151,13 @@ python3 backend/export_stats.py \
 
 Questo comando:
 
-- copia `frontend/site/` dentro `docs/`
-- genera `docs/data/stats.v1.json`
-- genera `docs/data/draft.v1.json`
-- copia `docs/data/stats.v1.schema.json`
+- valida prima gli invarianti del DB Commander;
+- copia `frontend/site/` dentro `docs/`;
+- genera `docs/data/stats.v1.json`;
+- genera `docs/data/draft.v1.json`;
+- copia `docs/data/stats.v1.schema.json`.
+
+L'export viene bloccato per winner orfani, bracket fuori range, game con meno di 2 entries, entry vuote, foreign-key violation e nuovi player duplicati. I soli duplicati storici noti sono dichiarati esplicitamente in `data/validation_exceptions.json` e producono un warning finche non vengono corretti manualmente.
 
 ### 4.2 Servire il sito in locale
 
@@ -309,13 +319,13 @@ L'admin consente di:
 
 - vedere l'elenco partite
 - aprire il dettaglio di una partita
-- creare una nuova partita
-- modificare data, note e vincitore
+- creare una nuova partita (inizialmente come draft senza winner)
+- modificare data, note e vincitore, scegliendo il winner solo tra i player della partita
 - cancellare una partita
 - aggiungere entry giocatore/commander/bracket
 - modificare entry esistenti
 - cancellare entry
-- importare partite da JSON
+- importare partite da JSON in modo atomico: un errore nel batch lascia il DB invariato
 - duplicare/importare da partite esistenti
 - vedere la lista player
 - rinominare player
@@ -953,6 +963,31 @@ python3 backend/export_stats.py --db data/commander_tracker.sqlite --draft-db da
 python3 backend/export_draft.py --db data/draft_tracker.sqlite --docs docs
 ```
 
+
+### Validazione DB Commander
+
+Prima di un export o dopo modifiche manuali al database:
+
+```bash
+python3 backend/validate_db.py --db data/commander_tracker.sqlite
+```
+
+Per trattare come errori anche le eccezioni legacy configurate:
+
+```bash
+python3 backend/validate_db.py --db data/commander_tracker.sqlite --strict-duplicates
+```
+
+Attualmente `data/validation_exceptions.json` documenta i game legacy `45`, `47` e `55`, che contengono player duplicati ambigui e non vengono modificati automaticamente. Nuovi duplicati non presenti nella lista bloccano l'export.
+
+### Test automatici
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+La suite copre validazione payload, rollback atomico del batch, invarianti DB, statistiche base, compatibilita con `stats.v1.schema.json` quando `jsonschema` e disponibile, e determinismo byte-for-byte dell'export. `jsonschema` resta una dipendenza opzionale usata solo dal test di contratto.
+
 ### Server statico locale
 
 ```bash
@@ -1081,10 +1116,10 @@ python3 backend/export_stats.py --db data/commander_tracker.sqlite --draft-db da
 python3 -m http.server -d docs 8081
 ```
 
-6. Pubblica o committa:
+6. Pubblica/committa preferibilmente con lo script hardenizzato:
 
 ```bash
-git add data/commander_tracker.sqlite data/draft_tracker.sqlite docs
-git commit -m "Update Commander tracker"
-git push
+bash scripts/publish.sh "Update Commander tracker"
 ```
+
+Lo script esegue test e validazione DB, forza il checkpoint SQLite, rigenera l'intera `docs/`, mette in staging sia `frontend/site/` sia `docs/` e include entrambi i database quando si usano i percorsi standard. Se `.venv/bin/python` non esiste usa automaticamente `python3`, oppure puoi impostare `PYTHON_BIN`.

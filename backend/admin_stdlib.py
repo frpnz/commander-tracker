@@ -30,6 +30,10 @@ import urllib.parse
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
+from contextlib import contextmanager
+
+from commander_stats.ingest import insert_games_atomic
+from commander_stats.validation import PayloadValidationError, normalize_bracket, normalize_game_payload
 
 
 REPO_DEFAULT_DB = os.path.join(os.path.dirname(__file__), "..", "data", "commander_tracker.sqlite")
@@ -39,10 +43,18 @@ HOST = os.environ.get("ADMIN_HOST", "127.0.0.1")
 PORT = int(os.environ.get("ADMIN_PORT", "8000"))
 
 
-def db() -> sqlite3.Connection:
+@contextmanager
+def db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    return conn
+    conn.execute("PRAGMA foreign_keys = ON")
+    try:
+        yield conn
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 def esc(s: str | None) -> str:
@@ -107,6 +119,29 @@ def pick_select_or_new(form: dict[str, str], sel_key: str, new_key: str) -> str:
     if sel and sel != "__NEW__":
         return sel
     return ""
+
+
+def _admin_bracket(value: str) -> int | None:
+    try:
+        return normalize_bracket(value)
+    except PayloadValidationError as exc:
+        raise ValueError(str(exc)) from exc
+
+
+def _game_players(conn: sqlite3.Connection, game_id: int, *, exclude_entry_id: int | None = None) -> list[str]:
+    if exclude_entry_id is None:
+        rows = conn.execute("SELECT player FROM gameentry WHERE game_id=? ORDER BY id", (game_id,)).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT player FROM gameentry WHERE game_id=? AND id<>? ORDER BY id",
+            (game_id, exclude_entry_id),
+        ).fetchall()
+    return [str(r["player"] or "").strip() for r in rows]
+
+
+def _contains_player(players: list[str], player: str) -> bool:
+    key = (player or "").strip().casefold()
+    return bool(key) and any((p or "").strip().casefold() == key for p in players)
 
 def iso_to_dtlocal(iso_str: str | None) -> str:
     """Convert DB timestamp to <input type=datetime-local> value."""
@@ -413,117 +448,37 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("JSON non valido"))
 
+        payloads = payload if isinstance(payload, list) else [payload]
+        if not payloads:
+            return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Payload vuoto"))
+
+        normalized: list[dict] = []
         try:
-            # Supporta sia un singolo oggetto (game.v1) sia una lista di oggetti.
-            payloads = payload if isinstance(payload, list) else [payload]
-            if not payloads:
-                return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Payload vuoto"))
+            for idx, item in enumerate(payloads, start=1):
+                normalized.append(normalize_game_payload(item, label=f"Elemento #{idx}"))
+        except PayloadValidationError as exc:
+            return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote(str(exc)))
 
-            imported_ids: list[int] = []
+        try:
             with db() as conn:
-                cur = conn.cursor()
-                for idx, item in enumerate(payloads, start=1):
-                    if not isinstance(item, dict):
-                        return self._redirect(
-                            "/admin/games/import_json?msg="
-                            + urllib.parse.quote(f"Elemento #{idx} non è un oggetto JSON valido")
-                        )
-
-                    if item.get("version") != "game.v1":
-                        return self._redirect(
-                            "/admin/games/import_json?msg="
-                            + urllib.parse.quote(f"Elemento #{idx}: Versione payload non supportata")
-                        )
-
-                    played_at = (item.get("played_at") or "").strip()
-                    winner_player = (item.get("winner_player") or "").strip() or None
-                    notes = item.get("notes", None)
-                    entries = item.get("entries") or []
-
-                    if not played_at:
-                        return self._redirect(
-                            "/admin/games/import_json?msg="
-                            + urllib.parse.quote(f"Elemento #{idx}: played_at è obbligatorio")
-                        )
-
-                    if not isinstance(entries, list) or len(entries) < 2:
-                        return self._redirect(
-                            "/admin/games/import_json?msg="
-                            + urllib.parse.quote(f"Elemento #{idx}: entries deve essere una lista (min 2)")
-                        )
-
-                    # Normalize + validate entries
-                    norm_entries: list[tuple[str, str, int | None]] = []
-                    players_set: set[str] = set()
-                    for e in entries:
-                        if not isinstance(e, dict):
-                            return self._redirect(
-                                "/admin/games/import_json?msg="
-                                + urllib.parse.quote(f"Elemento #{idx}: entries contiene un elemento non valido")
-                            )
-                        player = (e.get("player") or "").strip()
-                        commander = (e.get("commander") or "").strip()
-                        bracket = e.get("bracket", None)
-
-                        if not player or not commander:
-                            return self._redirect(
-                                "/admin/games/import_json?msg="
-                                + urllib.parse.quote(
-                                    f"Elemento #{idx}: ogni entry richiede player e commander"
-                                )
-                            )
-
-                        # Allow duplicate players across entries (e.g., team games or multi-seat aliasing).
-                        players_set.add(player)
-
-                        if bracket is None or bracket == "":
-                            b = None
-                        else:
-                            try:
-                                b = int(bracket)
-                            except Exception:
-                                return self._redirect(
-                                    "/admin/games/import_json?msg="
-                                    + urllib.parse.quote(f"Elemento #{idx}: bracket non valido per {player}")
-                                )
-                            if b < 1 or b > 5:
-                                return self._redirect(
-                                    "/admin/games/import_json?msg="
-                                    + urllib.parse.quote(f"Elemento #{idx}: bracket fuori range (1..5) per {player}")
-                                )
-
-                        norm_entries.append((player, commander, b))
-
-                    if winner_player and winner_player not in players_set:
-                        return self._redirect(
-                            "/admin/games/import_json?msg="
-                            + urllib.parse.quote(f"Elemento #{idx}: winner_player deve essere uno dei player nelle entries")
-                        )
-
-                    cur.execute(
-                        "INSERT INTO game (played_at, notes, winner_player) VALUES (?, ?, ?)",
-                        (played_at, notes, winner_player),
-                    )
-                    game_id = int(cur.lastrowid)
-
-                    cur.executemany(
-                        "INSERT INTO gameentry (game_id, player, commander, bracket) VALUES (?, ?, ?, ?)",
-                        [(game_id, p, c, b) for (p, c, b) in norm_entries],
-                    )
-                    imported_ids.append(game_id)
-
-                conn.commit()
-
-            if len(imported_ids) == 1:
-                gid = imported_ids[0]
-                return self._redirect("/admin/games/%d?updated=1&msg=%s" % (gid, urllib.parse.quote("Import JSON")))
-
+                imported_ids = insert_games_atomic(conn, normalized)
+        except Exception as exc:
             return self._redirect(
-                "/admin/games/import_json?updated=1&msg="
-                + urllib.parse.quote(f"Importati {len(imported_ids)} game")
+                "/admin/games/import_json?msg="
+                + urllib.parse.quote("Errore import; nessuna partita inserita: " + str(exc))
             )
-        except Exception as e:
-            return self._redirect("/admin/games/import_json?msg=" + urllib.parse.quote("Errore import: " + str(e)))
+
+        if len(imported_ids) == 1:
+            gid = imported_ids[0]
+            return self._redirect(
+                "/admin/games/%d?updated=1&msg=%s"
+                % (gid, urllib.parse.quote("Import JSON"))
+            )
+
+        return self._redirect(
+            "/admin/games/import_json?updated=1&msg="
+            + urllib.parse.quote(f"Importati {len(imported_ids)} game")
+        )
 
     def _get_api_bracket_suggestions(self, query: dict[str, list[str]]):
         """Return suggested brackets for a specific (player, commander) pair.
@@ -579,21 +534,6 @@ class Handler(BaseHTTPRequestHandler):
             )
             games_for_import = cur.fetchall()
 
-            cur.execute(
-                """
-                SELECT player, COUNT(*) AS n
-                FROM gameentry
-                GROUP BY player
-                ORDER BY n DESC, player ASC
-                LIMIT 100
-                """
-            )
-            players = [r["player"] for r in cur.fetchall()]
-
-        # Valori esistenti dal DB per i menu (mobile-friendly)
-        players_list = "\n".join(f'<option value="{esc(p)}"></option>' for p in players)
-        players_select = select_options(players)
-
         import_opts = []
         for g in games_for_import:
             label = f"#{g['id']} — {str(g['played_at'] or '')} — {str(g['winner_player'] or '—')}"
@@ -622,15 +562,7 @@ class Handler(BaseHTTPRequestHandler):
           <div class="card" style="flex:1;">
             <h3>Nuova partita</h3>
             <form method="post" action="/admin/games/create">
-              <label>Winner (player)</label>
-              <select name="winner_sel">
-                <option value="" selected>— nessuno —</option>
-                {players_select}
-                <option value="__NEW__">+ Nuovo…</option>
-              </select>
-              <label class="muted">Se “Nuovo…”, scrivi qui:</label>
-              <input name="winner_new" placeholder="Winner nuovo (opzionale)">
-
+              <p class="muted">Il winner si imposta dopo aver aggiunto le entries, così resta sempre coerente con i player della partita.</p>
               <label>Note</label>
               <textarea name="notes" rows="3" placeholder="opzionale"></textarea>
 
@@ -649,15 +581,7 @@ class Handler(BaseHTTPRequestHandler):
                 <option value="" disabled selected>Seleziona…</option>
                 {import_options}
               </select>
-              <label>Override (opzionale)</label>
-              <div class="muted" style="margin-top:4px;">Se vuoi, puoi cambiare subito il winner della nuova partita qui (altrimenti copia quello originale).</div>
-              <select name="winner_sel">
-                <option value="" selected>— lascia invariato —</option>
-                {players_select}
-                <option value="__NEW__">+ Nuovo…</option>
-              </select>
-              <label class="muted">Se “Nuovo…”, scrivi qui:</label>
-              <input name="winner_new" placeholder="Winner nuovo (opzionale)">
+              <p class="muted">Winner, note ed entries vengono copiati dalla sorgente. Il winner può essere cambiato nella schermata di dettaglio, scegliendo solo tra i player della partita.</p>
 
               <div class="btn-row" style="margin-top:12px;">
                 <button class="primary" type="submit">Importa e modifica</button>
@@ -716,7 +640,7 @@ class Handler(BaseHTTPRequestHandler):
         brackets_list = "\n".join(f'<option value="{esc(b)}"></option>' for b in brackets)
 
         # <select> options (affidabile su mobile)
-        winner_select = select_options(players, (game["winner_player"] or ""))
+        winner_select = select_options([str(e["player"]) for e in entries], (game["winner_player"] or ""))
         players_select = select_options(players)
         commanders_select = select_options(commanders)
         brackets_select = "\n".join(
@@ -820,12 +744,10 @@ class Handler(BaseHTTPRequestHandler):
 
               <label>Winner (player)</label>
               <select name="winner_sel">
-                <option value="" selected>— nessuno —</option>
+                <option value="">— nessuno —</option>
                 {winner_select}
-                <option value="__NEW__">+ Nuovo…</option>
               </select>
-              <label class="muted">Se “Nuovo…”, scrivi qui:</label>
-              <input name="winner_new" placeholder="Winner nuovo (opzionale)" value="">
+              <div class="muted" style="margin-top:4px;">Il winner deve essere uno dei player presenti nelle entries.</div>
 
               <label>Note</label>
               <textarea name="notes" rows="3">{esc(game['notes'] or '')}</textarea>
@@ -1120,70 +1042,84 @@ class Handler(BaseHTTPRequestHandler):
     # ---------------------------
     def _post_game_create(self, form: dict[str, str]):
         notes = form.get("notes", "").strip() or None
-        winner = pick_select_or_new(form, "winner_sel", "winner_new") or None
-
         played_iso = now_iso()
 
         with db() as conn:
             cur = conn.cursor()
             cur.execute(
-                "INSERT INTO game (played_at, notes, winner_player) VALUES (?, ?, ?)",
-                (played_iso, notes, winner),
+                "INSERT INTO game (played_at, notes, winner_player) VALUES (?, ?, NULL)",
+                (played_iso, notes),
             )
-            game_id = cur.lastrowid
+            game_id = int(cur.lastrowid)
             conn.commit()
 
-        # Flash message on landing page (use querystring to avoid server-side state)
-        return self._redirect(f"/admin/games/{game_id}?saved=1")
+        return self._redirect(
+            f"/admin/games/{game_id}?saved=1&msg="
+            + urllib.parse.quote("Partita creata. Aggiungi almeno 2 entries prima dell'export.")
+        )
 
     def _post_game_import(self, form: dict[str, str]):
-        """Duplicate an existing game (winner/notes/entries) into a new one.
-
-        The new game gets `played_at = now()`. After creation, redirect to its detail page
-        so the user can quickly edit.
-        """
+        """Duplicate a valid historical game into a new editable game."""
         src_s = (form.get("source_game_id", "") or "").strip()
         try:
             source_game_id = int(src_s)
         except ValueError:
             return self._send_html(page("Errore", "<h1>Partita sorgente non valida</h1>"), 400)
 
-        # Optional override for winner
-        winner_override = pick_select_or_new(form, "winner_sel", "winner_new")
-        winner_override = winner_override.strip() if winner_override else ""
-
         with db() as conn:
             cur = conn.cursor()
-
             cur.execute("SELECT * FROM game WHERE id=?", (source_game_id,))
             src_game = cur.fetchone()
             if not src_game:
                 return self._send_html(page("404", "<h1>Partita sorgente non trovata</h1>"), 404)
 
-            cur.execute("SELECT player, commander, bracket FROM gameentry WHERE game_id=? ORDER BY id ASC", (source_game_id,))
+            cur.execute(
+                "SELECT player, commander, bracket FROM gameentry WHERE game_id=? ORDER BY id ASC",
+                (source_game_id,),
+            )
             src_entries = cur.fetchall()
-            if not src_entries:
-                # Allow importing an empty game, but warn.
-                pass
+            if len(src_entries) < 2:
+                return self._send_html(
+                    page("Errore", "<h1>La partita sorgente ha meno di 2 entries e non può essere duplicata</h1>"),
+                    400,
+                )
 
-            played_iso = now_iso()
-            notes = (src_game["notes"] or None)
-            winner = (src_game["winner_player"] or None)
-            if winner_override:
-                winner = winner_override or None
+            players: list[str] = []
+            seen: set[str] = set()
+            for e in src_entries:
+                player = str(e["player"] or "").strip()
+                commander = str(e["commander"] or "").strip()
+                if not player or not commander:
+                    return self._send_html(page("Errore", "<h1>Partita sorgente con entry incompleta</h1>"), 400)
+                key = player.casefold()
+                if key in seen:
+                    return self._send_html(
+                        page("Errore", "<h1>La partita sorgente contiene un player duplicato. Correggila prima di duplicarla.</h1>"),
+                        400,
+                    )
+                seen.add(key)
+                players.append(player)
+                try:
+                    normalize_bracket(e["bracket"])
+                except PayloadValidationError as exc:
+                    return self._send_html(page("Errore", f"<h1>{esc(str(exc))}</h1>"), 400)
+
+            winner = (str(src_game["winner_player"] or "").strip() or None)
+            if winner is not None and winner not in players:
+                return self._send_html(
+                    page("Errore", "<h1>Il winner della partita sorgente non è presente tra le entries</h1>"),
+                    400,
+                )
 
             cur.execute(
                 "INSERT INTO game (played_at, notes, winner_player) VALUES (?, ?, ?)",
-                (played_iso, notes, winner),
+                (now_iso(), src_game["notes"] or None, winner),
             )
-            new_game_id = cur.lastrowid
-
-            for e in src_entries:
-                cur.execute(
-                    "INSERT INTO gameentry (game_id, player, commander, bracket) VALUES (?, ?, ?, ?)",
-                    (new_game_id, e["player"], e["commander"], e["bracket"]),
-                )
-
+            new_game_id = int(cur.lastrowid)
+            cur.executemany(
+                "INSERT INTO gameentry (game_id, player, commander, bracket) VALUES (?, ?, ?, ?)",
+                [(new_game_id, e["player"], e["commander"], e["bracket"]) for e in src_entries],
+            )
             conn.commit()
 
         return self._redirect(
@@ -1193,8 +1129,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def _post_game_update(self, game_id: int, form: dict[str, str]):
         notes = form.get("notes", "").strip() or None
-        winner = pick_select_or_new(form, "winner_sel", "winner_new") or None
-
+        winner = (form.get("winner_sel", "") or "").strip() or None
         set_now = form.get("set_now", "").strip() == "1"
 
         with db() as conn:
@@ -1203,6 +1138,13 @@ class Handler(BaseHTTPRequestHandler):
             row = cur.fetchone()
             if not row:
                 return self._send_html(page("404", "<h1>Partita non trovata</h1>"), 404)
+
+            players = _game_players(conn, game_id)
+            if winner is not None and winner not in players:
+                return self._redirect(
+                    f"/admin/games/{game_id}?error=1&msg="
+                    + urllib.parse.quote("Il winner deve essere uno dei player presenti nelle entries")
+                )
 
             played_iso = now_iso() if set_now else str(row["played_at"])
             cur.execute(
@@ -1228,19 +1170,21 @@ class Handler(BaseHTTPRequestHandler):
 
         if not player or not commander:
             return self._send_html(page("Errore", "<h1>player e commander sono obbligatori</h1>"), 400)
-
-        bracket = None
-        if bracket_s != "":
-            try:
-                bracket = int(bracket_s)
-            except ValueError:
-                return self._send_html(page("Errore", "<h1>bracket deve essere un intero</h1>"), 400)
+        try:
+            bracket = _admin_bracket(bracket_s)
+        except ValueError as exc:
+            return self._send_html(page("Errore", f"<h1>{esc(str(exc))}</h1>"), 400)
 
         with db() as conn:
             cur = conn.cursor()
             cur.execute("SELECT id FROM game WHERE id=?", (game_id,))
             if not cur.fetchone():
                 return self._send_html(page("404", "<h1>Partita non trovata</h1>"), 404)
+            if _contains_player(_game_players(conn, game_id), player):
+                return self._redirect(
+                    f"/admin/games/{game_id}?error=1&msg="
+                    + urllib.parse.quote(f"Player già presente nella partita: {player}")
+                )
             cur.execute(
                 "INSERT INTO gameentry (game_id, player, commander, bracket) VALUES (?, ?, ?, ?)",
                 (game_id, player, commander, bracket),
@@ -1259,25 +1203,50 @@ class Handler(BaseHTTPRequestHandler):
 
         if not player or not commander:
             return self._send_html(page("Errore", "<h1>player e commander sono obbligatori</h1>"), 400)
-
-        bracket = None
-        if bracket_s != "":
-            try:
-                bracket = int(bracket_s)
-            except ValueError:
-                return self._send_html(page("Errore", "<h1>bracket deve essere un intero</h1>"), 400)
+        try:
+            bracket = _admin_bracket(bracket_s)
+        except ValueError as exc:
+            return self._send_html(page("Errore", f"<h1>{esc(str(exc))}</h1>"), 400)
 
         with db() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT game_id FROM gameentry WHERE id=?", (entry_id,))
+            cur.execute(
+                """
+                SELECT ge.game_id, ge.player AS old_player, g.winner_player
+                FROM gameentry ge
+                JOIN game g ON g.id = ge.game_id
+                WHERE ge.id=?
+                """,
+                (entry_id,),
+            )
             row = cur.fetchone()
             if not row:
                 return self._send_html(page("404", "<h1>Entry non trovata</h1>"), 404)
             game_id = int(row["game_id"])
+            old_player = str(row["old_player"] or "")
+
+            if old_player.casefold() != player.casefold() and _contains_player(
+                _game_players(conn, game_id, exclude_entry_id=entry_id), player
+            ):
+                return self._redirect(
+                    f"/admin/games/{game_id}?error=1&msg="
+                    + urllib.parse.quote(f"Player già presente nella partita: {player}")
+                )
+
             cur.execute(
                 "UPDATE gameentry SET player=?, commander=?, bracket=? WHERE id=?",
                 (player, commander, bracket, entry_id),
             )
+
+            winner = str(row["winner_player"] or "")
+            if winner == old_player and old_player != player:
+                remaining_old = conn.execute(
+                    "SELECT 1 FROM gameentry WHERE game_id=? AND player=? LIMIT 1",
+                    (game_id, old_player),
+                ).fetchone()
+                if not remaining_old:
+                    cur.execute("UPDATE game SET winner_player=? WHERE id=?", (player, game_id))
+
             conn.commit()
 
         return self._redirect(
@@ -1288,17 +1257,35 @@ class Handler(BaseHTTPRequestHandler):
     def _post_entry_delete(self, entry_id: int):
         with db() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT game_id FROM gameentry WHERE id=?", (entry_id,))
+            cur.execute(
+                """
+                SELECT ge.game_id, ge.player, g.winner_player
+                FROM gameentry ge
+                JOIN game g ON g.id=ge.game_id
+                WHERE ge.id=?
+                """,
+                (entry_id,),
+            )
             row = cur.fetchone()
             if not row:
                 return self._send_html(page("404", "<h1>Entry non trovata</h1>"), 404)
             game_id = int(row["game_id"])
+            player = str(row["player"] or "")
+            winner = str(row["winner_player"] or "")
             cur.execute("DELETE FROM gameentry WHERE id=?", (entry_id,))
+
+            if winner == player:
+                still_present = conn.execute(
+                    "SELECT 1 FROM gameentry WHERE game_id=? AND player=? LIMIT 1",
+                    (game_id, player),
+                ).fetchone()
+                if not still_present:
+                    cur.execute("UPDATE game SET winner_player=NULL WHERE id=?", (game_id,))
             conn.commit()
 
         return self._redirect(
             f"/admin/games/{game_id}?updated=1&msg="
-            + urllib.parse.quote("Entry eliminata")
+            + urllib.parse.quote("Entry eliminata; verifica che restino almeno 2 entries prima dell'export")
         )
 
     def _post_brackets_apply(self, form: dict[str, str]):
@@ -1310,9 +1297,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._send_html(page("Errore", "<h1>Commander obbligatorio</h1>"), 400)
 
         try:
-            new_bracket = int(new_bracket_s)
-        except ValueError:
-            return self._send_html(page("Errore", "<h1>new_bracket deve essere un intero</h1>"), 400)
+            new_bracket = _admin_bracket(new_bracket_s)
+        except ValueError as exc:
+            return self._send_html(page("Errore", f"<h1>{esc(str(exc))}</h1>"), 400)
+        if new_bracket is None:
+            return self._send_html(page("Errore", "<h1>new_bracket è obbligatorio</h1>"), 400)
 
         with db() as conn:
             cur = conn.cursor()
@@ -1443,6 +1432,25 @@ class Handler(BaseHTTPRequestHandler):
             )
 
         with db() as conn:
+            collision = conn.execute(
+                """
+                SELECT a.game_id
+                FROM gameentry a
+                JOIN gameentry b ON b.game_id=a.game_id AND b.id<>a.id
+                WHERE a.player = ? COLLATE NOCASE
+                  AND b.player = ? COLLATE NOCASE
+                LIMIT 1
+                """,
+                (oldp, newp),
+            ).fetchone()
+            if collision:
+                return self._redirect(
+                    "/admin/players?kind=err&msg="
+                    + urllib.parse.quote(
+                        f"Rinomina bloccata: creerebbe un player duplicato nel game {collision['game_id']}"
+                    )
+                )
+
             conn.execute("BEGIN")
             cur = conn.cursor()
 
