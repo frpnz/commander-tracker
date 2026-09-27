@@ -1,91 +1,329 @@
-# Commander Tracker — Hardening Audit
+# Commander Tracker — Functional, Statistical and Admin Audit
 
-Date: 2026-09-18
+**Audit date:** 2026-09-27  
+**Scope:** package functionality, Commander/Draft statistics, admin workflows, validation/export pipeline and user-facing documentation.  
+**Data policy:** no historical Commander or Draft row was rewritten by this audit.
 
-## Scope
+## Executive summary
 
-Conservative pre-extension hardening. No historical game or draft data were rewritten.
+The package is structurally sound and the main workflows are usable, but the audit found several places where implementation and documentation had diverged. Two statistical issues were material: the three known legacy games with duplicated player identities were still entering context-aware metrics, and player+commander win-rate confidence intervals used a Wald/normal approximation that becomes misleading at 0%/100% with small samples.
 
-## Implemented
+Both issues are corrected without changing historical database rows. Context-aware metrics now exclude games that violate the one-seat/one-identity assumption, while raw/archive counts remain unchanged. The player+commander chart now uses Wilson 95% confidence intervals.
 
-- Centralized `game.v1` validation for player/commander presence, bracket `1..5`, winner membership, and duplicate-player rejection.
-- JSON batch import is now all-or-nothing: validation happens before writes and insertion uses an explicit rollback-safe transaction.
-- Commander admin prevents new duplicate players, invalid bracket values, and winners outside the game entries.
-- Renaming/deleting a winning entry keeps `winner_player` coherent; global player rename is blocked if it would merge two identities in one game.
-- New games start as drafts with `winner_player = NULL`; export blocks games with fewer than two entries.
-- Pre-export database validator checks foreign keys, empty identities, bracket range, orphan winners, minimum pod size, and duplicate players.
-- Known ambiguous historical duplicate-player games are explicit exceptions in `data/validation_exceptions.json`: `45`, `47`, `55`. They remain warnings in normal export and errors under `--strict-duplicates`.
-- `stats.v1.schema.json` is aligned with the real payload, including integer brackets, `pod_size`, `pod_sizes`, `games`, and `by_player_count` nested payloads.
-- Exported float values are canonicalized to 14 significant digits to remove platform-level last-bit noise while preserving metric values far beyond UI precision.
-- Removed unused weighted/WBD/meta-wins computations from `compute.py`. Raw `compute_stats()` output was verified byte-identical to the original baseline after this cleanup.
-- `publish.sh` now falls back to system `python3`, checkpoints both SQLite DBs without requiring the sqlite3 CLI, runs tests and validation before export, rebuilds all of `docs/`, and stages both frontend source and generated static content.
-- Commander and Draft admin/database paths now close SQLite connections reliably; Draft export also closes its connection on success or failure.
-- Fixed an accidental duplicated SQL literal in the Commander game-detail query.
-- Added a standard-library regression suite in `tests/test_hardening.py`.
+The admin/export path has also been hardened: malformed timestamps and fractional brackets are rejected, incomplete games without a winner cannot be exported, direct export validates before replacing `docs/`, Draft imports reject ambiguous/invalid rows, and publish no longer depends on a hard-coded checkout path.
 
-## Historical data deliberately not changed
+The README has been condensed and reorganized around actual use: admin startup, new-game JSON workflow, multi-file import, manual/duplicated games, player/bracket maintenance, Draft import, validation, export and publish. The package now also exposes direct CLI imports for Commander JSON and Draft Companion text, so routine data entry can be automated without starting the HTTP admin.
 
-The following games contain an ambiguous duplicated player identity and cannot be corrected safely without external information:
+## Current repository snapshot
+
+### Commander
+
+| Item | Current value |
+|---|---:|
+| Games | 167 |
+| Entries | 577 |
+| Distinct players | 9 |
+| Distinct commanders | 70 |
+| Earliest `played_at` | 2026-01-16 14:14:19.371139 |
+| Latest `played_at` | 2026-09-18 00:12:00 |
+| 2-player games | 24 |
+| 3-player games | 64 |
+| 4-player games | 58 |
+| 5-player games | 21 |
+| Entries with missing bracket | 2 |
+
+Bracket distribution: 21 entries at bracket 2, 162 at bracket 3, 368 at bracket 4, 24 at bracket 5, plus 2 null brackets.
+
+Known legacy duplicate-player games remain:
 
 - Game 45 — `Matti`
 - Game 47 — `Matti`
 - Game 55 — `Da`
 
-The exporter allows only these configured legacy exceptions. Any new unconfigured duplicate is a blocking validation error.
+They are explicitly listed in `data/validation_exceptions.json`.
 
-## Final audit results
+### Draft
 
-- Python syntax: PASS
-- JavaScript syntax: PASS
-- `scripts/publish.sh` shell syntax: PASS
-- Automated tests: **17/17 PASS**
-- Tests with `ResourceWarning` promoted to error: PASS
-- Commander SQLite `integrity_check`: `ok`
-- Commander foreign-key violations: `0`
-- Draft SQLite `integrity_check`: `ok`
-- Draft foreign-key violations: `0`
-- Commander DB byte-identical to supplied original: YES
-- Draft DB byte-identical to supplied original: YES
-- `stats.v1.json` vs JSON Schema: **0 errors**
-- Commander counts after hardening: **155 games / 534 entries**
-- Baseline structural/non-float differences: **0**
-- Float-only differences caused by canonicalization: max absolute delta **5.02e-14**
-- Draft JSON byte-identical to baseline: YES
-- Repeated full export byte-deterministic: PASS
-- `frontend/site` vs generated `docs/` static assets: synchronized
-- Strict duplicate validation: correctly fails on games `45`, `47`, `55`
+| Item | Current value |
+|---|---:|
+| Tournaments | 4 |
+| Standings rows | 24 |
+| Distinct players | 8 |
+| Playoff rows currently stored | 0 |
+| Earliest tournament | 2026-02-28 03:49:00 |
+| Latest tournament | 2026-06-29 22:10:00 |
 
-## Commands
+## Functional audit
 
-Validate Commander DB:
+### Static-first architecture
 
-```bash
-python3 backend/validate_db.py --db data/commander_tracker.sqlite
+The architecture is coherent: SQLite is the source of truth, local admin tools mutate the DB, Python exporters compute/validate data, and `docs/` contains a fully static artifact. No public backend is required at runtime.
+
+The frontend currently exposes Home, Commander archive, Stats, Meta Profile, Bracket Calibration, Draft, New Game and Metrics pages. The New Game page generates the payload consumed by the Commander admin rather than writing directly to the DB.
+
+### Commander admin
+
+Verified workflows:
+
+- create a new empty game with current local timestamp;
+- add/edit/delete entries;
+- set/update the winner only among entries in the game;
+- duplicate a historical game into a new game;
+- import a JSON object generated by New Game;
+- import multiple JSON files as one atomic batch;
+- use existing player/commander values and bracket suggestions;
+- globally rename players;
+- mass-update brackets;
+- rename a commander for a specific player;
+- delete games.
+
+Invariants are now enforced both at payload/admin level and again at export validation level.
+
+
+### Direct command-line imports
+
+Two thin CLI entry points were added without changing the admin, schema or statistical logic:
+
+```text
+python3 backend/import_games.py --db data/commander_tracker.sqlite <json...>
+python3 backend/import_draft.py --db data/draft_tracker.sqlite --tournament-id <id> --standings <file> [--playoffs <file>]
 ```
 
-Strict legacy duplicate check:
+`import_games.py` accepts one or more files; each can contain one `game.v1` object or an array. All payloads are normalized with the same Commander validator used by the admin and inserted with the existing atomic batch helper. Invalid input or a missing DB path leaves the database untouched.
 
-```bash
-python3 backend/validate_db.py --db data/commander_tracker.sqlite --strict-duplicates
+`import_draft.py` targets an existing tournament, uses the same Companion/playoff parsers as the Draft admin and atomically replaces that tournament's standings and playoffs. Invalid text, a missing tournament or a missing DB path leaves existing tournament data untouched.
+
+### Draft admin
+
+Verified workflows:
+
+- create/update/delete tournaments;
+- paste standings exported/copied from MTG Companion;
+- replace standings for an existing tournament;
+- add/replace optional SF/F playoff rows;
+- globally rename Draft players.
+
+The parser accepts player names containing spaces and either tab/space-separated `W-L-D` and VIA values.
+
+## Statistical audit
+
+### Raw statistics
+
+`by_player` and `by_player_commander` are direct aggregates over stored `gameentry` rows. This is intentional and means historical ambiguous rows remain represented in raw counts. The audit did not silently rewrite or discard them.
+
+### WAE / pod-size normalization
+
+The frontend computes expected wins using a neutral seat baseline of `1 / pod_size` for each game and defines:
+
+```text
+Expected wins = Σ (1 / pod_size)
+WAE           = actual wins - Expected wins
 ```
 
-Run tests:
+This is a pod-size normalization only; it does not use bracket strength.
+
+### MDI / MPI
+
+For each eligible appearance:
+
+```text
+delta = bracket_player - mean(bracket_other_players)
+MDI   = mean(delta)
+MPI   = mean(abs(delta))
+```
+
+Before this audit, duplicate player identities in a single game could be collapsed in the player-keyed bracket map while still being counted multiple times. That violates the model's one-seat/one-identity assumption.
+
+**Fix:** any game containing a duplicate player identity is excluded from MDI/MPI, OEWR and commander calibration. Raw/archive aggregates are left untouched.
+
+Current full-dataset usage after the fix:
+
+| Metric family | Eligible appearances |
+|---|---:|
+| Raw appearances | 577 |
+| MDI/MPI | 563 |
+| OEWR | 557 |
+| Commander calibration | 557 |
+
+MDI/MPI can still use appearances from a game with a missing bracket when enough other numeric brackets exist for the specific seat. OEWR/calibration require a complete numeric bracket vector for the game.
+
+### OEWR
+
+The implemented expected-win model is:
+
+```text
+p_i = softmax(k * bracket_i),  k = 0.80
+r_i = actual_win_i - p_i
+OEWR = Σ r_i / N
+oewr_z = Σ r_i / sqrt(Σ p_i(1-p_i))
+```
+
+The previous Metrics page incorrectly described `oewr_z` as `(OEWR - μ_ref) / σ_ref`. The documentation is now aligned to the backend.
+
+As a conservation check, after excluding duplicate-identity games the weighted total OEWR residual across all player appearances is approximately `-6.6e-15`, numerically zero as expected because probabilities sum to one within every eligible game.
+
+### Win-rate confidence intervals
+
+The player+commander chart previously used the symmetric Wald/normal interval. With small samples and 0%/100% observed WR this can collapse to zero width.
+
+**Fix:** the chart now uses a Wilson score 95% interval and exposes the lower/upper bounds in the tooltip.
+
+### Commander bracket calibration
+
+The backend computes a grid posterior for latent commander bracket `theta ∈ {1.00, 1.25, ..., 5.00}`. It exposes:
+
+- `bracket_prior`;
+- `b_post` = posterior mean;
+- `b_post_sd` = posterior standard deviation;
+- `b_post_map` = posterior MAP;
+- `cpr_z` = standardized commander residual.
+
+The UI displays `b_post_map` as “B posterior”, falling back to `b_post` when needed. Documentation now states this explicitly.
+
+The Low/Medium/High uncertainty labels are relative percentiles of `b_post_sd` computed on the full active calibration dataset for the selected pod-size dataset, before UI filtering by player or minimum games. The previous wording implied they were recomputed only over visible rows; this has been corrected.
+
+### Draft statistics
+
+The Draft exporter computes:
+
+```text
+MWP = (wins + 0.5 * draws) / (wins + losses + draws)
+```
+
+Standings are actually ordered by:
+
+```text
+wins DESC, draws DESC, via_pct DESC, player ASC
+```
+
+The old documentation claimed a `3*W + D` points ordering. That was not the implementation and has been corrected rather than changing historical behavior.
+
+Podium aggregates (`podium_gold`, `podium_silver`, `podium_bronze`, `podium_total`) live directly inside `draft.v1.json -> by_player`; there is no separate `podium_by_player` field. Documentation is corrected.
+
+## Admin and validation hardening completed
+
+### Commander payload and DB validation
+
+The audit added/verified blocking checks for:
+
+- parseable ISO `played_at` in imports and stored Commander rows;
+- at least two entries;
+- non-empty player and commander names;
+- no duplicate player identity in new/imported games;
+- bracket `null` or an integral value from 1 to 5;
+- winner belonging to the game's entries when supplied;
+- winner being present before export;
+- foreign-key integrity;
+- no unconfigured duplicate identity in stored games.
+
+A new/imported game may temporarily have `winner_player = null` while still in progress, but the export gate now blocks publication until a valid winner is set.
+
+### Atomic JSON import
+
+Multi-file Commander JSON import is validated before insertion and uses an atomic transaction. If one payload is invalid, none of the batch is inserted.
+
+### Safe direct export
+
+Previously the direct exporter could copy/replace the static site before validation/computation completed. A failed export could therefore disturb the last known-good `docs/` artifact.
+
+**Fix:** Commander validation and Commander/Draft computation happen first. `docs/` is replaced only after all preconditions succeed. A regression test verifies preservation of an existing docs sentinel on failed export. Direct Commander/Draft export also rejects missing DB paths instead of letting SQLite silently create an empty database.
+
+### Draft input hardening
+
+The Draft admin now rejects:
+
+- duplicate player rows in pasted standings;
+- VIA values outside `0..100`;
+- playoff rows whose winner is not one of the two participants;
+- global player renames that would merge two standings in the same tournament.
+
+The playoff parser also checks the `A vs B -> winner` form before the bare `A > B` form, avoiding ambiguity because the arrow itself contains `>`.
+
+### Publish workflow
+
+`scripts/publish.sh` now derives its repository directory from the script location instead of assuming `$HOME/Projects/commander-tracker`. It can therefore be called from any working directory, while still allowing explicit environment overrides.
+
+The script checkpoints both SQLite databases, runs tests, validates Commander data, rebuilds `docs/`, stages generated/source artifacts and commits/pushes only when staged changes exist.
+
+## Documentation audit
+
+`README.md` was reduced from a long mixed reference/manual into a usage-first guide. The current pass also documents the two direct CLI import commands and corrects the example Commander payload to include the required `"version": "game.v1"`. It now prioritizes:
+
+- how to start both admin tools;
+- the New Game -> JSON -> admin import workflow;
+- multi-file import semantics, including direct Commander JSON CLI import;
+- manual creation and historical duplication;
+- winner completion before export;
+- player/bracket maintenance;
+- Draft/Companion import and playoffs, including direct CLI import;
+- validation, export and publish;
+- a compact explanation of all statistical families;
+- local-only security and SSH tunneling.
+
+`frontend/site/metrics/index.html` was rewritten to match current implementation and `frontend/site/bracket-calibration/index.html` was corrected for the uncertainty-population wording.
+
+`backend/stats.v1.schema.json` now documents `generated_utc` accurately. Despite its legacy field name, it is a deterministic data watermark based on the latest stored `played_at`; it is not the wall-clock export timestamp. Stored timestamps are timezone-naive, so the historical trailing `Z` is retained for compatibility and should not be interpreted as evidence of an actual timezone conversion.
+
+## Known legacy caveats retained intentionally
+
+The historical games 45, 47 and 55 are ambiguous and were not changed. Normal validation emits warnings for these configured exceptions; `--strict-duplicates` correctly turns them into blocking errors.
+
+Because raw aggregates reflect stored rows exactly, those legacy rows remain part of raw game/entry/WR counts. The context-aware metrics now isolate themselves from the ambiguity instead of inventing a historical correction.
+
+The two Commander entries with `bracket = NULL` remain in the DB and are handled by metric eligibility rules rather than imputed.
+
+## Verification results
+
+The final verification for this audit includes:
+
+| Check | Result |
+|---|---|
+| Python syntax | PASS |
+| JavaScript syntax | PASS |
+| `scripts/publish.sh` syntax | PASS |
+| Automated tests | 35/35 PASS |
+| Commander CLI import regressions | PASS |
+| Draft CLI import regressions | PASS |
+| Direct CLI operational smoke on DB copies | PASS |
+| Commander normal validation | PASS with only legacy warnings 45/47/55 |
+| Commander strict duplicate validation | Expected FAIL on 45/47/55 only |
+| Commander SQLite `integrity_check` | ok |
+| Commander foreign-key violations | 0 |
+| Draft SQLite `integrity_check` | ok |
+| Draft foreign-key violations | 0 |
+| Full export | PASS |
+| HTTP smoke test: public pages + Commander/Draft admin GET routes | PASS |
+| Export determinism regression | PASS |
+| Failed export preserves previous `docs/` | PASS |
+| Stats JSON vs schema | PASS |
+| Commander DB byte-identical to pre-audit checksum | YES |
+| Draft DB byte-identical to pre-audit checksum | YES |
+| Historical Commander DB rows modified by audit | NO |
+| Historical Draft DB rows modified by audit | NO |
+
+## Operational commands
 
 ```bash
+# Tests
 python3 -m unittest discover -s tests -v
-```
 
-Export:
+# Commander validation
+python3 backend/validate_db.py --db data/commander_tracker.sqlite
 
-```bash
+# Strict check including configured legacy duplicates
+python3 backend/validate_db.py \
+  --db data/commander_tracker.sqlite \
+  --strict-duplicates
+
+# Full static export
 python3 backend/export_stats.py \
   --db data/commander_tracker.sqlite \
   --draft-db data/draft_tracker.sqlite \
   --docs docs
-```
 
-Publish:
+# Local static preview
+python3 -m http.server -d docs 8081
 
-```bash
-bash scripts/publish.sh "Update Commander tracker"
+# Publish
+./scripts/publish.sh "Update Commander tracker"
 ```

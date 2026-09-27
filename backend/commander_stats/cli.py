@@ -93,15 +93,13 @@ def main(argv: list[str] | None = None) -> int:
     repo_root = Path(__file__).resolve().parents[2]  # .../backend/commander_stats -> repo root
     site_dir = Path(args.site) if args.site else (repo_root / "frontend" / "site")
     docs_dir = Path(args.docs).resolve()
-
-    # (Re)create static site root
-    copy_static_site(str(site_dir), str(docs_dir))
-
-    # Export JSON data
-    data_dir = docs_dir / "data"
-    data_dir.mkdir(parents=True, exist_ok=True)
-
     db_path = Path(args.db).resolve()
+    if not db_path.is_file():
+        raise SystemExit(f"Commander DB non trovato: {db_path}")
+
+    draft_db_path = Path(args.draft_db).resolve() if args.draft_db else None
+    if draft_db_path is not None and not draft_db_path.is_file():
+        raise SystemExit(f"Draft DB non trovato: {draft_db_path}")
 
     exceptions_path = (
         Path(args.validation_exceptions).resolve()
@@ -118,6 +116,8 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as exc:
             raise SystemExit(f"File eccezioni validazione non valido: {exceptions_path}: {exc}")
 
+    # Compute and validate every requested dataset before touching docs/.
+    # This keeps a failed direct export from deleting the last known-good static site.
     conn = connect(str(db_path))
     try:
         try:
@@ -133,46 +133,55 @@ def main(argv: list[str] | None = None) -> int:
             if issue.severity == "warning":
                 print(f"WARNING [{issue.code}] {issue.message}", file=sys.stderr)
 
-        # generated_utc is computed deterministically from DB content when omitted
         stats = _canonicalize_json_numbers(compute_stats(conn, generated_utc=None))
     finally:
         conn.close()
 
-    json_path = data_dir / "stats.v1.json"
+    draft_data = None
+    if args.draft_db:
+        try:
+            from draft_stats.compute import compute_draft  # type: ignore
+        except Exception as exc:
+            raise SystemExit(f"Draft export requested but draft_stats not importable: {exc}")
+        draft_data = compute_draft(str(draft_db_path))
 
-    # Always write the JSON file. The output is now deterministic for an
-    # unchanged DB (including generated_utc).
+    # Only now replace the generated site and write data files.
+    copy_static_site(str(site_dir), str(docs_dir))
+    data_dir = docs_dir / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    json_path = data_dir / "stats.v1.json"
     new_json = json.dumps(stats, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
     json_path.write_text(new_json, encoding="utf-8")
 
-    # Export JSON schema alongside the data for a visible contract
     schema_src = repo_root / "backend" / "stats.v1.schema.json"
     if schema_src.exists():
-        (data_dir / "stats.v1.schema.json").write_text(schema_src.read_text(encoding="utf-8"), encoding="utf-8")
+        (data_dir / "stats.v1.schema.json").write_text(
+            schema_src.read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
 
-    draft_data = None
-    # Optional: draft export into the same docs output (separate DB for safety)
-    if args.draft_db:
-        try:
-            from draft_stats.compute import compute_draft, write_json  # type: ignore
-        except Exception as e:
-            raise SystemExit(f"Draft export requested but draft_stats not importable: {e}")
-
-        draft_data = compute_draft(str(Path(args.draft_db).resolve()))
+    if isinstance(draft_data, dict):
+        from draft_stats.compute import write_json  # type: ignore
         write_json(draft_data, str(data_dir / "draft.v1.json"))
 
     # --- Player color overrides (static mapping shared across pages) ---
-    # Draft, Stats, Meta-profile, etc. all read window.PLAYER_COLOR_OVERRIDES (if present).
-    # This keeps player colors consistent across the whole site and across runs.
-    commander_players = [str(r.get("player") or "").strip() for r in (stats.get("by_player") or []) if isinstance(r, dict)]
+    commander_players = [
+        str(r.get("player") or "").strip()
+        for r in (stats.get("by_player") or [])
+        if isinstance(r, dict)
+    ]
     draft_players = []
     if isinstance(draft_data, dict):
         dp = draft_data.get("by_player")
         if isinstance(dp, dict):
             draft_players = [str(k).strip() for k in dp.keys() if str(k).strip()]
         elif isinstance(dp, list):
-            # future-proofing in case schema changes
-            draft_players = [str(r.get("player") or "").strip() for r in dp if isinstance(r, dict)]
+            draft_players = [
+                str(r.get("player") or "").strip()
+                for r in dp
+                if isinstance(r, dict)
+            ]
 
     overrides = _build_player_color_overrides(commander_players, draft_players)
     _write_player_color_overrides_js(overrides, docs_dir / "assets" / "player-color-overrides.js")

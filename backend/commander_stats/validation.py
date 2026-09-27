@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 import sqlite3
 from typing import Any, Iterable
 
@@ -30,6 +31,8 @@ def normalize_bracket(value: Any) -> int | None:
         return None
     if isinstance(value, bool):
         raise PayloadValidationError("bracket deve essere un intero tra 1 e 5")
+    if isinstance(value, float) and not value.is_integer():
+        raise PayloadValidationError("bracket deve essere un intero tra 1 e 5")
     try:
         bracket = int(value)
     except (TypeError, ValueError) as exc:
@@ -50,6 +53,10 @@ def normalize_game_payload(item: Any, *, label: str = "Payload") -> dict[str, An
     played_at = played_at_raw.strip() if isinstance(played_at_raw, str) else ""
     if not played_at:
         raise PayloadValidationError(f"{label}: played_at è obbligatorio")
+    try:
+        datetime.fromisoformat(played_at.replace("T", " ").replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise PayloadValidationError(f"{label}: played_at non è una data/ora ISO valida") from exc
 
     notes = item.get("notes")
     if notes is not None and not isinstance(notes, str):
@@ -132,6 +139,14 @@ def validate_database(
             )
         )
 
+    for row in _fetchall(conn, "SELECT id, played_at FROM game ORDER BY id"):
+        gid = int(row["id"])
+        played_at = str(row["played_at"] or "").strip()
+        try:
+            datetime.fromisoformat(played_at.replace("T", " ").replace("Z", "+00:00"))
+        except ValueError:
+            issues.append(ValidationIssue("error", "invalid_played_at", f"Game {gid}: played_at non valido: {played_at!r}", gid))
+
     for row in _fetchall(
         conn,
         """
@@ -139,7 +154,7 @@ def validate_database(
         FROM gameentry
         WHERE TRIM(COALESCE(player, '')) = ''
            OR TRIM(COALESCE(commander, '')) = ''
-           OR (bracket IS NOT NULL AND (bracket < 1 OR bracket > 5))
+           OR (bracket IS NOT NULL AND (bracket < 1 OR bracket > 5 OR bracket != CAST(bracket AS INTEGER)))
         ORDER BY game_id, id
         """,
     ):
@@ -148,8 +163,10 @@ def validate_database(
             issues.append(ValidationIssue("error", "empty_player", f"Game {game_id}: entry {row['id']} ha player vuoto", game_id))
         if not str(row["commander"] or "").strip():
             issues.append(ValidationIssue("error", "empty_commander", f"Game {game_id}: entry {row['id']} ha commander vuoto", game_id))
-        if row["bracket"] is not None and not 1 <= int(row["bracket"]) <= 5:
-            issues.append(ValidationIssue("error", "invalid_bracket", f"Game {game_id}: entry {row['id']} ha bracket fuori range: {row['bracket']}", game_id))
+        if row["bracket"] is not None:
+            bracket_value = float(row["bracket"])
+            if not 1 <= bracket_value <= 5 or not bracket_value.is_integer():
+                issues.append(ValidationIssue("error", "invalid_bracket", f"Game {game_id}: entry {row['id']} ha bracket non intero o fuori range: {row['bracket']}", game_id))
 
     for row in _fetchall(
         conn,
@@ -164,6 +181,18 @@ def validate_database(
     ):
         gid = int(row["id"])
         issues.append(ValidationIssue("error", "too_few_entries", f"Game {gid}: solo {row['n']} entry; ne servono almeno 2 per l'export", gid))
+
+    for row in _fetchall(
+        conn,
+        """
+        SELECT g.id
+        FROM game g
+        WHERE g.winner_player IS NULL OR TRIM(g.winner_player) = ''
+        ORDER BY g.id
+        """,
+    ):
+        gid = int(row["id"])
+        issues.append(ValidationIssue("error", "missing_winner", f"Game {gid}: winner non impostato; completa la partita prima dell'export", gid))
 
     for row in _fetchall(
         conn,

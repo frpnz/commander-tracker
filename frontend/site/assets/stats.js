@@ -41,7 +41,7 @@ const barValueLabels = {
 };
 
 
-// --- Plugin: draw symmetric error bars (in data units) for bar charts ---
+// --- Plugin: draw confidence intervals for bar charts ---
 const errorBars = {
   id: "errorBars",
   afterDatasetsDraw(chart) {
@@ -65,7 +65,7 @@ const errorBars = {
     ctx.strokeStyle = ciStroke || getComputedStyle(document.documentElement).getPropertyValue('--fg').trim() || '#e8eaed';
 
     meta.data.forEach((elem, i) => {
-      const err = Number(errs[i] ?? 0);
+      const ci = errs[i];
       const val = Number(ds.data[i] ?? 0);
       if (!isFinite(val)) return;
 
@@ -74,10 +74,23 @@ const errorBars = {
       // Keep 0-axis marker inside the plot area (Chart.js may place 0 slightly outside)
       const xZero = Math.max(chart.chartArea.left + 2, xScale.getPixelForValue(0));
 
-      // Draw CI only when > 0
-      if (isFinite(err) && err > 0) {
-        const x0 = xScale.getPixelForValue(Math.max(0, val - err));
-        const x1 = xScale.getPixelForValue(Math.min(100, val + err));
+      let low = null;
+      let high = null;
+      if (ci && typeof ci === "object") {
+        low = Number(ci.low);
+        high = Number(ci.high);
+      } else {
+        // Backward-compatible symmetric interval.
+        const err = Number(ci ?? 0);
+        if (isFinite(err) && err > 0) {
+          low = val - err;
+          high = val + err;
+        }
+      }
+
+      if (isFinite(low) && isFinite(high) && high >= low) {
+        const x0 = xScale.getPixelForValue(Math.max(0, low));
+        const x1 = xScale.getPixelForValue(Math.min(100, high));
         const cap = 6;
 
         ctx.beginPath();
@@ -419,13 +432,22 @@ const errorBars = {
     const labels = rows.map((r) => r.commander);
     const data = rows.map((r) => asNum(r.winRate, 0));
 
-    // Error bars: 95% CI for a proportion (normal approximation) in percentage points.
-    // ci = 1.96 * sqrt(p*(1-p)/n) * 100
+    // 95% Wilson score interval for a binomial proportion.
+    // Unlike the simple normal/Wald interval, Wilson remains informative at 0%/100%
+    // and behaves much better for the small samples common in commander-level views.
     const errors = rows.map((r) => {
       const n = Math.max(1, asNum(r.games, 0));
-      const p = Math.min(1, Math.max(0, asNum(r.winRate, 0) / 100));
-      const se = Math.sqrt((p * (1 - p)) / n);
-      return 1.96 * se * 100;
+      const wins = Math.min(n, Math.max(0, asNum(r.wins, 0)));
+      const p = wins / n;
+      const z = 1.96;
+      const z2 = z * z;
+      const den = 1 + z2 / n;
+      const center = (p + z2 / (2 * n)) / den;
+      const half = (z / den) * Math.sqrt((p * (1 - p) / n) + (z2 / (4 * n * n)));
+      return {
+        low: 100 * Math.max(0, center - half),
+        high: 100 * Math.min(1, center + half),
+      };
     });
 
     const base = pcGet(playerName);
@@ -506,8 +528,13 @@ const errorBars = {
                 const wr = asNum(r.winRate, 0);
                 const g = asNum(r.games, 0);
                 const w = asNum(r.wins, 0);
-                const ci = errors[i];
-                return ` ${wr.toFixed(1)}%  ·  ${w}/${g}  ·  ±${ci.toFixed(1)}pp (95% CI)`;
+                const ci = errors[i] || {};
+                const lo = Number(ci.low);
+                const hi = Number(ci.high);
+                const ciTxt = Number.isFinite(lo) && Number.isFinite(hi)
+                  ? `${lo.toFixed(1)}–${hi.toFixed(1)}%`
+                  : "—";
+                return ` ${wr.toFixed(1)}%  ·  ${w}/${g}  ·  Wilson 95% CI ${ciTxt}`;
               }
             }
           }
@@ -1303,7 +1330,7 @@ const errorBars = {
         if (period) parts.push(`Periodo: ${period}`);
         if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
         if (Number.isFinite(entries)) parts.push(`Entries: ${entries}`);
-        if (gen) parts.push(`Gen: ${gen}`);
+        if (gen) parts.push(`Ultimo dato: ${String(gen).replace("T", " ").replace("Z", "")}`);
         // Mantieni il riepilogo nei dati ma non mostrarlo in UI
         const summary = parts.join(" · ");
         elMeta.dataset.summary = summary;

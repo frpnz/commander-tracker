@@ -505,7 +505,7 @@ const barValueLabels = {
     DATA = await res.json();
 
     const gen = (DATA.generated_utc || "").replace("Z", "");
-    setMeta(`Dati: ${DATA.counts.tournaments} tornei · gen: ${gen}`);
+    setMeta(`Dati: ${DATA.counts.tournaments} tornei · ultimo dato: ${gen}`);
 
     renderTournamentOptions();
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR="${REPO_DIR:-$HOME/Projects/commander-tracker}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="${REPO_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 DB_PATH="${DB_PATH:-$REPO_DIR/data/commander_tracker.sqlite}"
 DRAFT_DB_PATH="${DRAFT_DB_PATH:-$REPO_DIR/data/draft_tracker.sqlite}"
 DOCS_DIR="${DOCS_DIR:-$REPO_DIR/docs}"

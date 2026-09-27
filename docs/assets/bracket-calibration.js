@@ -385,7 +385,7 @@ function updateMeta() {
   const parts = [];
   if (period) parts.push(`Periodo: ${period}`);
   if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
-  if (gen) parts.push(`Gen: ${gen}`);
+  if (gen) parts.push(`Ultimo dato: ${String(gen).replace("T", " ").replace("Z", "")}`);
   const summary = parts.join(" · ");
   elMeta.dataset.summary = summary;
   elMeta.textContent = "";

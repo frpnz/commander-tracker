@@ -134,6 +134,8 @@ def parse_companion_text(text: str) -> list[dict[str, object]]:
             via = float(via_token)
         except ValueError:
             raise ValueError(f"VIA% non numerica: {raw!r}")
+        if not 0.0 <= via <= 100.0:
+            raise ValueError(f"VIA% fuori range 0..100: {raw!r}")
 
         player = " ".join(name_tokens).strip()
         if not player:
@@ -148,17 +150,16 @@ def parse_companion_text(text: str) -> list[dict[str, object]]:
     if not rows:
         raise ValueError("Nessuna riga valida trovata.")
 
-    # de-dup by player (keep first)
-    seen = set()
-    dedup: list[dict[str, object]] = []
+    # One standing row per player. Silently dropping duplicates can hide a bad
+    # paste or a rename collision, so reject them explicitly.
+    seen: set[str] = set()
     for r in rows:
-        k = str(r["player"]).casefold()
+        k = str(r["player"]).strip().casefold()
         if k in seen:
-            continue
+            raise ValueError(f"Player duplicato negli standings: {r['player']}")
         seen.add(k)
-        dedup.append(r)
 
-    return dedup
+    return rows
 
 
 _STAGE_RE = re.compile(r"^(?P<stage>sf|semi|semifinale|semifinal|f|finale|final)\s*[:\-]?\s*(?P<rest>.*)$", re.IGNORECASE)
@@ -171,6 +172,23 @@ def _norm_stage(stage: str) -> str:
     if s in ("f", "finale", "final"):
         return "F"
     return stage.strip().upper() or "M"
+
+
+def _validated_playoff(stage: str, player_a: str, player_b: str, winner: str, raw: str) -> dict[str, str]:
+    a = player_a.strip()
+    b = player_b.strip()
+    w = winner.strip()
+    if not a or not b or not w:
+        raise ValueError(f"Riga playoff non valida: {raw!r}")
+    if a.casefold() == b.casefold():
+        raise ValueError(f"Riga playoff non valida: stesso player su entrambi i lati: {raw!r}")
+    if w.casefold() == a.casefold():
+        w = a
+    elif w.casefold() == b.casefold():
+        w = b
+    else:
+        raise ValueError(f"Winner playoff non presente nel match: {raw!r}")
+    return {"stage": stage, "player_a": a, "player_b": b, "winner": w}
 
 
 def parse_playoffs_text(text: str) -> list[dict[str, str]]:
@@ -200,17 +218,9 @@ def parse_playoffs_text(text: str) -> list[dict[str, str]]:
         # Normalize common separators
         rest2 = rest.replace("→", "->").replace("⇒", "->")
 
-        # Pattern 1: "A > B" means A wins.
-        if ">" in rest2:
-            left, right = rest2.split(">", 1)
-            a = left.strip()
-            b = right.strip()
-            if not a or not b:
-                raise ValueError(f"Riga playoff non valida: {raw!r}")
-            out.append({"stage": stage, "player_a": a, "player_b": b, "winner": a})
-            continue
-
-        # Pattern 2: "A vs B -> A" (winner on the right)
+        # Pattern 1: "A vs B -> A" (winner on the right).
+        # Check the arrow form before bare ">", otherwise the ">" inside "->"
+        # would be misread as the winner separator.
         if "->" in rest2:
             pre, win = rest2.split("->", 1)
             winner = win.strip()
@@ -228,7 +238,17 @@ def parse_playoffs_text(text: str) -> list[dict[str, str]]:
                 raise ValueError(f"Riga playoff non valida (manca 'vs'): {raw!r}")
             if not a or not b:
                 raise ValueError(f"Riga playoff non valida: {raw!r}")
-            out.append({"stage": stage, "player_a": a, "player_b": b, "winner": winner})
+            out.append(_validated_playoff(stage, a, b, winner, raw))
+            continue
+
+        # Pattern 2: "A > B" means A wins.
+        if ">" in rest2:
+            left, right = rest2.split(">", 1)
+            a = left.strip()
+            b = right.strip()
+            if not a or not b:
+                raise ValueError(f"Riga playoff non valida: {raw!r}")
+            out.append(_validated_playoff(stage, a, b, a, raw))
             continue
 
         # Pattern 3: "A def. B" or "A beat B" means A wins.
@@ -237,7 +257,7 @@ def parse_playoffs_text(text: str) -> list[dict[str, str]]:
             a, b = mdef[0].strip(), mdef[1].strip()
             if not a or not b:
                 raise ValueError(f"Riga playoff non valida: {raw!r}")
-            out.append({"stage": stage, "player_a": a, "player_b": b, "winner": a})
+            out.append(_validated_playoff(stage, a, b, a, raw))
             continue
 
         raise ValueError(
@@ -425,6 +445,26 @@ class Handler(BaseHTTPRequestHandler):
             )
 
         with closing(db()) as conn:
+            collision = conn.execute(
+                """
+                SELECT s_old.tournament_id
+                FROM standing s_old
+                JOIN standing s_new ON s_new.tournament_id = s_old.tournament_id
+                WHERE s_old.player = ? COLLATE NOCASE
+                  AND s_new.player = ? COLLATE NOCASE
+                  AND s_old.id <> s_new.id
+                LIMIT 1
+                """,
+                (oldp, newp),
+            ).fetchone()
+            if collision:
+                return self._redirect(
+                    "/draft/players?kind=err&msg="
+                    + urllib.parse.quote(
+                        f"Rinomina bloccata: creerebbe un player duplicato nel torneo {collision['tournament_id']}"
+                    )
+                )
+
             conn.execute("BEGIN")
             cur = conn.cursor()
             # Standings

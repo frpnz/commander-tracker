@@ -1,189 +1,15 @@
 # Commander Tracker
 
-Commander Tracker e una web app static-first per tracciare partite Commander e tornei Draft di Magic: The Gathering, calcolare statistiche, pubblicare dashboard statiche e gestire i dati tramite strumenti admin locali.
+Commander Tracker e un tracker **static-first** per partite Commander e tornei Draft di Magic: The Gathering.
+I dati vivono in due database SQLite locali; gli admin servono solo per inserimento e manutenzione. L'export genera `docs/`, un sito statico pubblicabile su GitHub Pages senza backend pubblico.
 
-Il progetto usa:
+## Uso rapido
 
-- Python standard library per admin locale, calcolo metriche ed export
-- SQLite per la persistenza dati
-- frontend statico HTML/CSS/JavaScript
-- Chart.js via CDN per i grafici
-- output statico in `docs/`, adatto a GitHub Pages o a qualsiasi hosting statico
+Requisiti: Python 3.10+ e un browser moderno. Non ci sono dipendenze Python esterne obbligatorie.
 
-Non serve un backend pubblico in produzione: il sito legge file JSON generati a partire dai database SQLite.
+### 1. Avviare l'admin Commander
 
----
-
-## Indice
-
-1. Struttura del progetto
-2. Flusso generale
-3. Setup e requisiti
-4. Run locale per test
-5. Flusso utente
-6. Flusso admin Commander
-7. Flusso admin Draft
-8. Export e pubblicazione statica
-9. Funzionalita frontend
-10. Funzionalita Commander analytics
-11. Funzionalita Draft analytics
-12. Database e backup
-13. Comandi utili
-14. Troubleshooting
-
----
-
-## 1. Struttura del progetto
-
-```text
-backend/
-  export_stats.py              # Export completo sito statico: Commander + Draft
-  export_draft.py              # Export standalone dati Draft
-  admin_stdlib.py              # Admin locale Commander, solo standard library
-  admin_draft_stdlib.py        # Admin locale Draft, solo standard library
-  validate_db.py               # Validator invarianti DB Commander
-  stats.v1.schema.json         # Schema JSON dati Commander
-
-  commander_stats/
-    cli.py                     # CLI Commander/export sito + validation gate
-    compute.py                 # Calcolo statistiche Commander
-    db.py                      # Accesso SQLite Commander
-    ingest.py                  # Inserimento batch atomico
-    validation.py              # Invarianti DB e payload game.v1
-    site.py                    # Copia frontend + scrittura JSON/schema
-
-  draft_stats/
-    cli.py                     # CLI export Draft JSON
-    compute.py                 # Calcolo statistiche Draft
-    db.py                      # Accesso SQLite Draft
-
-data/
-  commander_tracker.sqlite     # Database Commander
-  draft_tracker.sqlite         # Database Draft
-  validation_exceptions.json   # Eccezioni legacy esplicite del validator
-
-tests/
-  test_hardening.py            # Regressione invarianti, transazioni, schema ed export
-
-frontend/site/
-  index.html                   # Home
-  archive/                     # Archivio partite Commander
-  stats/                       # Dashboard statistiche Commander
-  meta-profile/                # Analisi meta/profile
-  bracket-calibration/         # Calibrazione bracket commander
-  draft/                       # Dashboard Draft
-  new-game/                    # Generatore JSON nuova partita Commander
-  metrics/                     # Guida metriche
-  assets/                      # JS, CSS, immagini, colori player
-
-docs/                          # Output generato dall'export, pubblicabile
-  data/
-    stats.v1.json              # Dati Commander esportati
-    draft.v1.json              # Dati Draft esportati
-    stats.v1.schema.json       # Schema dati Commander
-```
-
-Nota: `docs/` puo non esistere dopo clone/unzip. Viene generata con l'export.
-
----
-
-## 2. Flusso generale
-
-Il flusso dati e questo:
-
-```text
-Admin locale / import JSON
-        ->
-SQLite Commander e/o Draft
-        ->
-Python export
-        ->
-docs/data/*.json + frontend statico
-        ->
-Sito statico consultabile dagli utenti
-```
-
-In pratica:
-
-1. L'admin inserisce o importa partite/tornei nei database SQLite.
-2. L'admin lancia l'export.
-3. L'export rigenera `docs/` con frontend e JSON aggiornati.
-4. Gli utenti consultano il sito statico.
-5. La pagina `Nuova partita` puo generare un file JSON da inviare/importare nell'admin.
-
----
-
-## 3. Setup e requisiti
-
-Requisiti minimi:
-
-- Python 3.10+ consigliato
-- browser moderno
-- nessuna dipendenza Python esterna obbligatoria
-
-Verifica Python:
-
-```bash
-python3 --version
-```
-
-Da root repo, verifica che i file principali siano presenti:
-
-```bash
-ls backend data frontend
-ls data/commander_tracker.sqlite data/draft_tracker.sqlite
-```
-
----
-
-## 4. Run locale per test
-
-### 4.1 Generare il sito statico
-
-Da root repo:
-
-```bash
-python3 backend/export_stats.py \
-  --db data/commander_tracker.sqlite \
-  --draft-db data/draft_tracker.sqlite \
-  --docs docs
-```
-
-Questo comando:
-
-- valida prima gli invarianti del DB Commander;
-- copia `frontend/site/` dentro `docs/`;
-- genera `docs/data/stats.v1.json`;
-- genera `docs/data/draft.v1.json`;
-- copia `docs/data/stats.v1.schema.json`.
-
-L'export viene bloccato per winner orfani, bracket fuori range, game con meno di 2 entries, entry vuote, foreign-key violation e nuovi player duplicati. I soli duplicati storici noti sono dichiarati esplicitamente in `data/validation_exceptions.json` e producono un warning finche non vengono corretti manualmente.
-
-### 4.2 Servire il sito in locale
-
-```bash
-python3 -m http.server -d docs 8081
-```
-
-Apri:
-
-```text
-http://127.0.0.1:8081/
-```
-
-Pagine utili:
-
-```text
-http://127.0.0.1:8081/archive/
-http://127.0.0.1:8081/stats/
-http://127.0.0.1:8081/meta-profile/
-http://127.0.0.1:8081/bracket-calibration/
-http://127.0.0.1:8081/draft/
-http://127.0.0.1:8081/new-game/
-http://127.0.0.1:8081/metrics/
-```
-
-### 4.3 Avviare admin Commander locale
+Da root del repository:
 
 ```bash
 export COMMANDER_DB=./data/commander_tracker.sqlite
@@ -192,13 +18,23 @@ export ADMIN_PORT=8000
 python3 backend/admin_stdlib.py
 ```
 
-Apri:
+Apri `http://127.0.0.1:8000/admin/games`.
 
-```text
-http://127.0.0.1:8000/admin/games
-```
+L'admin Commander permette di:
 
-### 4.4 Avviare admin Draft locale
+- creare una partita manualmente;
+- duplicare una partita storica come base per una nuova;
+- importare uno o piu file JSON generati dalla pagina **Nuova partita**;
+- modificare data/ora, note e winner;
+- aggiungere, modificare o eliminare entries;
+- suggerire automaticamente il bracket gia usato per una coppia player/commander;
+- rinominare globalmente un player;
+- applicare correzioni massive ai bracket;
+- rinominare un commander per uno specifico player.
+
+> L'admin non ha autenticazione ed e progettato per essere **locale-only**. Non esporre `8000` su Internet.
+
+### 2. Avviare l'admin Draft
 
 In un altro terminale:
 
@@ -209,776 +45,220 @@ export ADMIN_PORT=8010
 python3 backend/admin_draft_stdlib.py
 ```
 
-Apri:
+Apri `http://127.0.0.1:8010/draft/tournaments`.
 
-```text
-http://127.0.0.1:8010/draft/tournaments
+L'admin Draft permette di creare/modificare tornei, importare standings da MTG Companion, inserire playoff opzionali e rinominare player.
+
+### 3. Validare ed esportare il sito
+
+```bash
+python3 backend/validate_db.py --db data/commander_tracker.sqlite
+
+python3 backend/export_stats.py \
+  --db data/commander_tracker.sqlite \
+  --draft-db data/draft_tracker.sqlite \
+  --docs docs
 ```
+
+L'export valida **prima** i dati Commander e tocca `docs/` solo se la validazione e il calcolo terminano correttamente.
+
+Per vedere il sito in locale:
+
+```bash
+python3 -m http.server -d docs 8081
+```
+
+Apri `http://127.0.0.1:8081/`.
 
 ---
 
-## 5. Flusso utente
+## Workflow Commander consigliato
 
-Il sito pubblico/statico e pensato per consultazione e preparazione dati.
+### A. Inserimento dal sito: Nuova partita -> JSON -> admin
 
-### 5.1 Consultare statistiche
+La pagina pubblica `/new-game/` serve a preparare la partita senza accesso al database.
 
-L'utente apre il sito generato in `docs/` e naviga tra:
+1. Apri `/new-game/`.
+2. Inserisci almeno due entries con `player`, `commander` e `bracket`.
+3. Seleziona il winner quando noto.
+4. Scarica il file `game_YYYYMMDD_HHMM.json`.
+5. Nell'admin apri `/admin/games/import_json`.
+6. Seleziona **uno o piu** file `.json`, oppure incolla il payload.
+7. Premi **Importa**.
+8. Controlla la partita importata e completa eventuali informazioni mancanti.
 
-- Home
-- Archivio
-- Stats
-- Meta Profile
-- Calibrazione
-- Draft
-- Nuova partita
-- Guida metriche
-
-Esempio locale:
-
-```text
-http://127.0.0.1:8081/stats/
-```
-
-### 5.2 Preparare una nuova partita Commander
-
-Pagina:
-
-```text
-/new-game/
-```
-
-Flusso:
-
-1. L'utente compila data/ora.
-2. Aggiunge player, commander e bracket.
-3. Seleziona il vincitore, se gia noto.
-4. Scarica un file JSON `game_YYYYMMDD_HHMM.json`.
-5. Invia il file all'admin o lo importa direttamente se ha accesso all'admin locale.
-
-Il payload generato ha forma simile a:
+Formato atteso:
 
 ```json
 {
   "version": "game.v1",
-  "played_at": "2026-06-12 21:00",
-  "winner_player": "Marco",
-  "notes": "Partita del venerdi",
+  "played_at": "2026-09-26 21:15:00",
+  "notes": "",
+  "winner_player": "Alice",
   "entries": [
-    { "player": "Marco", "commander": "Atraxa", "bracket": 4 },
-    { "player": "Luca", "commander": "Muldrotha", "bracket": 3 },
-    { "player": "Giulia", "commander": "Yuriko", "bracket": 4 },
-    { "player": "Francesco", "commander": "Miirym", "bracket": 4 }
+    {"player": "Alice", "commander": "Commander A", "bracket": 4},
+    {"player": "Bob", "commander": "Commander B", "bracket": 3}
   ]
 }
 ```
 
-### 5.3 Importare il JSON nell'admin Commander
+Regole principali dell'import:
 
-Con admin Commander avviato:
+- `played_at` deve essere una data/ora ISO valida;
+- servono almeno 2 entries;
+- player e commander non possono essere vuoti;
+- lo stesso player non puo comparire due volte nella stessa partita;
+- `bracket` puo essere `null` oppure un intero da 1 a 5;
+- `winner_player`, se valorizzato, deve essere uno dei player della partita;
+- un import multiplo e **atomico**: se un payload fallisce, non viene inserita nessuna delle partite del batch.
 
-```text
-http://127.0.0.1:8000/admin/games/import_json
-```
+Il JSON puo essere importato con `winner_player: null` quando la partita non e ancora conclusa. Prima dell'export, pero, ogni partita deve avere un winner valido: la validazione blocca la pubblicazione finche non viene impostato.
 
-Flusso:
+#### Import JSON diretto da riga di comando
 
-1. Carica uno o piu file `.json`, oppure incolla il JSON.
-2. Premi `Importa`.
-3. Controlla la partita importata.
-4. Rigenera il sito con l'export.
-
----
-
-## 6. Flusso admin Commander
-
-L'admin Commander e un server locale, non pensato per esposizione pubblica.
-
-### 6.1 Avvio
+Non serve avviare l'admin HTTP. Da root del repository:
 
 ```bash
-export COMMANDER_DB=./data/commander_tracker.sqlite
-python3 backend/admin_stdlib.py
-```
-
-Host/porta custom:
-
-```bash
-COMMANDER_DB=./data/commander_tracker.sqlite ADMIN_HOST=127.0.0.1 ADMIN_PORT=8005 python3 backend/admin_stdlib.py
-```
-
-Apri:
-
-```text
-http://127.0.0.1:8000/admin/games
-```
-
-### 6.2 Funzionalita admin Commander
-
-L'admin consente di:
-
-- vedere l'elenco partite
-- aprire il dettaglio di una partita
-- creare una nuova partita (inizialmente come draft senza winner)
-- modificare data, note e vincitore, scegliendo il winner solo tra i player della partita
-- cancellare una partita
-- aggiungere entry giocatore/commander/bracket
-- modificare entry esistenti
-- cancellare entry
-- importare partite da JSON in modo atomico: un errore nel batch lascia il DB invariato
-- duplicare/importare da partite esistenti
-- vedere la lista player
-- rinominare player
-- gestire bracket
-- applicare correzioni bracket
-- rinominare commander per uno specifico player
-- usare suggerimenti bracket basati sui dati esistenti
-
-### 6.3 URL principali Commander
-
-```text
-/admin/games
-/admin/games/import_json
-/admin/players
-/admin/brackets
-/admin/api/bracket_suggestions
-```
-
-Esempi locali:
-
-```text
-http://127.0.0.1:8000/admin/games
-http://127.0.0.1:8000/admin/games/import_json
-http://127.0.0.1:8000/admin/players
-http://127.0.0.1:8000/admin/brackets
-```
-
-### 6.4 Accesso da telefono via SSH tunnel
-
-Se l'admin gira su un server remoto:
-
-```bash
-ssh -L 8080:127.0.0.1:8000 user@SERVER
-```
-
-Poi dal dispositivo locale apri:
-
-```text
-http://127.0.0.1:8080/admin/games
-```
-
-### 6.5 Dopo modifiche admin
-
-Dopo aver inserito o modificato dati:
-
-```bash
-python3 backend/export_stats.py \
+python3 backend/import_games.py \
   --db data/commander_tracker.sqlite \
-  --draft-db data/draft_tracker.sqlite \
-  --docs docs
+  partite.json
 ```
 
-Poi testa:
+Puoi passare piu file nello stesso comando; ogni file puo contenere una singola partita oppure un array JSON:
 
 ```bash
-python3 -m http.server -d docs 8081
+python3 backend/import_games.py \
+  --db data/commander_tracker.sqlite \
+  partita_1.json partita_2.json batch.json
 ```
+
+Tutto il batch viene validato prima dell'inserimento e importato in **un'unica transazione**: se un payload non e valido, non viene inserita nessuna partita. Il comando rifiuta inoltre un path DB inesistente invece di creare accidentalmente un nuovo SQLite vuoto.
+
+### B. Creazione manuale nell'admin
+
+Da `/admin/games` usa **Nuova partita**. L'admin assegna data/ora corrente, crea il game e poi consente di aggiungere le entries. Il winner si seleziona solo dopo aver inserito i player, cosi non puo puntare a un'identita assente dalla partita.
+
+### C. Riutilizzare un tavolo storico
+
+Da `/admin/games`, **Importa da partita storica** duplica entries, winner e note di un game esistente in una nuova partita con data/ora corrente. E utile quando tavolo e commander cambiano poco: dopo la duplicazione apri il dettaglio e correggi cio che serve.
+
+### D. Correggere una partita
+
+Nel dettaglio `/admin/games/<id>` puoi:
+
+- modificare data/ora, note e winner;
+- modificare player, commander e bracket delle singole entries;
+- aggiungere o eliminare entries;
+- eliminare l'intera partita.
+
+Le operazioni che romperebbero le invarianti vengono rifiutate. In particolare, non e consentito creare due entries dello stesso player nella stessa partita o impostare un winner non presente nelle entries.
+
+### E. Manutenzione player e bracket
+
+- `/admin/players`: rinomina globale di un player. L'operazione viene bloccata se fonderebbe due identita gia presenti nella stessa partita.
+- `/admin/brackets`: aggiornamento massivo dei bracket per coppia player/commander e rinomina commander per uno specifico player.
+
+Dopo modifiche importanti, esegui sempre validazione, test ed export.
 
 ---
 
-## 7. Flusso admin Draft
+## Workflow Draft
 
-L'admin Draft usa un database separato:
+### 1. Crea il torneo
 
-```text
-data/draft_tracker.sqlite
-```
+Apri `/draft/tournaments` e crea il torneo con data/ora, nome, formato, numero round opzionale e note.
 
-### 7.1 Avvio admin Draft
+### 2. Importa standings da MTG Companion
 
-```bash
-export DRAFT_DB=./data/draft_tracker.sqlite
-python3 backend/admin_draft_stdlib.py
-```
-
-Apri:
+Apri `/draft/import`, seleziona il torneo e incolla una riga per player:
 
 ```text
-http://127.0.0.1:8010/draft/tournaments
+Marco Rossi    3-0-0    67.89
+Giulia         2-1-0    55.50%
+Ale            1-2-0    44.12
 ```
 
-Host/porta custom:
+Sono accettati spazi o tab. L'import richiede:
+
+- record `W-L-D` valido;
+- VIA numerica tra 0 e 100;
+- un'unica riga per player nel torneo.
+
+Un player duplicato non viene piu ignorato: l'import viene rifiutato, cosi un paste errato resta visibile.
+
+#### Import Draft diretto da riga di comando
+
+Il torneo deve essere gia stato creato nell'admin. Salva gli standings nello stesso formato Companion, per esempio in `standings.txt`, e opzionalmente i playoff in `playoffs.txt`, quindi:
 
 ```bash
-DRAFT_DB=./data/draft_tracker.sqlite ADMIN_HOST=127.0.0.1 ADMIN_PORT=8015 python3 backend/admin_draft_stdlib.py
-```
-
-### 7.2 Funzionalita admin Draft
-
-L'admin Draft consente di:
-
-- vedere l'elenco tornei
-- creare un torneo
-- modificare torneo, formato, round e note
-- sostituire standings
-- sostituire playoff
-- cancellare tornei
-- importare standings testuali
-- rinominare player
-
-### 7.3 Import standings Draft
-
-La pagina import accetta standings in stile:
-
-```text
-Nome Player  W-L-D  VIA%
-```
-
-Esempio:
-
-```text
-Marco Rossi  3-0-0  67.89
-Giulia       2-1-0  55.50%
-Ale          1-2-0  44.12
-```
-
-### 7.4 Export solo Draft
-
-Opzione A, tramite wrapper:
-
-```bash
-python3 backend/export_draft.py --db data/draft_tracker.sqlite --docs docs
-```
-
-Opzione B, tramite modulo:
-
-```bash
-python3 -m backend.draft_stats \
+python3 backend/import_draft.py \
   --db data/draft_tracker.sqlite \
-  --out docs/data/draft.v1.json
+  --tournament-id 10 \
+  --standings standings.txt \
+  --playoffs playoffs.txt
 ```
 
-In genere, per aggiornare tutto conviene usare l'export completo:
+Senza playoff ometti semplicemente `--playoffs`. Il comando verifica che il torneo esista, applica gli stessi parser dell'admin e sostituisce standings e playoff del torneo in **un'unica transazione**. Un input non valido non modifica il torneo.
 
-```bash
-python3 backend/export_stats.py \
-  --db data/commander_tracker.sqlite \
-  --draft-db data/draft_tracker.sqlite \
-  --docs docs
+### 3. Playoff opzionali
+
+Esempi accettati:
+
+```text
+SF: Fra > Teo
+SF: Giamma vs Lori -> Giamma
+F: Fra vs Giamma -> Fra
 ```
+
+Il winner deve essere uno dei due partecipanti del match. Gli standings e i playoff possono anche essere sostituiti in seguito dalla pagina del torneo.
+
+### 4. Rinomina player
+
+`/draft/players` rinomina un player nel database Draft. La rinomina viene bloccata se produrrebbe due standings dello stesso player nello stesso torneo.
+
+### Ordinamento e podio Draft
+
+Gli standings esportati sono ordinati per:
+
+1. `wins` decrescente;
+2. `draws` decrescente;
+3. `VIA%` decrescente;
+4. nome player per stabilita.
+
+Il `Match Win %` e:
+
+```text
+MWP = (wins + 0.5 * draws) / (wins + losses + draws)
+```
+
+Se e presente una finale, oro e argento derivano dalla finale; il bronzo e il semifinalista sconfitto meglio piazzato negli standings, oppure il primo player disponibile negli standings. Senza finale, il podio e la top 3 degli standings.
 
 ---
 
-## 8. Export e pubblicazione statica
+## Validazione, test ed export
 
-### 8.1 Export completo
-
-```bash
-python3 backend/export_stats.py \
-  --db data/commander_tracker.sqlite \
-  --draft-db data/draft_tracker.sqlite \
-  --docs docs
-```
-
-### 8.2 Export Commander senza Draft
-
-```bash
-python3 backend/export_stats.py \
-  --db data/commander_tracker.sqlite \
-  --docs docs
-```
-
-### 8.3 Specificare una sorgente frontend diversa
-
-```bash
-python3 backend/export_stats.py \
-  --db data/commander_tracker.sqlite \
-  --draft-db data/draft_tracker.sqlite \
-  --site frontend/site \
-  --docs docs
-```
-
-### 8.4 Test post-export
-
-```bash
-python3 -m http.server -d docs 8081
-```
-
-Apri:
-
-```text
-http://127.0.0.1:8081/
-```
-
-### 8.5 Pubblicazione GitHub Pages
-
-Il repo e compatibile con un setup GitHub Pages che pubblica la cartella `docs/`.
-
-Flusso manuale tipico:
-
-```bash
-git status
-python3 backend/export_stats.py --db data/commander_tracker.sqlite --draft-db data/draft_tracker.sqlite --docs docs
-git add data/commander_tracker.sqlite data/draft_tracker.sqlite docs
-git commit -m "Update tracker data and static export"
-git push
-```
-
-Se vuoi committare solo i dati generati:
-
-```bash
-git add docs/data data/commander_tracker.sqlite data/draft_tracker.sqlite
-git commit -m "Update tracker data"
-git push
-```
-
----
-
-## 9. Funzionalita frontend
-
-### 9.1 Home
-
-Pagina:
-
-```text
-/
-```
-
-Mostra landing page, navigazione e accesso alle sezioni principali.
-
-### 9.2 Archivio
-
-Pagina:
-
-```text
-/archive/
-```
-
-Funzionalita:
-
-- elenco partite Commander
-- filtri per player
-- filtri per commander
-- filtri per bracket
-- reset filtri
-- ultime partite
-- dettaglio entry per partita
-
-### 9.3 Stats
-
-Pagina:
-
-```text
-/stats/
-```
-
-Schede interne:
-
-- `Overview`
-- `Player detail`
-- `Commander by Pod`
-- `Cumulative trend`
-
-Funzionalita:
-
-- filtro player
-- filtro minimo partite
-- winrate player
-- bubble plot winrate vs volume
-- winrate per commander del player selezionato
-- analisi commander per pod size
-- cumulata wins above expected
-
-### 9.4 Meta Profile
-
-Pagina:
-
-```text
-/meta-profile/
-```
-
-Serve a leggere il profilo meta di player e commander usando metriche avanzate come MDI, MPI, OEWR e OEWR_Z.
-
-### 9.5 Bracket Calibration
-
-Pagina:
-
-```text
-/bracket-calibration/
-```
-
-Serve a stimare se un commander sembra performare sopra o sotto il bracket dichiarato.
-
-### 9.6 Draft
-
-Pagina:
-
-```text
-/draft/
-```
-
-Mostra statistiche aggregate dei tornei Draft.
-
-### 9.7 Nuova partita
-
-Pagina:
-
-```text
-/new-game/
-```
-
-Genera un file JSON `game.v1` importabile nell'admin Commander.
-
-### 9.8 Guida metriche
-
-Pagina:
-
-```text
-/metrics/
-```
-
-Documenta come leggere le metriche e le sezioni del sito.
-
----
-
-## 10. Funzionalita Commander analytics
-
-I dati Commander vengono calcolati a partire da:
-
-```text
-game
-  id
-  played_at
-  notes
-  winner_player
-
-gameentry
-  id
-  game_id
-  player
-  commander
-  bracket
-```
-
-Ogni partita ha N entry, una per ogni player seduto al tavolo.
-
-### 10.1 Metriche base
-
-- numero partite
-- numero entry
-- elenco player
-- elenco commander
-- elenco bracket
-- partite per player
-- vittorie per player
-- winrate per player
-- partite per commander
-- vittorie per commander
-- winrate per player/commander/bracket
-
-### 10.2 Overview Stats
-
-La scheda `Overview` mostra:
-
-- ranking winrate per player
-- volume partite
-- bubble plot efficacia vs volume
-
-Interpretazione:
-
-- winrate alto con poche partite = segnale rumoroso
-- winrate alto con molte partite = segnale piu affidabile
-- bubble piu a destra = piu partite
-
-### 10.3 Player detail
-
-La scheda `Player detail` mostra i commander di un player selezionato.
-
-Metriche:
-
-- games
-- wins
-- raw winrate
-- intervallo di confidenza 95% sul winrate
-
-Uso:
-
-1. Seleziona un player.
-2. Imposta `Min partite`.
-3. Confronta i commander del player.
-
-### 10.4 Commander by Pod
-
-La scheda `Commander by Pod` analizza i commander del player selezionato in funzione del numero di player al tavolo.
-
-Obiettivo: non confrontare in modo ingenuo un winrate ottenuto in pod da 3, 4 o 5 player, perche la probabilita neutra cambia.
-
-Winrate atteso neutro:
-
-```text
-3 player -> 1/3 = 33.3%
-4 player -> 1/4 = 25.0%
-5 player -> 1/5 = 20.0%
-```
-
-Metrica principale:
-
-```text
-WAE = wins - expected_wins
-expected_wins = somma(1 / pod_size) sulle partite considerate
-```
-
-Esempio:
-
-```text
-Commander X, 4 partite tutte a 4 player
-expected_wins = 4 * 0.25 = 1.00
-wins = 2
-WAE = 2 - 1.00 = +1.00
-```
-
-Visualizzazioni:
-
-- matrice commander x pod size
-- cella con WAE
-- dettaglio wins/games, raw WR ed expected WR
-- grafico barre per top commander
-- colori barre fissi per pod size, non per player
-
-### 10.5 Cumulative trend
-
-La scheda `Cumulative trend` sostituisce il rolling winrate.
-
-Il rolling classico puo essere rumoroso. La cumulata usa invece la performance progressiva rispetto all'atteso neutro del pod size.
-
-Per ogni partita del player o del commander selezionato:
-
-```text
-actual = 1 se vince, altrimenti 0
-expected = 1 / pod_size
-delta = actual - expected
-cumulative_delta += delta
-```
-
-Il grafico mostra:
-
-```text
-cumulative wins above expected
-```
-
-Interpretazione:
-
-- linea sopra 0 = sopra atteso
-- linea sotto 0 = sotto atteso
-- linea crescente = periodo positivo
-- linea decrescente = periodo sotto atteso
-
-La summary card mostra:
-
-- games
-- wins
-- expected wins
-- wins above expected
-- raw WR
-- expected WR
-
-### 10.6 Meta Profile
-
-Metriche principali:
-
-- `MDI`: Matchup Difficulty Index, differenza tra bracket del player e media bracket degli altri player al tavolo
-- `MPI`: intensita media dello scostamento rispetto al tavolo
-- `OEWR`: Over Expected Win Rate, differenza tra win reale e win atteso
-- `OEWR_Z`: normalizzazione del segnale OEWR
-
-Uso tipico:
-
-- capire chi performa meglio rispetto al tavolo
-- individuare player spesso favoriti o sfavoriti
-- leggere performance non spiegate solo dal winrate grezzo
-
-### 10.7 Bracket Calibration
-
-La pagina calibrazione aiuta a valutare se un commander sembra dichiarato troppo basso o troppo alto rispetto alla performance osservata.
-
-Metriche principali:
-
-- `CPR-Z`: indicatore normalizzato di performance/calibrazione
-- `B_post`: bracket posteriore stimato
-- giochi minimi per ridurre rumore statistico
-
----
-
-## 11. Funzionalita Draft analytics
-
-Il dominio Draft usa:
-
-```text
-tournament
-  id
-  played_at
-  name
-  format
-  rounds
-  notes
-
-standing
-  tournament_id
-  player
-  wins
-  losses
-  draws
-  via_pct
-
-playoff_match
-  tournament_id
-  stage
-  player_a
-  player_b
-  winner
-```
-
-Statistiche calcolate:
-
-- numero tornei
-- standings per torneo
-- wins/losses/draws
-- match win percentage
-- VIA percentage media
-- ranking medio
-- miglior ranking
-- podi oro/argento/bronzo
-- playoff opzionali
-- campione playoff, se presente
-
-Pagina frontend:
-
-```text
-/draft/
-```
-
-Funzionalita:
-
-- filtro torneo
-- filtro minimo match
-- ranking player Draft
-- grafico Match Win %
-- dettaglio tornei
-- podi
-- playoff, se presenti
-
----
-
-## 12. Database e backup
-
-### 12.1 Database versionabili
-
-I database principali sono:
-
-```text
-data/commander_tracker.sqlite
-data/draft_tracker.sqlite
-```
-
-Sono piccoli e possono essere versionati in Git.
-
-### 12.2 File SQLite da non versionare
-
-Non versionare file temporanei SQLite:
-
-```gitignore
-*.sqlite-wal
-*.sqlite-shm
-```
-
-### 12.3 Backup manuale veloce
-
-```bash
-cp data/commander_tracker.sqlite data/commander_tracker.backup.sqlite
-cp data/draft_tracker.sqlite data/draft_tracker.backup.sqlite
-```
-
-### 12.4 Backup consistente con SQLite
-
-```bash
-sqlite3 data/commander_tracker.sqlite ".backup data/commander_tracker.backup.sqlite"
-sqlite3 data/draft_tracker.sqlite ".backup data/draft_tracker.backup.sqlite"
-```
-
-### 12.5 Rollback da Git
-
-Vedere storico:
-
-```bash
-git log --oneline -- data/commander_tracker.sqlite
-git log --oneline -- data/draft_tracker.sqlite
-```
-
-Ripristinare una versione:
-
-```bash
-git checkout COMMIT_SHA -- data/commander_tracker.sqlite
-git checkout COMMIT_SHA -- data/draft_tracker.sqlite
-```
-
-Committare il rollback:
-
-```bash
-git add data/commander_tracker.sqlite data/draft_tracker.sqlite
-git commit -m "Rollback tracker database"
-git push
-```
-
----
-
-## 13. Comandi utili
-
-### Help exporter completo
-
-```bash
-python3 backend/export_stats.py --help
-```
-
-### Help modulo Commander
-
-```bash
-python3 -m backend.commander_stats --help
-```
-
-### Help modulo Draft
-
-```bash
-python3 -m backend.draft_stats --help
-```
-
-### Export completo
-
-```bash
-python3 backend/export_stats.py --db data/commander_tracker.sqlite --draft-db data/draft_tracker.sqlite --docs docs
-```
-
-### Export solo Draft
-
-```bash
-python3 backend/export_draft.py --db data/draft_tracker.sqlite --docs docs
-```
-
-
-### Validazione DB Commander
-
-Prima di un export o dopo modifiche manuali al database:
+### Validator Commander
 
 ```bash
 python3 backend/validate_db.py --db data/commander_tracker.sqlite
 ```
 
-Per trattare come errori anche le eccezioni legacy configurate:
+Blocca, tra le altre cose:
+
+- foreign key non valide;
+- game con meno di 2 entries;
+- winner mancante o non presente tra le entries;
+- player/commander vuoti;
+- bracket non interi o fuori 1..5;
+- nuovi duplicati dello stesso player nella stessa partita.
+
+Le partite legacy `#45`, `#47`, `#55` sono elencate in `data/validation_exceptions.json`: in modalita normale generano warning. Per trattarle come errori:
 
 ```bash
-python3 backend/validate_db.py --db data/commander_tracker.sqlite --strict-duplicates
+python3 backend/validate_db.py \
+  --db data/commander_tracker.sqlite \
+  --strict-duplicates
 ```
-
-Attualmente `data/validation_exceptions.json` documenta i game legacy `45`, `47` e `55`, che contengono player duplicati ambigui e non vengono modificati automaticamente. Nuovi duplicati non presenti nella lista bloccano l'export.
 
 ### Test automatici
 
@@ -986,140 +266,150 @@ Attualmente `data/validation_exceptions.json` documenta i game legacy `45`, `47`
 python3 -m unittest discover -s tests -v
 ```
 
-La suite copre validazione payload, rollback atomico del batch, invarianti DB, statistiche base, compatibilita con `stats.v1.schema.json` quando `jsonschema` e disponibile, e determinismo byte-for-byte dell'export. `jsonschema` resta una dipendenza opzionale usata solo dal test di contratto.
+La suite copre invarianti admin, validazione payload/DB, import Draft, transazioni atomiche, contratto statistiche, schema ed export deterministico.
 
-### Server statico locale
-
-```bash
-python3 -m http.server -d docs 8081
-```
-
-### Admin Commander
+### Export completo
 
 ```bash
-COMMANDER_DB=./data/commander_tracker.sqlite python3 backend/admin_stdlib.py
+python3 backend/export_stats.py \
+  --db data/commander_tracker.sqlite \
+  --draft-db data/draft_tracker.sqlite \
+  --docs docs
 ```
 
-### Admin Draft
-
-```bash
-DRAFT_DB=./data/draft_tracker.sqlite python3 backend/admin_draft_stdlib.py
-```
-
-### Controllo sintassi Python
-
-```bash
-python3 -m py_compile backend/*.py backend/commander_stats/*.py backend/draft_stats/*.py
-```
-
-### Ispezione rapida tabelle SQLite
-
-```bash
-sqlite3 data/commander_tracker.sqlite ".tables"
-sqlite3 data/draft_tracker.sqlite ".tables"
-```
-
-### Conteggio partite Commander
-
-```bash
-sqlite3 data/commander_tracker.sqlite "select count(*) from game;"
-```
-
-### Conteggio tornei Draft
-
-```bash
-sqlite3 data/draft_tracker.sqlite "select count(*) from tournament;"
-```
-
----
-
-## 14. Troubleshooting
-
-### Il sito mostra dati vecchi
-
-Rigenera `docs/`:
-
-```bash
-python3 backend/export_stats.py --db data/commander_tracker.sqlite --draft-db data/draft_tracker.sqlite --docs docs
-```
-
-Poi ricarica il browser senza cache.
-
-### Il sito non carica i JSON
-
-Servi il sito via HTTP, non aprire direttamente `index.html` da file system:
-
-```bash
-python3 -m http.server -d docs 8081
-```
-
-Poi apri:
+Genera:
 
 ```text
-http://127.0.0.1:8081/
+docs/data/stats.v1.json
+docs/data/draft.v1.json
+docs/data/stats.v1.schema.json
 ```
 
-### L'admin non parte per porta occupata
+e copia il frontend da `frontend/site/` a `docs/`.
 
-Usa un'altra porta:
+### Export solo Draft
 
 ```bash
-ADMIN_PORT=8005 COMMANDER_DB=./data/commander_tracker.sqlite python3 backend/admin_stdlib.py
+python3 backend/export_draft.py \
+  --db data/draft_tracker.sqlite \
+  --docs docs
 ```
-
-Oppure per Draft:
-
-```bash
-ADMIN_PORT=8015 DRAFT_DB=./data/draft_tracker.sqlite python3 backend/admin_draft_stdlib.py
-```
-
-### Import JSON fallisce
-
-Controlla che il payload abbia:
-
-- `version: "game.v1"`
-- `played_at` valorizzato
-- almeno 2 entries
-- player non duplicati nella stessa partita
-- `winner_player`, se presente, uguale a uno dei player nelle entries
-
-### Chart.js non carica
-
-Il frontend usa Chart.js da CDN. In locale serve connessione internet per visualizzare i grafici se il browser non ha gia la libreria in cache.
-
-### Admin esposto pubblicamente
-
-Non esporre direttamente `admin_stdlib.py` o `admin_draft_stdlib.py` su internet. Usali in locale o via SSH tunnel.
 
 ---
 
-## Workflow operativo consigliato
+## Pubblicazione GitHub Pages
 
-Dopo una serata Commander:
-
-```bash
-COMMANDER_DB=./data/commander_tracker.sqlite python3 backend/admin_stdlib.py
-```
-
-1. Apri `/admin/games`.
-2. Importa i JSON da `/admin/games/import_json` o crea/modifica manualmente le partite.
-3. Ferma o lascia attivo l'admin locale.
-4. Rigenera il sito:
+Lo script completo e:
 
 ```bash
-python3 backend/export_stats.py --db data/commander_tracker.sqlite --draft-db data/draft_tracker.sqlite --docs docs
+./scripts/publish.sh "messaggio commit"
 ```
 
-5. Testa in locale:
+Lo script ora usa automaticamente come repository la directory che contiene `scripts/`; quindi puo essere eseguito da qualunque working directory. Opzionalmente puoi sovrascrivere `REPO_DIR`, `DB_PATH`, `DRAFT_DB_PATH`, `DOCS_DIR` o `PYTHON_BIN`.
+
+Prima di modificare `docs/`, il publish:
+
+1. forza il checkpoint WAL dei DB;
+2. esegue la suite di test;
+3. valida il DB Commander;
+4. rigenera l'intero sito;
+5. aggiunge a Git frontend, docs, eccezioni e DB in-repo;
+6. esegue commit e push solo se esistono modifiche staged.
+
+---
+
+## Funzionalita del sito
+
+| Pagina | Funzione |
+|---|---|
+| `/` | sintesi dataset e navigazione |
+| `/archive/` | archivio partite Commander con filtri |
+| `/stats/` | statistiche player/commander, pod size, trend e intervalli di confidenza |
+| `/meta-profile/` | MDI, MPI e OEWR contestualizzati sui bracket del tavolo |
+| `/bracket-calibration/` | confronto bracket assegnato vs bracket inferito dai risultati |
+| `/draft/` | tornei, Match Win %, VIA e podi |
+| `/new-game/` | creazione del JSON da importare nell'admin Commander |
+| `/metrics/` | definizioni e formule delle metriche |
+
+Il frontend e interamente statico e legge i JSON in `docs/data/`.
+
+---
+
+## Metriche Commander: lettura rapida
+
+Le statistiche grezze (`games`, `wins`, `WR`) riflettono direttamente le righe memorizzate. I tre game legacy con identita duplicata restano quindi nell'archivio e nei conteggi grezzi, ma sono esclusi dalle metriche contestuali.
+
+- **WR** = `wins / games`; nei grafici player+commander il 95% CI usa Wilson.
+- **WAE** = `wins - somma(1/pod_size)`: normalizza solo per dimensione del pod.
+- **MDI** = media di `bracket_player - media(bracket_altri)`; **MPI** = media del valore assoluto dello stesso scostamento.
+- **OEWR** usa `p_i = softmax(0.80 * bracket_i)` e il residuo `actual_win_i - p_i`. `oewr_z` standardizza la somma dei residui con `sqrt(somma(p_i*(1-p_i)))`.
+- **Bracket calibration** stima un posteriore su `1.00..5.00` a step `0.25`; il JSON espone media (`b_post`), deviazione standard (`b_post_sd`) e MAP (`b_post_map`). La UI mostra il MAP come “B posterior”.
+
+MDI/MPI/OEWR/calibrazione ignorano i game con identita player duplicata. OEWR e calibrazione richiedono inoltre il vettore completo dei bracket. Per formule, criteri di inclusione e interpretazione usa `/metrics/`; per i risultati dell'audit vedi `AUDIT_REPORT.md`.
+
+---
+
+## Dati e struttura essenziale
+
+```text
+backend/
+  admin_stdlib.py              admin Commander
+  admin_draft_stdlib.py        admin Draft
+  import_games.py              import Commander JSON da CLI
+  import_draft.py              import Draft Companion da CLI
+  validate_db.py               validazione Commander
+  export_stats.py              export completo
+  export_draft.py              export Draft
+  commander_stats/             calcolo/validation/export Commander
+  draft_stats/                 calcolo/export Draft
+
+data/
+  commander_tracker.sqlite
+  draft_tracker.sqlite
+  validation_exceptions.json
+frontend/site/                 sorgente sito statico
+docs/                          artifact statico generato
+tests/test_hardening.py        regressioni e invarianti
+scripts/publish.sh             validazione + export + git push
+```
+
+`docs/` e un artifact generato: le modifiche di frontend vanno fatte in `frontend/site/` e poi propagate con l'export.
+
+Il campo `generated_utc` nei JSON e mantenuto per compatibilita ma oggi e un **watermark deterministico dei dati**: corrisponde al `played_at` piu recente del dataset, non all'istante reale in cui e stato eseguito l'export.
+
+---
+
+## Backup e accesso remoto
+
+I due file SQLite in `data/` sono la sorgente dati. Prima di manutenzioni invasive e consigliabile conservarne una copia o usare Git come punto di rollback.
+
+Per usare gli admin su una macchina remota, mantieni il bind su `127.0.0.1` e usa un tunnel SSH, per esempio:
 
 ```bash
-python3 -m http.server -d docs 8081
+ssh -L 8080:127.0.0.1:8000 user@SERVER
+ssh -L 8081:127.0.0.1:8010 user@SERVER
 ```
 
-6. Pubblica/committa preferibilmente con lo script hardenizzato:
+Poi apri rispettivamente `http://127.0.0.1:8080/admin/games` e `http://127.0.0.1:8081/draft/tournaments`.
 
-```bash
-bash scripts/publish.sh "Update Commander tracker"
-```
+---
 
-Lo script esegue test e validazione DB, forza il checkpoint SQLite, rigenera l'intera `docs/`, mette in staging sia `frontend/site/` sia `docs/` e include entrambi i database quando si usano i percorsi standard. Se `.venv/bin/python` non esiste usa automaticamente `python3`, oppure puoi impostare `PYTHON_BIN`.
+## Troubleshooting essenziale
+
+**Il sito mostra dati vecchi**  
+Riesegui l'export e servi/pubblica la nuova `docs/`.
+
+**L'import JSON fallisce**  
+Controlla `played_at`, almeno 2 entries, player unici, commander non vuoti, bracket interi 1..5/null e winner presente nelle entries.
+
+**L'export fallisce per winner mancante**  
+Apri la partita indicata dal validator e imposta il winner. E possibile importare una partita ancora aperta, ma non pubblicarla come dato completo.
+
+**Il validator segnala duplicati nei game 45/47/55**  
+Sono eccezioni legacy note. In modalita normale sono warning; le metriche contestuali li ignorano. Non aggiungere nuovi ID all'elenco delle eccezioni per aggirare errori correnti senza una verifica esplicita.
+
+**Porta admin occupata**  
+Scegli un'altra `ADMIN_PORT`.
+
+**Il sito non carica i JSON aprendo direttamente `index.html`**  
+Usa un web server locale (`python3 -m http.server -d docs 8081`) invece di `file://`.

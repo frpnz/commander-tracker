@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import os
+from pathlib import Path
 
 from draft_stats.compute import compute_draft, write_json
 
@@ -26,8 +27,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--docs", default="docs")
     args = ap.parse_args(argv)
 
+    db_path = Path(args.db).resolve()
+    if not db_path.is_file():
+        raise SystemExit(f"Draft DB non trovato: {db_path}")
+
     out = os.path.join(args.docs, "data", "draft.v1.json")
-    data = compute_draft(args.db)
+    data = compute_draft(str(db_path))
     write_json(data, out)
     print(f"Wrote {out}")
     return 0

@@ -241,7 +241,8 @@ def _compute_draft_conn(conn) -> dict[str, Any]:
 
     return {
         "schema": SCHEMA_VERSION,
-        # Keep deterministic like commander exporter: use max played_at, not now.
+        # Legacy deterministic data watermark: use max played_at, not wall-clock time.
+        # Stored timestamps are timezone-naive; the trailing Z is retained for compatibility.
         "generated_utc": generated.replace(microsecond=0).isoformat() + "Z",
         "counts": {
             "tournaments": len(tournaments),

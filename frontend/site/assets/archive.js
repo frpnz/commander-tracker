@@ -315,7 +315,7 @@ async function main() {
   if (Number.isFinite(games)) parts.push(`${games} partite`);
   if (Number.isFinite(entries)) parts.push(`${entries} entries`);
   if (period) parts.push(`periodo ${period}`);
-  if (gen) parts.push(`gen ${gen}`);
+  if (gen) parts.push(`ultimo dato ${String(gen).replace("T", " ").replace("Z", "")}`);
   $("#meta").textContent = parts.join(" · ");
   };
   updateMeta();

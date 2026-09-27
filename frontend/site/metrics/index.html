@@ -4,51 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Metrics</title>
-  <link rel="stylesheet" href="../assets/style.css?v=20260209" />
+  <link rel="stylesheet" href="../assets/style.css?v=20260926" />
   <style>
-    /* Minimal helpers (tiny + consistent with existing pages) */
-    details.metrics-details > summary {
-      cursor: pointer;
-      user-select: none;
-      font-weight: 600;
-    }
-    .metrics-kv {
-      display: grid;
-      grid-template-columns: 180px 1fr;
-      gap: 10px 14px;
-    }
-    @media (max-width: 720px) {
-      .metrics-kv { grid-template-columns: 1fr; }
-    }
+    details.metrics-details > summary { cursor:pointer; user-select:none; font-weight:600; }
+    .metrics-kv { display:grid; grid-template-columns:180px 1fr; gap:10px 14px; }
+    @media (max-width:720px) { .metrics-kv { grid-template-columns:1fr; } }
     .codeblock {
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.03);
-      overflow-x: auto;
-      font-size: 12px;
-      line-height: 1.45;
-      white-space: pre;
+      margin-top:10px; padding:10px 12px; border-radius:12px;
+      border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.03);
+      overflow-x:auto; font-size:12px; line-height:1.45; white-space:pre;
     }
-    .pillrow {
-      display:flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .pillrow .pill { padding: 6px 10px; }
+    .pillrow { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .pillrow .pill { padding:6px 10px; }
   </style>
 </head>
-
 <body>
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-label="Commander Tracker"></div>
-      <div>
-        <div class="title">Metrics</div>
-        <div class="subtitle">Guida alle metriche</div>
-      </div>
+      <div><div class="title">Metrics</div><div class="subtitle">Guida alle metriche</div></div>
     </div>
     <div class="topbar-right">
       <div class="meta" id="meta"></div>
@@ -59,123 +33,101 @@
 
   <main class="container">
     <section class="card">
-      <div class="card-head">
-        <h2>Come leggere questa pagina</h2>
-      </div>
+      <div class="card-head"><h2>Come leggere le statistiche</h2></div>
       <div class="card-body">
         <div class="muted" style="font-size:12px; opacity:.85;">
-          Ogni sezione corrisponde a una scheda dell’app. Per ciascuna:
-          <b>Panoramica</b> (lettura veloce) + <b>Dettagli matematici</b> (rigorosi).
-          <span style="display:block; margin-top:6px;">Ultima rigenerazione: <b>2026-02-10</b> (UTC).</span>
+          Questa pagina documenta le formule implementate nel backend e le convenzioni mostrate nella UI.
+          Documentazione riallineata all'audit del <b>26 settembre 2026</b>.
         </div>
         <div class="pillrow">
-          <span class="pill">Win-rate</span>
-          <span class="pill">OEWR</span>
-          <span class="pill">Bracket posterior (b_post)</span>
-          <span class="pill">cpr_z</span>
-          <span class="pill">Match Win % (Draft)</span>
-          <span class="pill">VIA% (Draft)</span>
-          <span class="pill">Podi (Draft)</span>
+          <span class="pill">Win rate + Wilson 95%</span>
+          <span class="pill">WAE</span>
+          <span class="pill">MDI / MPI</span>
+          <span class="pill">OEWR / OEWR-Z</span>
+          <span class="pill">Bracket posterior</span>
+          <span class="pill">Draft MWP / VIA</span>
         </div>
       </div>
     </section>
 
     <section class="card">
-      <div class="card-head"><h2>Home</h2></div>
+      <div class="card-head"><h2>Dati e metadati</h2></div>
       <div class="card-body">
         <div class="metrics-kv">
-          <div><b>Panoramica</b></div>
+          <div><b>Conteggi</b></div>
+          <div class="muted" style="opacity:.85;"><code>counts.games</code> e <code>counts.entries</code> sono conteggi diretti del database.</div>
+          <div><b>generated_utc</b></div>
           <div class="muted" style="opacity:.85;">
-            Sintesi dei dati disponibili (conteggi partite/entries, ultimo aggiornamento) e link alle altre schede.
-          </div>
-          <div><b>Dati</b></div>
-          <div class="muted" style="opacity:.85;">
-            Derivano da <code>stats.v1.json</code>: <code>counts</code>, <code>generated_utc</code>.
+            Per compatibilita il nome del campo e rimasto invariato, ma oggi e un <b>watermark deterministico dei dati</b>:
+            corrisponde al <code>played_at</code> piu recente, non all'istante reale di esecuzione dell'export.
           </div>
         </div>
-        <details class="metrics-details" style="margin-top:12px;">
-          <summary>Dettagli matematici</summary>
-          <div class="muted" style="margin-top:8px; opacity:.85;">
-            La Home non introduce metriche nuove: espone solo aggregazioni e metadati.
-          </div>
-          <div class="codeblock">counts.games = N_partite
-counts.entries = N_righe_totali
-generated_utc = timestamp di generazione dataset (backend)</div>
-        </details>
       </div>
     </section>
 
     <section class="card">
-      <div class="card-head"><h2>Stats</h2></div>
+      <div class="card-head"><h2>Stats: WR, intervallo Wilson e WAE</h2></div>
       <div class="card-body">
         <div class="metrics-kv">
-          <div><b>Panoramica</b></div>
+          <div><b>Win rate</b></div>
+          <div class="muted" style="opacity:.85;">Rapporto grezzo tra vittorie e partite. Con pochi game la stima e naturalmente instabile.</div>
+          <div><b>95% CI</b></div>
           <div class="muted" style="opacity:.85;">
-            Mostra <b>win-rate</b> per giocatore e per commander (con filtri tipo “min partite”).
-            Il win-rate è affidabile solo se supportato da volume (N partite).
+            Nei grafici player+commander l'intervallo al 95% usa il metodo <b>Wilson score</b>, evitando l'intervallo Wald che collassa a zero con WR 0% o 100%.
           </div>
-          <div><b>Metriche</b></div>
+          <div><b>WAE</b></div>
           <div class="muted" style="opacity:.85;">
-            <b>WR</b> (win-rate), <b>N</b> (partite), confronto per ranking e grafici (bar / bubble).
+            Wins Above Expected corregge solo per la dimensione del pod: in un pod da <code>m</code> ogni seat ha baseline <code>1/m</code>.
           </div>
         </div>
         <details class="metrics-details" style="margin-top:12px;">
-          <summary>Dettagli matematici</summary>
+          <summary>Formule</summary>
           <div class="codeblock">WR = wins / games
 
-wins  = numero di partite vinte
-games = numero di partite giocate
+Per ogni game g:
+expected_win_g = 1 / pod_size_g
 
-Nota: per N piccolo, WR ha alta varianza (stima instabile).</div>
+Expected wins = sum_g(expected_win_g)
+WAE           = wins - Expected wins</div>
           <div class="muted" style="margin-top:8px; opacity:.85;">
-            (Opzionale, futuro) shrinkage Beta-Binomial: WR_shrunk = (wins + α) / (games + α + β).
-            Attualmente la UI usa WR grezzo + filtro “min partite”.
+            WAE non usa i bracket: serve soprattutto a rendere confrontabili risultati ottenuti in pod di dimensioni diverse.
           </div>
         </details>
       </div>
     </section>
 
     <section class="card">
-      <div class="card-head"><h2>Meta profile</h2></div>
+      <div class="card-head"><h2>Meta profile: MDI, MPI e OEWR</h2></div>
       <div class="card-body">
         <div class="metrics-kv">
-          <div><b>Panoramica</b></div>
-          <div class="muted" style="opacity:.85;">
-            Valuta l’impatto al netto del tavolo: quanto un giocatore (o coppia player+commander)
-            performa rispetto all’atteso, considerando i bracket del tavolo.
-          </div>
-          <div><b>Termini</b></div>
-          <div class="muted" style="opacity:.85;">
-            La pipeline espone <code>OEWR</code> (expected win residual) e lo z-score <code>oewr_z</code>.
-            Vedi <code>stats.v1.json</code>: <code>meta_profile_by_player</code>, <code>meta_profile_by_player_commander</code>.
-          </div>
+          <div><b>MDI</b></div>
+          <div class="muted" style="opacity:.85;">Scostamento medio del bracket del player rispetto alla media degli altri seat del tavolo.</div>
+          <div><b>MPI</b></div>
+          <div class="muted" style="opacity:.85;">Ampiezza media assoluta dello stesso scostamento.</div>
+          <div><b>OEWR</b></div>
+          <div class="muted" style="opacity:.85;">Residuo medio di vittoria rispetto alla probabilita attesa dal profilo di bracket del tavolo.</div>
         </div>
 
         <details class="metrics-details" style="margin-top:12px;">
-          <summary>Dettagli matematici</summary>
+          <summary>Formule e criteri di inclusione</summary>
+          <div class="codeblock">Per player i in un game:
+d_i = bracket_i - mean(bracket_altri_player)
+MDI = mean(d_i)
+MPI = mean(abs(d_i))
+
+OEWR usa solo game con bracket numerico completo:
+p_i = exp(k*b_i) / sum_j exp(k*b_j),   k = 0.80
+r_i = actual_win_i - p_i
+
+OEWR   = sum(r_i) / N
+oewr_z = sum(r_i) / sqrt(sum(p_i * (1-p_i)))</div>
           <div class="muted" style="margin-top:8px; opacity:.85;">
-            Dal backend (metodo dichiarato nel JSON):
-            <code>oewr_method = "softmax_expected_win_residual"</code>.
+            <code>oewr_z</code> e quindi una standardizzazione interna della somma dei residui; <b>non</b> e calcolato come
+            <code>(OEWR - media_di_riferimento) / deviazione_standard_di_riferimento</code>.
           </div>
-          <div class="codeblock">Per una partita g con players i=1..m e bracket b_i:
-
-1) Probabilità attesa di vittoria (softmax):
-   p_i = exp(k * b_i) / Σ_j exp(k * b_j)
-
-2) Residuo:
-   r_i = 1 - p_i   se i è il vincitore
-   r_i = 0 - p_i   altrimenti
-
-3) Aggregazione:
-   OEWR = media(r_i) (o somma normalizzata) sulle partite considerate
-
-4) Standardizzazione:
-   oewr_z = (OEWR - μ_ref) / σ_ref
-   (μ_ref, σ_ref stimati su dataset di riferimento)</div>
-
           <div class="muted" style="margin-top:8px; opacity:.85;">
-            La forma esatta di aggregazione/standardizzazione è nel backend e resa esplicita dai campi
-            <code>meta_profile.method</code>, <code>oewr_method</code>, <code>oewr_k</code>.
+            I game con la stessa identita player ripetuta in piu seat sono esclusi da MDI/MPI/OEWR e dalla calibrazione,
+            perche violano l'assunzione un seat = una identita = una probabilita. Le righe legacy restano invece nell'archivio e nei conteggi grezzi.
           </div>
         </details>
       </div>
@@ -185,114 +137,61 @@ Nota: per N piccolo, WR ha alta varianza (stima instabile).</div>
       <div class="card-head"><h2>Bracket calibration</h2></div>
       <div class="card-body">
         <div class="metrics-kv">
-          <div><b>Panoramica</b></div>
+          <div><b>Obiettivo</b></div>
           <div class="muted" style="opacity:.85;">
-            Stima, per ogni commander, un <b>bracket posteriore</b> <code>b_post</code> (step 0.25)
-            che massimizza la coerenza con i risultati osservati, partendo da <code>bracket_prior</code> (se presente).
-            La tabella evidenzia anche un segnale standardizzato <code>cpr_z</code>.
+            Stimare per ogni commander quale bracket e piu coerente con i risultati osservati, mantenendo un prior centrato sul bracket assegnato quando disponibile.
           </div>
-          <div><b>Campi</b></div>
+          <div><b>UI</b></div>
           <div class="muted" style="opacity:.85;">
-            <code>bracket_prior</code>, <code>b_post</code>, <code>b_post_sd</code>, <code>b_post_map</code>, <code>games</code>, <code>wins</code>, <code>cpr_z</code>.
+            La colonna <b>B posterior</b> mostra <code>b_post_map</code> (fallback a <code>b_post</code>); il JSON espone anche media e deviazione standard del posteriore.
+          </div>
+          <div><b>Incertezza</b></div>
+          <div class="muted" style="opacity:.85;">
+            Le fasce di incertezza della UI sono percentili di <code>b_post_sd</code> calcolati sull'intero dataset di calibrazione attivo per il filtro pod selezionato,
+            prima dei filtri UI per player o minimo numero di partite.
           </div>
         </div>
 
         <details class="metrics-details" style="margin-top:12px;">
-          <summary>Dettagli matematici (calibrazione, molto dettagliati)</summary>
+          <summary>Dettagli matematici</summary>
+          <div class="codeblock">Griglia del bracket latente:
+theta in {1.00, 1.25, ..., 5.00}
 
-          <div class="muted" style="margin-top:8px; opacity:.85;">
-            Il backend calcola un posteriore deterministico su griglia per un parametro
-            <code>θ</code> (il “vero bracket” del commander) su <code>[1, 5]</code> con passo <code>0.25</code>.
-            Ogni occorrenza del commander è una Bernoulli (vittoria/non-vittoria) per il “pilot player”,
-            con probabilità data dallo stesso modello softmax usato per OEWR.
-          </div>
-
-          <div class="codeblock">Griglia
-θ ∈ {1.00, 1.25, ..., 5.00}
-
-Osservazioni
-y_i ∈ {0,1}   (pilot vince?)
-p_i(θ) = P(y_i=1 | θ)  (softmax con override del bracket del pilot a θ)
-
-Posterior (non normalizzato)
-log post(θ) ∝ log prior(θ) + Σ_i log Bernoulli(y_i; p_i(θ))
-
-Prior (forma tipo normale troncata, a costante additiva)
+Prior:
 prior_mu    = bracket_prior se disponibile, altrimenti 3.0
 prior_sigma = 0.90
-log prior(θ) = -0.5 * ((θ - prior_mu)/prior_sigma)^2
+log prior(theta) = -0.5 * ((theta-prior_mu)/prior_sigma)^2
 
-Likelihood (stabile numericamente)
-log Bernoulli(y;p) = log(p) se y=1, altrimenti log(1-p)
-con clamp p∈[1e-12, 1-1e-12]</div>
+Likelihood per occorrenza:
+y in {0,1}
+p(theta) = softmax_k(brackets del tavolo con il bracket del pilot sostituito da theta)
+log L     = log Bernoulli(y; p(theta))
 
+Posterior normalizzato su griglia:
+b_post     = E[theta | dati]
+b_post_sd  = SD[theta | dati]
+b_post_map = argmax_theta posterior(theta)
+
+CPR-Z:
+cpr_z = sum(residui commander) / sqrt(sum(p*(1-p)))</div>
           <div class="muted" style="margin-top:8px; opacity:.85;">
-            Normalizzazione (log-sum-exp) e statistiche riportate:
-          </div>
-
-          <div class="codeblock">Normalizzazione
-w(θ) = exp(log post(θ) - m) / Σ_θ' exp(log post(θ') - m)
-dove m = max_θ log post(θ)
-
-Output
-b_post     = E[θ|D] = Σ_θ w(θ) * θ
-b_post_sd  = sqrt( Var[θ|D] ) = sqrt( Σ_θ w(θ) * (θ - b_post)^2 )
-b_post_map = argmax_θ log post(θ)</div>
-
-          <div class="muted" style="margin-top:8px; opacity:.85;">
-            Interpretazione rapida:
-            <ul style="margin:8px 0 0 18px;">
-              <li><b>b_post</b> più alto del prior ⇒ il commander è più “forte” del bracket dichiarato (a parità di tavoli).</li>
-              <li><b>b_post_sd</b> grande ⇒ pochi dati / evidenza debole (servono più partite).</li>
-              <li><b>cpr_z</b> è un indicatore standardizzato: valori assoluti alti ⇒ segnale più forte.</li>
-            </ul>
+            <code>b_post_sd</code> alto indica evidenza debole / maggiore incertezza. <code>cpr_z</code> segnala quanto i risultati del commander si discostano dall'atteso dato il contesto di bracket.
           </div>
         </details>
       </div>
     </section>
 
     <section class="card">
-      <div class="card-head"><h2>Nuova partita</h2></div>
+      <div class="card-head"><h2>Archive e Nuova partita</h2></div>
       <div class="card-body">
         <div class="metrics-kv">
-          <div><b>Panoramica</b></div>
+          <div><b>Archive</b></div>
+          <div class="muted" style="opacity:.85;">Espone i game e le entries originali con filtri; non introduce nuove metriche.</div>
+          <div><b>Nuova partita</b></div>
           <div class="muted" style="opacity:.85;">
-            Scheda di inserimento: non calcola metriche, ma genera un JSON coerente con l’import admin.
-            L’autocomplete usa le liste di <code>players</code> e <code>commanders</code> dal dataset.
-          </div>
-          <div><b>Output</b></div>
-          <div class="muted" style="opacity:.85;">
-            Partita con <code>playedAt</code>, entries (player, commander, bracket) e vincitore.
+            Genera il payload per l'admin con <code>played_at</code>, <code>winner_player</code>, <code>notes</code> ed <code>entries</code> (player, commander, bracket).
           </div>
         </div>
-        <details class="metrics-details" style="margin-top:12px;">
-          <summary>Dettagli matematici</summary>
-          <div class="muted" style="margin-top:8px; opacity:.85;">
-            Nessuna metrica: le metriche si calcolano dopo l’import, nel backend.
-          </div>
-        </details>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="card-head"><h2>Archive</h2></div>
-      <div class="card-body">
-        <div class="metrics-kv">
-          <div><b>Panoramica</b></div>
-          <div class="muted" style="opacity:.85;">
-            Consultazione dettagliata di partite e entries. Utile per auditing e debug.
-          </div>
-          <div><b>Tipico</b></div>
-          <div class="muted" style="opacity:.85;">
-            Filtri + conteggi. Le metriche analitiche sono in Stats / Meta profile / Bracket calibration.
-          </div>
-        </div>
-        <details class="metrics-details" style="margin-top:12px;">
-          <summary>Dettagli matematici</summary>
-          <div class="codeblock">Conteggi
-- N partite per filtro
-- N entries per filtro</div>
-        </details>
       </div>
     </section>
 
@@ -300,87 +199,34 @@ b_post_map = argmax_θ log post(θ)</div>
       <div class="card-head"><h2>Draft</h2></div>
       <div class="card-body">
         <div class="metrics-kv">
-          <div><b>Panoramica</b></div>
+          <div><b>Match Win %</b></div>
+          <div class="muted" style="opacity:.85;">Un pareggio vale mezza vittoria.</div>
+          <div><b>Standings</b></div>
           <div class="muted" style="opacity:.85;">
-            Traccia tornei Draft (svizzera + eventuale fase finale) importando l’output di MTG Companion.
-            La scheda mostra <b>Match Win %</b> per player (con filtro “min match”) e una tabella <b>Podi</b>.
+            L'export ordina per <b>wins DESC</b>, poi <b>draws DESC</b>, <b>VIA% DESC</b> e infine nome player. Non ricostruisce autonomamente altri tie-break di MTG Companion.
           </div>
-
-          <div><b>Input</b></div>
+          <div><b>Podi</b></div>
           <div class="muted" style="opacity:.85;">
-            Per ogni player: record <code>W-L-D</code> (Vittorie–Sconfitte–Pareggi) e <code>VIA%</code>
-            (tie-breaker di Companion). Facoltativo: righe Playoff (SF/F) per determinare campione e finalista.
-          </div>
-
-          <div><b>Dati</b></div>
-          <div class="muted" style="opacity:.85;">
-            Derivano da <code>draft.v1.json</code> (export dal Draft DB separato): <code>tournaments</code>, <code>by_player</code>,
-            <code>podium_by_player</code> (aggregato) e <code>tournaments[].podium</code> (per torneo).
+            I conteggi oro/argento/bronzo sono inclusi direttamente in <code>draft.v1.json → by_player</code>; ogni torneo espone anche <code>tournaments[].podium</code>.
           </div>
         </div>
 
         <details class="metrics-details" style="margin-top:12px;">
-          <summary>Dettagli matematici</summary>
+          <summary>Formule e regole podio</summary>
+          <div class="codeblock">W = wins, L = losses, D = draws
+M = W + L + D
 
-          <div class="muted" style="margin-top:8px; opacity:.85;">
-            La metrica principale del Draft è il <b>Match Win %</b> (MWP), che tratta un pareggio come “mezza vittoria”.
-          </div>
+Match Win % = (W + 0.5*D) / M
 
-          <div class="codeblock">Definizioni
-W = vittorie (wins)
-L = sconfitte (losses)
-D = pareggi (draws)
-M = match totali = W + L + D
+Se esiste la finale:
+  gold   = winner(finale)
+  silver = loser(finale)
+  bronze = miglior piazzato negli standings tra i perdenti delle SF,
+           oppure primo player disponibile negli standings
 
-Match Win % (MWP)
-MWP = (W + 0.5 * D) / M</div>
-
-          <div class="muted" style="margin-top:8px; opacity:.85;">
-            <b>VIA%</b> è un tie-breaker esportato da Companion e usato per ordinare la classifica quando il record è a pari.
-            La UI lo mostra e lo usa per riprodurre l’ordine “da Companion” (record → VIA).
-          </div>
-
-          <div class="codeblock">Ordinamento standings (stile Companion)
-1) Punti match: P = 3*W + 1*D
-2) VIA% (discendente) come spareggio
-3) Nome player (per stabilità)</div>
-
-          <div class="muted" style="margin-top:8px; opacity:.85;">
-            <b>Podi</b>: per ogni torneo assegniamo oro/argento/bronzo in modo deterministico.
-            Se esiste la finale, oro e argento vengono dalla finale; il bronzo deriva da semifinali (se presenti)
-            oppure dalla classifica. Se non esiste la finale, il podio è Top-3 della classifica.
-          </div>
-
-          <div class="codeblock">Podi per torneo
-Caso A) Finale presente
-  🥇 = winner(F)
-  🥈 = loser(F)
-  🥉 =
-      - se SF presenti: migliore in standings tra i due sconfitti in SF
-      - altrimenti: 3° in standings (escludendo 🥇 e 🥈)
-
-Caso B) Finale assente
-  🥇 = 1° in standings
-  🥈 = 2° in standings
-  🥉 = 3° in standings</div>
+Se la finale non esiste:
+  podium = top 3 degli standings esportati</div>
         </details>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="card-head"><h2>Metrics</h2></div>
-      <div class="card-body">
-        <div class="metrics-kv">
-          <div><b>Panoramica</b></div>
-          <div class="muted" style="opacity:.85;">
-            Questa scheda è un manuale: collega “cosa vedo” ↔ “come è calcolato”.
-            Riferimenti: <code>backend/commander_stats/compute.py</code> e <code>backend/stats.v1.schema.json</code>.
-          </div>
-          <div><b>Consiglio</b></div>
-          <div class="muted" style="opacity:.85;">
-            Per calibrazione: guarda insieme <b>b_post</b>, <b>b_post_sd</b> e <b>games</b>.
-          </div>
-        </div>
       </div>
     </section>
   </main>

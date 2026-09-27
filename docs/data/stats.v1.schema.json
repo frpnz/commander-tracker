@@ -255,7 +255,7 @@
           "type": "array"
         },
         "generated_utc": {
-          "description": "UTC timestamp in ISO-8601, ends with Z",
+          "description": "Legacy deterministic data watermark: latest played_at in the exported dataset, serialized as ISO-8601 with a trailing Z; not the wall-clock export time",
           "type": "string"
         },
         "meta_profile": {
@@ -660,7 +660,7 @@
       "type": "array"
     },
     "generated_utc": {
-      "description": "UTC timestamp in ISO-8601, ends with Z",
+      "description": "Legacy deterministic data watermark: latest played_at in the exported dataset, serialized as ISO-8601 with a trailing Z; not the wall-clock export time",
       "type": "string"
     },
     "meta_profile": {

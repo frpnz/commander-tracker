@@ -10,21 +10,18 @@ def _rows_to_dicts(rows) -> List[Dict[str, Any]]:
 
 
 def _iso_utc_from_sqlite_dt(dt_str: str) -> str:
-    """Convert a SQLite DATETIME string to ISO-8601 UTC with trailing 'Z'.
+    """Serialize the latest stored played_at as the legacy data watermark.
 
-    The project DB stores played_at values like "YYYY-MM-DD HH:MM:SS".
-    We keep the same moment but render it in a stable, explicit UTC form.
+    Historical rows are timezone-naive. For backward compatibility the output field
+    still ends in ``Z``; this function does not perform a timezone conversion.
     """
     dt_str = (dt_str or "").strip()
     if not dt_str:
         return "1970-01-01T00:00:00Z"
 
-    # Accept either "YYYY-MM-DD HH:MM:SS" or ISO-ish strings.
+    # Accept SQLite/ISO-like timestamps, including fractional seconds.
     try:
-        if "T" in dt_str:
-            dt = datetime.datetime.fromisoformat(dt_str.replace("Z", ""))
-        else:
-            dt = datetime.datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+        dt = datetime.datetime.fromisoformat(dt_str.replace("T", " ").removesuffix("Z"))
     except Exception:
         # If parsing fails, fall back to a safe constant rather than
         # reintroducing non-determinism.
@@ -284,6 +281,13 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *,
         winner = g.get("winner")
         entries = g.get("entries") or []
 
+        # Legacy data can contain the same player identity more than once in a game.
+        # Keep those rows in raw/archive aggregates, but do not use the game for
+        # context-aware metrics: a duplicated identity breaks the one-seat/one-probability
+        # assumption behind MDI/MPI, OEWR and commander calibration.
+        identity_keys = [str(e.get("player") or "").strip().casefold() for e in entries]
+        has_duplicate_identity = any(identity_keys.count(k) > 1 for k in set(identity_keys) if k)
+
         # --- Meta Profile (MDI/MPI) aggregation ---
         # Every player contributes (independent of outcome). We compute deltas
         # using numeric brackets only and excluding the player from the table
@@ -303,7 +307,14 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *,
         # --- OEWR aggregation ---
         # Only compute when we have a complete numeric bracket vector.
         # (This avoids renormalizing away missing data.)
-        can_oewr = (winner is not None) and (len(entries) > 0) and (count_all == len(entries)) and (winner in br_by_player)
+        can_oewr = (
+            (not has_duplicate_identity)
+            and (winner is not None)
+            and (len(entries) > 0)
+            and (count_all == len(entries))
+            and (len(br_by_player) == len(entries))
+            and (winner in br_by_player)
+        )
         expected_by_player: Dict[str, float] = {}
         if can_oewr:
             # Stable softmax: subtract max before exp.
@@ -356,6 +367,9 @@ def compute_stats(conn: sqlite3.Connection, generated_utc: str | None = None, *,
                 }
                 meta_by_player_commander[(p, c)] = curmc
             curmc["games_total"] += 1
+
+            if has_duplicate_identity:
+                continue
 
             bp = br_by_player.get(p)
             if bp is None:

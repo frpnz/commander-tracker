@@ -67,7 +67,7 @@ function updateMetaSummary() {
   if (period) parts.push(`Periodo: ${period}`);
   if (Number.isFinite(games)) parts.push(`Partite: ${games}`);
   if (Number.isFinite(entries)) parts.push(`Entries: ${entries}`);
-  if (gen) parts.push(`Gen: ${String(gen).replace("T", " ").replace("Z", " UTC")}`);
+  if (gen) parts.push(`Ultimo dato: ${String(gen).replace("T", " ").replace("Z", "")}`);
   const summary = parts.join(" · ");
   elMeta.dataset.summary = summary;
   elMeta.textContent = "";

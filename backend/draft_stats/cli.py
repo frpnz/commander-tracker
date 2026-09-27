@@ -21,7 +21,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = p.parse_args(argv)
 
-    data = compute_draft(args.db)
+    db_path = Path(args.db).resolve()
+    if not db_path.is_file():
+        raise SystemExit(f"Draft DB non trovato: {db_path}")
+
+    data = compute_draft(str(db_path))
     write_json(data, args.out)
 
     print(f"Wrote {args.out} (tournaments={data['counts']['tournaments']}, players={data['counts']['players']})")
