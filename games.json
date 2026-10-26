@@ -1,114 +1,131 @@
 [
   {
     "version": "game.v1",
-    "played_at": "2026-10-05T00:00:00+02:00",
+    "played_at": "2026-10-09T00:00:00+02:00",
     "notes": "",
-    "winner_player": "Stanka",
+    "winner_player": "Da",
     "entries": [
-      {
-        "player": "Stanka",
-        "commander": "Elash",
-        "bracket": 4
-      },
-      {
-        "player": "Giamma",
-        "commander": "Galtha",
-        "bracket": 3
-      },
-      {
-        "player": "Fra",
-        "commander": "Vnwxt",
-        "bracket": 5
-      },
-      {
-        "player": "Da",
-        "commander": "Yennet",
-        "bracket": 3
-      }
+      {"player": "Da", "commander": "Miirym", "bracket": 3},
+      {"player": "Teo", "commander": "Betor", "bracket": 2},
+      {"player": "Matti", "commander": "Radagast", "bracket": 3}
     ]
   },
   {
     "version": "game.v1",
-    "played_at": "2026-10-05T00:01:00+02:00",
+    "played_at": "2026-10-09T00:01:00+02:00",
+    "notes": "",
+    "winner_player": "Da",
+    "entries": [
+      {"player": "Da", "commander": "Miirym", "bracket": 3},
+      {"player": "Teo", "commander": "Betor", "bracket": 2},
+      {"player": "Matti", "commander": "Radagast", "bracket": 3}
+    ]
+  },
+  {
+    "version": "game.v1",
+    "played_at": "2026-10-09T00:02:00+02:00",
+    "notes": "",
+    "winner_player": "Teo",
+    "entries": [
+      {"player": "Da", "commander": "Miirym", "bracket": 3},
+      {"player": "Teo", "commander": "Betor", "bracket": 2},
+      {"player": "Matti", "commander": "Radagast", "bracket": 3}
+    ]
+  },
+  {
+    "version": "game.v1",
+    "played_at": "2026-10-09T00:03:00+02:00",
+    "notes": "",
+    "winner_player": "Matti",
+    "entries": [
+      {"player": "Matti", "commander": "Radagast", "bracket": 3},
+      {"player": "Fra", "commander": "Vnwxt", "bracket": 3},
+      {"player": "Teo", "commander": "Satoru", "bracket": 3},
+      {"player": "Da", "commander": "Hashaton", "bracket": 4}
+    ]
+  },
+  {
+    "version": "game.v1",
+    "played_at": "2026-10-09T00:04:00+02:00",
+    "notes": "",
+    "winner_player": "Matti",
+    "entries": [
+      {"player": "Matti", "commander": "Sephiroth", "bracket": 4},
+      {"player": "Fra", "commander": "Vnwxt", "bracket": 3},
+      {"player": "Teo", "commander": "Betor", "bracket": 2},
+      {"player": "Da", "commander": "Hashaton", "bracket": 4}
+    ]
+  },
+  {
+    "version": "game.v1",
+    "played_at": "2026-10-20T19:53:00+02:00",
+    "notes": "",
+    "winner_player": "Da",
+    "entries": [
+      {"player": "Teo", "commander": "Betor", "bracket": 2},
+      {"player": "Giamma", "commander": "Anti-Venom", "bracket": 3},
+      {"player": "Matti", "commander": "Radagast", "bracket": 3},
+      {"player": "Da", "commander": "Yennet", "bracket": 4}
+    ]
+  },
+  {
+    "version": "game.v1",
+    "played_at": "2026-10-20T19:54:00+02:00",
+    "notes": "",
+    "winner_player": "Matti",
+    "entries": [
+      {"player": "Teo", "commander": "Betor", "bracket": 2},
+      {"player": "Giamma", "commander": "Halana", "bracket": 4},
+      {"player": "Matti", "commander": "Sephiroth", "bracket": 4},
+      {"player": "Da", "commander": "Yennet", "bracket": 4}
+    ]
+  },
+  {
+    "version": "game.v1",
+    "played_at": "2026-10-20T19:55:00+02:00",
+    "notes": "",
+    "winner_player": "Giamma",
+    "entries": [
+      {"player": "Teo", "commander": "The Scarab God", "bracket": 3},
+      {"player": "Giamma", "commander": "Kruphix", "bracket": 4},
+      {"player": "Matti", "commander": "Vivi", "bracket": 4},
+      {"player": "Da", "commander": "Miirym", "bracket": 3}
+    ]
+  },
+  {
+    "version": "game.v1",
+    "played_at": "2026-10-23T01:03:00+02:00",
+    "notes": "",
+    "winner_player": "Da",
+    "entries": [
+      {"player": "Giamma", "commander": "Winter", "bracket": 3},
+      {"player": "Teo", "commander": "Betor", "bracket": 2},
+      {"player": "Fra", "commander": "Vnwxt", "bracket": 3},
+      {"player": "Da", "commander": "Yennet", "bracket": 4}
+    ]
+  },
+  {
+    "version": "game.v1",
+    "played_at": "2026-10-23T01:04:00+02:00",
+    "notes": "",
+    "winner_player": "Da",
+    "entries": [
+      {"player": "Matti", "commander": "Winter", "bracket": 3},
+      {"player": "Teo", "commander": "Betor", "bracket": 2},
+      {"player": "Fra", "commander": "Vnwxt", "bracket": 3},
+      {"player": "Da", "commander": "Yennet", "bracket": 4}
+    ]
+  },
+  {
+    "version": "game.v1",
+    "played_at": "2026-10-23T01:05:00+02:00",
     "notes": "",
     "winner_player": "Fra",
     "entries": [
-      {
-        "player": "Fra",
-        "commander": "Vnwxt",
-        "bracket": 5
-      },
-      {
-        "player": "Da",
-        "commander": "Yennet",
-        "bracket": 3
-      },
-      {
-        "player": "Giamma",
-        "commander": "Halana",
-        "bracket": 4
-      },
-      {
-        "player": "Stanka",
-        "commander": "Volo",
-        "bracket": 3
-      }
-    ]
-  },
-  {
-    "version": "game.v1",
-    "played_at": "2026-10-05T00:02:00+02:00",
-    "notes": "",
-    "winner_player": "Giamma",
-    "entries": [
-      {
-        "player": "Stanka",
-        "commander": "Kaalia",
-        "bracket": 4
-      },
-      {
-        "player": "Fra",
-        "commander": "Sab-Sunen",
-        "bracket": 3
-      },
-      {
-        "player": "Da",
-        "commander": "Yennet",
-        "bracket": 3
-      },
-      {
-        "player": "Giamma",
-        "commander": "Halana",
-        "bracket": 4
-      }
-    ]
-  },
-  {
-    "version": "game.v1",
-    "played_at": "2026-10-05T00:03:00+02:00",
-    "notes": "",
-    "winner_player": "Giamma",
-    "entries": [
-      {
-        "player": "Stanka",
-        "commander": "Kaalia",
-        "bracket": 4
-      },
-      {
-        "player": "Giamma",
-        "commander": "Halana",
-        "bracket": 4
-      },
-      {
-        "player": "Da",
-        "commander": "Mirim",
-        "bracket": 3
-      },
-      {
-        "player": "Fra",
-        "commander": "Vnwxt",
-        "bracket": 5
-      }
+      {"player": "Matti", "commander": "Winter", "bracket": 3},
+      {"player": "Teo", "commander": "Betor", "bracket": 2},
+      {"player": "Fra", "commander": "The Sentry", "bracket": 3},
+      {"player": "Da", "commander": "Miirym", "bracket": 3}
     ]
   }
 ]
