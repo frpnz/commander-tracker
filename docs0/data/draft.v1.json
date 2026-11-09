@@ -1,0 +1,593 @@
+{
+  "schema": "draft.v1",
+  "generated_utc": "2026-11-06T20:20:00Z",
+  "counts": {
+    "tournaments": 5,
+    "players": 8
+  },
+  "tournaments": [
+    {
+      "id": 10,
+      "played_at": "2026-11-06 20:20:00",
+      "name": "Reality Fracture 1",
+      "format": "Draft",
+      "rounds": null,
+      "notes": "",
+      "standings": [
+        {
+          "player": "Matti",
+          "record": {
+            "w": 9,
+            "l": 1,
+            "d": 0
+          },
+          "matches": 10,
+          "match_win_pct": 0.9,
+          "via_pct": 47.2,
+          "rank": 1
+        },
+        {
+          "player": "Da",
+          "record": {
+            "w": 8,
+            "l": 2,
+            "d": 0
+          },
+          "matches": 10,
+          "match_win_pct": 0.8,
+          "via_pct": 49.2,
+          "rank": 2
+        },
+        {
+          "player": "Giamma",
+          "record": {
+            "w": 5,
+            "l": 5,
+            "d": 0
+          },
+          "matches": 10,
+          "match_win_pct": 0.5,
+          "via_pct": 55.2,
+          "rank": 3
+        },
+        {
+          "player": "Stanka",
+          "record": {
+            "w": 4,
+            "l": 6,
+            "d": 0
+          },
+          "matches": 10,
+          "match_win_pct": 0.4,
+          "via_pct": 57.2,
+          "rank": 4
+        },
+        {
+          "player": "Fra",
+          "record": {
+            "w": 2,
+            "l": 8,
+            "d": 0
+          },
+          "matches": 10,
+          "match_win_pct": 0.2,
+          "via_pct": 58.6,
+          "rank": 5
+        },
+        {
+          "player": "Teo",
+          "record": {
+            "w": 2,
+            "l": 8,
+            "d": 0
+          },
+          "matches": 10,
+          "match_win_pct": 0.2,
+          "via_pct": 58.6,
+          "rank": 6
+        }
+      ],
+      "playoffs": null,
+      "podium": {
+        "gold": "Matti",
+        "silver": "Da",
+        "bronze": "Giamma",
+        "method": "standings"
+      }
+    },
+    {
+      "id": 9,
+      "played_at": "2026-06-29 22:10:00",
+      "name": "Marvel Super Heroes - multiplayer draft",
+      "format": "Draft",
+      "rounds": null,
+      "notes": "",
+      "standings": [
+        {
+          "player": "Giamma",
+          "record": {
+            "w": 2,
+            "l": 1,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.6666666666666666,
+          "via_pct": 33.0,
+          "rank": 1
+        },
+        {
+          "player": "Fra",
+          "record": {
+            "w": 1,
+            "l": 2,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.3333333333333333,
+          "via_pct": 50.0,
+          "rank": 2
+        },
+        {
+          "player": "Da",
+          "record": {
+            "w": 0,
+            "l": 3,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.0,
+          "via_pct": 50.0,
+          "rank": 3
+        }
+      ],
+      "playoffs": null,
+      "podium": {
+        "gold": "Giamma",
+        "silver": "Fra",
+        "bronze": "Da",
+        "method": "standings"
+      }
+    },
+    {
+      "id": 6,
+      "played_at": "2026-05-14 20:00:00",
+      "name": "Draft - I Segreti di Strixhaven",
+      "format": "Draft",
+      "rounds": null,
+      "notes": "",
+      "standings": [
+        {
+          "player": "Stanka",
+          "record": {
+            "w": 4,
+            "l": 1,
+            "d": 1
+          },
+          "matches": 6,
+          "match_win_pct": 0.75,
+          "via_pct": 47.14,
+          "rank": 1
+        },
+        {
+          "player": "Giamma",
+          "record": {
+            "w": 4,
+            "l": 4,
+            "d": 0
+          },
+          "matches": 8,
+          "match_win_pct": 0.5,
+          "via_pct": 48.01,
+          "rank": 2
+        },
+        {
+          "player": "Da",
+          "record": {
+            "w": 3,
+            "l": 2,
+            "d": 1
+          },
+          "matches": 6,
+          "match_win_pct": 0.5833333333333334,
+          "via_pct": 55.48,
+          "rank": 3
+        },
+        {
+          "player": "Fra",
+          "record": {
+            "w": 3,
+            "l": 4,
+            "d": 0
+          },
+          "matches": 7,
+          "match_win_pct": 0.42857142857142855,
+          "via_pct": 48.57,
+          "rank": 4
+        },
+        {
+          "player": "Teo",
+          "record": {
+            "w": 2,
+            "l": 3,
+            "d": 0
+          },
+          "matches": 5,
+          "match_win_pct": 0.4,
+          "via_pct": 51.9,
+          "rank": 5
+        },
+        {
+          "player": "Lori",
+          "record": {
+            "w": 2,
+            "l": 4,
+            "d": 0
+          },
+          "matches": 6,
+          "match_win_pct": 0.3333333333333333,
+          "via_pct": 50.12,
+          "rank": 6
+        }
+      ],
+      "playoffs": null,
+      "podium": {
+        "gold": "Stanka",
+        "silver": "Giamma",
+        "bronze": "Da",
+        "method": "standings"
+      }
+    },
+    {
+      "id": 4,
+      "played_at": "2026-03-12 23:00:00",
+      "name": "Matti's cube",
+      "format": "Draft",
+      "rounds": null,
+      "notes": "",
+      "standings": [
+        {
+          "player": "Matti",
+          "record": {
+            "w": 3,
+            "l": 0,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 1.0,
+          "via_pct": 48.1,
+          "rank": 1
+        },
+        {
+          "player": "Giamma",
+          "record": {
+            "w": 2,
+            "l": 1,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.6666666666666666,
+          "via_pct": 66.7,
+          "rank": 2
+        },
+        {
+          "player": "Teo",
+          "record": {
+            "w": 2,
+            "l": 1,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.6666666666666666,
+          "via_pct": 50.0,
+          "rank": 3
+        },
+        {
+          "player": "Stanka",
+          "record": {
+            "w": 1,
+            "l": 1,
+            "d": 1
+          },
+          "matches": 3,
+          "match_win_pct": 0.5,
+          "via_pct": 59.3,
+          "rank": 4
+        },
+        {
+          "player": "Lori",
+          "record": {
+            "w": 1,
+            "l": 1,
+            "d": 1
+          },
+          "matches": 3,
+          "match_win_pct": 0.5,
+          "via_pct": 38.9,
+          "rank": 5
+        },
+        {
+          "player": "Fra",
+          "record": {
+            "w": 1,
+            "l": 2,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.3333333333333333,
+          "via_pct": 66.7,
+          "rank": 6
+        },
+        {
+          "player": "Da",
+          "record": {
+            "w": 1,
+            "l": 2,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.3333333333333333,
+          "via_pct": 63.0,
+          "rank": 7
+        }
+      ],
+      "playoffs": null,
+      "podium": {
+        "gold": "Matti",
+        "silver": "Giamma",
+        "bronze": "Teo",
+        "method": "standings"
+      }
+    },
+    {
+      "id": 3,
+      "played_at": "2026-02-28 03:49:00",
+      "name": "Friday Draft Lorwin",
+      "format": "Draft",
+      "rounds": null,
+      "notes": "",
+      "standings": [
+        {
+          "player": "Matti",
+          "record": {
+            "w": 3,
+            "l": 0,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 1.0,
+          "via_pct": 44.4,
+          "rank": 1
+        },
+        {
+          "player": "Ivan",
+          "record": {
+            "w": 2,
+            "l": 1,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.6666666666666666,
+          "via_pct": 77.8,
+          "rank": 2
+        },
+        {
+          "player": "Teo",
+          "record": {
+            "w": 2,
+            "l": 1,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.6666666666666666,
+          "via_pct": 55.6,
+          "rank": 3
+        },
+        {
+          "player": "Giamma",
+          "record": {
+            "w": 2,
+            "l": 1,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.6666666666666666,
+          "via_pct": 44.4,
+          "rank": 4
+        },
+        {
+          "player": "Da",
+          "record": {
+            "w": 1,
+            "l": 2,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.3333333333333333,
+          "via_pct": 77.8,
+          "rank": 5
+        },
+        {
+          "player": "Lori",
+          "record": {
+            "w": 1,
+            "l": 2,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.3333333333333333,
+          "via_pct": 66.7,
+          "rank": 6
+        },
+        {
+          "player": "Stanka",
+          "record": {
+            "w": 1,
+            "l": 2,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.3333333333333333,
+          "via_pct": 44.4,
+          "rank": 7
+        },
+        {
+          "player": "Fra",
+          "record": {
+            "w": 0,
+            "l": 3,
+            "d": 0
+          },
+          "matches": 3,
+          "match_win_pct": 0.0,
+          "via_pct": 55.6,
+          "rank": 8
+        }
+      ],
+      "playoffs": null,
+      "podium": {
+        "gold": "Matti",
+        "silver": "Ivan",
+        "bronze": "Teo",
+        "method": "standings"
+      }
+    }
+  ],
+  "by_player": [
+    {
+      "player": "Matti",
+      "tournaments": 3,
+      "matches": 16,
+      "wins": 15,
+      "losses": 1,
+      "draws": 0,
+      "match_win_pct": 0.9375,
+      "via_avg": 46.56666666666667,
+      "via_n": 3,
+      "best_rank": 1,
+      "avg_rank": 1.0,
+      "podium_gold": 3,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 3
+    },
+    {
+      "player": "Ivan",
+      "tournaments": 1,
+      "matches": 3,
+      "wins": 2,
+      "losses": 1,
+      "draws": 0,
+      "match_win_pct": 0.6666666666666666,
+      "via_avg": 77.8,
+      "via_n": 1,
+      "best_rank": 2,
+      "avg_rank": 2.0,
+      "podium_gold": 0,
+      "podium_silver": 1,
+      "podium_bronze": 0,
+      "podium_total": 1
+    },
+    {
+      "player": "Giamma",
+      "tournaments": 5,
+      "matches": 27,
+      "wins": 15,
+      "losses": 12,
+      "draws": 0,
+      "match_win_pct": 0.5555555555555556,
+      "via_avg": 49.462,
+      "via_n": 5,
+      "best_rank": 1,
+      "avg_rank": 2.4,
+      "podium_gold": 1,
+      "podium_silver": 2,
+      "podium_bronze": 1,
+      "podium_total": 4
+    },
+    {
+      "player": "Da",
+      "tournaments": 5,
+      "matches": 25,
+      "wins": 13,
+      "losses": 11,
+      "draws": 1,
+      "match_win_pct": 0.54,
+      "via_avg": 59.096000000000004,
+      "via_n": 5,
+      "best_rank": 2,
+      "avg_rank": 4.0,
+      "podium_gold": 0,
+      "podium_silver": 1,
+      "podium_bronze": 2,
+      "podium_total": 3
+    },
+    {
+      "player": "Stanka",
+      "tournaments": 4,
+      "matches": 22,
+      "wins": 10,
+      "losses": 10,
+      "draws": 2,
+      "match_win_pct": 0.5,
+      "via_avg": 52.01,
+      "via_n": 4,
+      "best_rank": 1,
+      "avg_rank": 4.0,
+      "podium_gold": 1,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 1
+    },
+    {
+      "player": "Teo",
+      "tournaments": 4,
+      "matches": 21,
+      "wins": 8,
+      "losses": 13,
+      "draws": 0,
+      "match_win_pct": 0.38095238095238093,
+      "via_avg": 54.025,
+      "via_n": 4,
+      "best_rank": 3,
+      "avg_rank": 4.25,
+      "podium_gold": 0,
+      "podium_silver": 0,
+      "podium_bronze": 2,
+      "podium_total": 2
+    },
+    {
+      "player": "Lori",
+      "tournaments": 3,
+      "matches": 12,
+      "wins": 4,
+      "losses": 7,
+      "draws": 1,
+      "match_win_pct": 0.375,
+      "via_avg": 51.906666666666666,
+      "via_n": 3,
+      "best_rank": 5,
+      "avg_rank": 5.666666666666667,
+      "podium_gold": 0,
+      "podium_silver": 0,
+      "podium_bronze": 0,
+      "podium_total": 0
+    },
+    {
+      "player": "Fra",
+      "tournaments": 5,
+      "matches": 26,
+      "wins": 7,
+      "losses": 19,
+      "draws": 0,
+      "match_win_pct": 0.2692307692307692,
+      "via_avg": 55.894000000000005,
+      "via_n": 5,
+      "best_rank": 2,
+      "avg_rank": 5.0,
+      "podium_gold": 0,
+      "podium_silver": 1,
+      "podium_bronze": 0,
+      "podium_total": 1
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Meta Profile</title>
+  <link rel="stylesheet" href="../assets/style.css?v=20260209"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-label="Commander Tracker"></div>
+      <div>
+        <div class="title">Meta Profile</div>
+        <div class="subtitle" id="subtitle">Meta overview</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="meta" id="meta"></div>
+      <nav class="nav" id="nav"></nav>
+      <a class="help-icon" href="../metrics/" aria-label="Guida alle metriche" title="Guida alle metriche">?</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card filters">
+      <div class="filters-row">
+        <label>
+          Numero player
+          <select id="fPodSize">
+            <option value="">Tutti</option>
+          </select>
+        </label>
+      </div>
+      <div class="hint" id="hint"></div>
+    </section>
+
+    <section class="charts onecol">
+      <!-- Riquadro 1 -->
+      <section class="card" id="meta-profile-card">
+        <div class="card-head">
+          <h2>Profilo Meta per player</h2>
+          <div class="head-tools"></div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="mdiMpiPlayers" aria-label="MDI vs OEWR per player" role="img"></canvas>
+        </div>
+        <div class="footnote">
+        Meta Profile — X: pressione (giocare sopra media/essere minaccia) · Y: conversione (vittorie).
+          Alto dx sostanza · Alto sx outplaying · Basso dx sovraesposizione · Basso sx bassa incisività.
+          Dettagli in <a href="../metrics/">?</a>.<br/>
+        </div>
+</section>
+    </section>
+
+    <footer class="footer">
+      <span>Static site per GitHub Pages · dati da SQLite</span>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="../assets/player-color-overrides.js"></script>
+  <script src="../assets/player-colors.js?v=20260204"></script>
+  <script src="../assets/meta-profile.js?v=20260926"></script>
+
+  <script src="../assets/nav-items.js?v=20260223"></script>
+  <script src="../assets/nav.js?v=20260223"></script>
+</body>
+</html>

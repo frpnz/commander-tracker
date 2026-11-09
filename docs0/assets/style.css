@@ -1,0 +1,1087 @@
+:root{
+  --logo-mask: url("../assets/logo-ruins.svg");
+
+  --bg:#0b1020;
+  --text:#e9ecf7;
+  --muted:#aab3d3;
+  --accent:#6ee7ff;
+  --accent2:#b8ff6e;
+
+  --border:rgba(255,255,255,.10);
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%; overflow-x:hidden}
+html{color-scheme: dark; -webkit-text-size-adjust: 100%;}
+
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  background: var(--bg);
+  position: relative;
+  min-height: 100vh;
+  color:var(--text);
+  overflow-x: hidden;
+}
+
+/* Decorative gradients on all pages */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(900px 500px at 10% -10%, rgba(110,231,255,.25), transparent 60%),
+    radial-gradient(800px 500px at 90% 0%, rgba(184,255,110,.20), transparent 60%);
+  background-repeat:no-repeat;
+}
+
+/* --- Layout --- */
+.container,.wrap{max-width:1180px; margin:20px auto; padding:0 16px}
+
+.topbar{
+  position:sticky; top:0; z-index:5;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background: linear-gradient(to bottom, rgba(11,16,32,.85), rgba(11,16,32,.55));
+  border-bottom:1px solid var(--border);
+  padding:14px 18px;
+  display:flex; gap:16px; align-items:center; justify-content:space-between;
+}
+
+.brand{display:flex; gap:12px; align-items:center}
+
+.logo{
+  width:44px;height:44px;border-radius:14px;
+  border:1px solid var(--border);
+  box-shadow: var(--shadow);
+  background: linear-gradient(135deg, rgba(110,231,255,.18), rgba(184,255,110,.14));
+  color: var(--text);
+  position: relative;
+  overflow: hidden;
+}
+.logo:focus{outline: 2px solid rgba(110,231,255,.55); outline-offset: 3px}
+.logo::before{
+  content:"";
+  position:absolute;
+  inset: 3px;
+  display:block;
+  background: currentColor;
+  /*
+    Cross-browser mask rendering:
+    - Firefox is more strict about mask-* longhands and SVG luminance.
+    - Explicit longhands avoid sizing quirks.
+  */
+  -webkit-mask-image: var(--logo-mask);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: var(--logo-mask);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  mask-mode: alpha;
+}
+
+.title{font-weight:750; letter-spacing:.2px}
+.subtitle{color:var(--muted); font-size:13px; margin-top:2px}
+.meta{color:var(--muted); font-size:13px; text-align:right}
+
+.nav{display:flex; gap:10px; align-items:center}
+.navlink{color:var(--muted); text-decoration:none; padding:10px 12px; border-radius:12px; border:1px solid transparent; white-space:nowrap}
+.navlink:hover{color:var(--text); border-color:var(--border); background:rgba(255,255,255,.03)}
+.navlink.active{color:var(--text); border-color:var(--border); background:rgba(255,255,255,.05)}
+
+/* --- Cards --- */
+.card{
+  background: rgba(11,16,32,.35);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border:1px solid var(--border);
+  border-radius:18px;
+  box-shadow: var(--shadow);
+}
+
+/* --- Buttons --- */
+.btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 1px solid rgba(110,231,255,.35);
+  background: linear-gradient(
+    135deg,
+    rgba(110,231,255,.18),
+    rgba(184,255,110,.14)
+  );
+
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+
+  width: auto;
+}
+.btn:hover{ border-color: rgba(110,231,255,.6) }
+
+.btn.primary,
+.btn-primary{
+  width: 100%;
+}
+
+/* --- Home --- */
+.hero{padding:28px}
+.muted{color:var(--muted)}
+
+/*
+  Home v2 (mobile-first, no scrolling):
+  Full-screen hero with image background + bottom gradient overlay.
+*/
+body.home.home-v2{
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+body.home.home-v2::before{
+  /* keep decorative gradients but make them lighter behind the hero image */
+  opacity: .6;
+}
+
+body.home.home-v2 .home-main{
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+}
+
+body.home.home-v2 .topbar.home-topbar{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom, rgba(11,16,32,.78), rgba(11,16,32,.20));
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.home-hero{
+  position: relative;
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.home-bg{
+  position: absolute;
+  inset: 0;
+  display: block;
+  z-index: 0;
+}
+.home-bg img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* slight tweak to keep the image vivid but readable under UI */
+  filter: saturate(1.05) contrast(1.03);
+}
+
+.home-hero::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(11,16,32,.88) 0%,
+    rgba(11,16,32,.55) 28%,
+    rgba(11,16,32,.18) 52%,
+    rgba(11,16,32,0) 74%
+  );
+}
+
+.home-content{
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  padding: 86px 16px calc(16px + env(safe-area-inset-bottom));
+}
+
+.home-copy{
+  max-width: 44rem;
+  text-shadow: 0 8px 30px rgba(0,0,0,.45);
+  text-align: center;
+}
+.home-copy h1{margin:0 0 6px 0; font-size: 26px; line-height: 1.15;}
+.home-copy p{margin:0;}
+
+ .home-actions{
+  width: 100%;
+  max-width: 520px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+ }
+
+
+
+@media (max-width: 360px){
+  .home-actions{ grid-template-columns: 1fr; }
+}
+/* Home v2 buttons: outline-only (minimal) */
+body.home.home-v2 .home-actions .btn{
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 18px;
+  font-weight: 650;
+  color: rgba(255,255,255,.96);
+  background: rgba(255,255,255,.03); /* keeps backdrop-filter working while staying "outline" */
+  border: 1.5px solid rgba(255,255,255,.55);
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+body.home.home-v2 .home-actions .btn:hover{
+  border-color: rgba(255,255,255,.78);
+}
+
+body.home.home-v2 .home-actions .btn:active{
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.85);
+  transform: translateY(1px);
+}
+
+
+@media (min-width: 860px){
+  body.home.home-v2{overflow: hidden;}
+  .home-content{
+    padding: 110px 28px 28px;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .home-copy{ text-align: left; }
+  .home-copy h1{font-size: 34px;}
+  .home-actions{max-width: 520px;}
+}
+
+/* Home preview image (shown on mobile) */
+.home-visual{
+  display:none;
+  width:100%;
+  margin-top:14px;
+}
+.home-visual img{
+  width:100%;
+  height:auto;
+  border-radius:16px;
+  border:1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.hero-actions{
+  margin-top:14px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+/* Home: elastic buttons (no horizontal scroll) */
+body.home .hero{
+  display:flex;
+  flex-direction:column;
+}
+body.home .hero-actions{
+  order:2;
+  display:flex;
+  flex-wrap:wrap;
+  overflow-x:visible;
+  width:100%;
+  max-width:100%;
+  padding-bottom:4px;
+  gap:12px;
+}
+body.home .hero-actions::-webkit-scrollbar{display:none;}
+body.home .home-visual{order:1;}
+
+body.home .hero-actions .btn{
+  flex: 1 1 140px;
+  width: auto;
+  min-width: 0;
+  justify-content: center;
+}
+body.home .hero-actions .btn.primary,
+body.home .hero-actions .btn-primary{
+  width:auto;
+}
+
+/* --- Filters (stats) --- */
+.filters{padding:14px 14px 10px}
+.filters-row{
+  display:grid;
+  grid-template-columns: 200px 260px auto;
+  gap:10px;
+  align-items:end;
+}
+
+.grid2{display:grid; grid-template-columns: 1fr; gap:10px; align-items:end;}
+.grid3{display:grid; grid-template-columns: 1fr; gap:10px; align-items:end;}
+@media (min-width: 720px){
+  .grid2{grid-template-columns: 1fr 1fr;}
+  .grid3{grid-template-columns: 1fr 1fr 140px;}
+}
+label{display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--muted)}
+select,input,textarea{
+  appearance:none;
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color:var(--text);
+  padding:10px 10px;
+  border-radius:12px;
+  outline:none;
+}
+
+/* --- Autocomplete dropdown (robust cross-browser replacement for <datalist>) --- */
+label.ac{ position: relative; }
+.ac-menu{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  max-height: 240px;
+  overflow: auto;
+  z-index: 60;
+}
+.ac-item{
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  user-select: none;
+}
+.ac-item:hover,
+.ac-item.active{ background: rgba(255,255,255,.06); }
+.ac-empty{
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+select option{background: var(--bg); color: var(--text);}
+
+.actions{display:flex; gap:10px; justify-content:flex-end}
+
+/* New-game mobile UX: keep action buttons reachable when the virtual keyboard is open */
+.actions.sticky-actions{
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom) + var(--keyboard-inset, 0px));
+  background: linear-gradient(to top, rgba(11,16,32,.92), rgba(11,16,32,0));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+form.has-sticky-actions{padding-bottom: calc(18px + var(--keyboard-inset, 0px))}
+.hint{margin-top:10px; color:var(--muted); font-size:12px}
+
+/* --- Charts (stats) --- */
+.charts{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:14px;
+}
+.charts.onecol{grid-template-columns: 1fr !important}
+@media (min-width: 980px){
+  .charts{grid-template-columns: 1fr 1fr}
+}
+.chart-wrap{padding:10px 12px 14px}
+.chart-wrap canvas{width:100%; height:360px; max-height:420px}
+
+/* Mobile: massimizza lo spazio del grafico */
+@media (max-width: 640px){
+  .chart-wrap{ padding: 8px 8px 10px; }
+  .chart-wrap canvas{
+    height: 68vh;
+    max-height: none;
+  }
+}
+
+/* Fullscreen chart (fallback + estetica) */
+.chart-fs{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+/* Barra strumenti in fullscreen */
+.chart-fs .card-head{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* In fullscreen il canvas prende quasi tutto lo schermo */
+.chart-fs .chart-wrap{
+  padding: 8px;
+}
+.chart-fs .chart-wrap canvas{
+  height: calc(100vh - 64px);
+  max-height: none;
+}
+
+/* Bottone icona nella head-tools */
+.head-tools .btn-ico{
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  cursor: pointer;
+}
+.head-tools .btn-ico:active{ transform: scale(.98); }
+
+
+
+@media (max-width: 860px){
+  .filters-row{grid-template-columns: 1fr 1fr; }
+  .actions{grid-column: 1 / -1; justify-content:stretch}
+  .btn{flex:1}
+}
+
+@media (max-width: 560px){
+  .filters-row{grid-template-columns: 1fr; }
+  .actions{flex-direction:column}
+}
+
+
+
+/* Trend commander picker */
+.trend-controls{
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+}
+.trend-commander-picker{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255,255,255,.03);
+}
+.trend-picker-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.trend-picker-label{
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.trend-picker-sub{
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.trend-clear-btn{
+  appearance: none;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.trend-clear-btn:disabled{
+  opacity: .45;
+  cursor: default;
+}
+.trend-chip-list{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 200px;
+  overflow: auto;
+  padding-right: 2px;
+}
+.trend-chip-list.is-disabled{
+  opacity: .55;
+}
+.trend-chip-empty{
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 0;
+}
+.trend-chip{
+  --trend-chip-tone: rgba(255,255,255,.5);
+  appearance: none;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+.trend-chip-swatch{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--trend-chip-tone);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.18) inset;
+  flex: 0 0 auto;
+}
+.trend-chip .trend-chip-name{
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trend-chip .trend-chip-meta{
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.trend-chip.is-selected{
+  color: #fff;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset;
+}
+.trend-chart-wrap canvas{
+  height: 340px;
+}
+@media (max-width: 720px){
+  .trend-controls{grid-template-columns: 1fr;}
+  .trend-picker-head{flex-direction: column;}
+  .trend-clear-btn{align-self: flex-start;}
+  .trend-chip-list{max-height: 240px;}
+  .trend-chart-wrap canvas{height: 52vh; min-height: 320px; max-height: 480px;}
+}
+
+/* --- Tables (stats) --- */
+.grid{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:14px;
+}
+@media (min-width: 980px){
+  .grid{grid-template-columns: 1fr 1fr}
+  .grid > section:last-child{grid-column: 1 / -1}
+}
+
+.card-head{
+  padding:14px 14px 8px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.head-tools{display:flex; gap:10px; align-items:center}
+
+.sortlabel{display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--muted); align-items:flex-end}
+.sortlabel > span{display:none}
+.sortselect{
+  min-width:150px;
+  padding:8px 10px;
+  border-radius:12px;
+}
+
+h1{margin:0 0 8px 0; font-size:22px; letter-spacing:.2px}
+h2{margin:0; font-size:15px; letter-spacing:.2px}
+
+.pill{
+  font-size:12px;
+  color:var(--muted);
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  padding:6px 10px;
+  border-radius:999px;
+}
+
+.is-hidden{display:none !important;}
+.table-wrap{overflow:auto; padding:0 6px 10px}
+
+.recent-wrap{display:flex; flex-direction:column; gap:12px; padding:6px 6px 12px}
+.recent-game{border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px; background: rgba(11,16,32,.18)}
+.recent-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap}
+.recent-title{font-weight:750; overflow-wrap:anywhere}
+.recent-winner{color:var(--text)}
+.recent-notes{margin-top:8px; color:var(--muted); font-size:12px}
+.recent-table-wrap{margin-top:10px; overflow:auto}
+.recent-table{width:100%; border-collapse:collapse; min-width:420px}
+.recent-table th,.recent-table td{border-bottom:1px solid rgba(255,255,255,.08); padding:8px 10px; text-align:left; overflow-wrap:anywhere}
+.recent-table th{color:var(--muted); font-size:12px; font-weight:750}
+
+/* Meta Wins */
+.heatcell{border-radius:10px; padding:6px 10px; text-align:right; font-variant-numeric: tabular-nums;}
+.heat-up{background: rgba(37,99,235,.18); border:1px solid rgba(37,99,235,.28); color:#93c5fd;}
+.heat-down{background: rgba(220,38,38,.16); border:1px solid rgba(220,38,38,.28); color:#fecaca;}
+.heat-neutral{background: rgba(107,114,128,.14); border:1px solid rgba(107,114,128,.22); color: rgba(255,255,255,.85);}
+
+/* Meta Profile */
+.mpicell{display:flex; align-items:center; justify-content:flex-end; gap:10px}
+.mpibar{width:90px; max-width:120px; height:8px; border-radius:999px; background: rgba(255,255,255,.10); overflow:hidden; border:1px solid rgba(255,255,255,.14)}
+.mpibar > span{display:block; height:100%; width:0%; background: rgba(110,231,255,.55)}
+.mpilabel{min-width:52px; text-align:right; font-variant-numeric: tabular-nums; color: var(--text)}
+
+table{width:100%; border-collapse:separate; border-spacing:0; min-width:560px}
+thead th{
+  position:sticky; top:0;
+  background: rgba(11,16,32,.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-bottom:1px solid var(--border);
+  text-align:left;
+  font-size:12px;
+  color:var(--muted);
+  padding:10px 10px;
+}
+tbody td{
+  padding:10px 10px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  font-size:13px;
+}
+tbody tr:hover td{background: rgba(110,231,255,.06)}
+.num{text-align:right; font-variant-numeric: tabular-nums}
+
+.badge{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:999px;
+  border:1px solid rgba(110,231,255,.25);
+  background: rgba(110,231,255,.08);
+  color: var(--text);
+  font-size:12px;
+}
+
+.footnote{padding:8px 14px 14px; color:var(--muted); font-size:12px}
+.html-legend{margin-top:10px; display:grid; grid-auto-flow:column; grid-template-rows:repeat(2, auto); gap:6px 14px; justify-content:center; align-items:center; color:var(--muted); font-size:12px}
+.html-legend .item{display:inline-flex; align-items:center; gap:8px; white-space:nowrap; cursor:pointer; user-select:none}
+.html-legend .swatch{width:10px; height:10px; border-radius:999px; border:1px solid rgba(255,255,255,.25)}
+.html-legend .item.off{opacity:.45}
+
+.footer{margin:16px 0 30px; color:var(--muted); font-size:12px; text-align:center}
+
+/* --- Mobile: compact header + stacked filters + table rows as cards --- */
+@media (max-width: 720px){
+  .container,.wrap{margin:14px auto; padding:0 12px}
+  .topbar{padding:12px 12px; gap:12px; flex-wrap:wrap; justify-content:flex-start}
+  .meta{display:none}
+  .brand{flex:1 1 100%}
+  /* Keep nav in a single row on mobile: scroll horizontally instead of wrapping */
+  .nav{
+    flex:1 1 100%;
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    gap:8px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:2px;
+    scrollbar-width:none;
+  }
+  .nav::-webkit-scrollbar{height:0}
+  .navlink{padding:8px 10px; font-size:13px}
+
+  h1{font-size:18px}
+  h2{font-size:14px}
+
+  .filters-row{grid-template-columns: 1fr}
+  .actions{justify-content:stretch}
+
+  .table-wrap{overflow:visible; padding:0 10px 12px}
+  table{min-width:0; border-spacing:0 10px}
+  thead{display:none}
+
+  tbody tr{
+    display:block;
+    padding:10px 12px;
+    border-radius:16px;
+    background: rgba(11,16,32,.28);
+    border:1px solid rgba(255,255,255,.08);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  tbody td{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    padding:6px 0;
+    border:0;
+  }
+  tbody td::before{
+    content: attr(data-label);
+    color:var(--muted);
+    font-weight:650;
+  }
+  tbody tr:hover td{background: transparent}
+
+  /* Draft: keep podium table as a compact grid (no per-player cards, no horizontal scroll) */
+  #podiumTbl{min-width:0; width:100%; table-layout:fixed; border-spacing:0}
+  #podiumTbl thead{display:block}
+  #podiumTbl thead tr,
+  #podiumTbl tbody tr{
+    display:grid;
+    grid-template-columns:
+      minmax(120px, 1.55fr)  /* Player */
+      minmax(34px, 0.45fr)   /* Gold */
+      minmax(34px, 0.45fr)   /* Silver */
+      minmax(34px, 0.45fr)   /* Bronze */
+      minmax(38px, 0.50fr);  /* Total */
+    column-gap:8px;
+    align-items:center;
+  }
+  #podiumTbl thead tr{
+    padding:8px 12px;
+    border-bottom:1px solid var(--border);
+  }
+  #podiumTbl tbody tr{
+    padding:8px 12px;
+    border-radius:14px;
+    background: rgba(11,16,32,.22);
+    border:1px solid rgba(255,255,255,.08);
+    margin-bottom:8px;
+  }
+  #podiumTbl thead th,
+  #podiumTbl tbody td{
+    padding:0;
+    border:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #podiumTbl tbody td{display:block}
+  #podiumTbl tbody td::before{content:none}
+  #podiumTbl thead th:nth-child(n+2),
+  #podiumTbl tbody td:nth-child(n+2){
+    text-align:center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .recent-table-wrap{overflow:visible}
+  .recent-table{min-width:0; border-collapse:separate; border-spacing:0 10px}
+  .recent-table thead{display:none}
+  .recent-table tbody tr{
+    display:block;
+    padding:10px 12px;
+    border-radius:16px;
+    background: rgba(11,16,32,.28);
+    border:1px solid rgba(255,255,255,.08);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .recent-table tbody td{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    padding:6px 0;
+    border:0;
+  }
+  .recent-table tbody td::before{
+    content: attr(data-label);
+    color:var(--muted);
+    font-weight:650;
+  }
+
+  #tList{min-width:0; width:100%; table-layout:fixed}
+  /* Mobile: no horizontal scroll, real headers, and *aligned* header/body columns */
+  #tList thead{display:block}
+  #tList thead tr,
+  #tList tbody tr{
+    display:grid;
+    grid-template-columns:
+      minmax(100px, 1.25fr)  /* Player */
+      minmax(120px, 1.75fr)  /* Commander */
+      minmax(64px, 0.85fr)   /* Bracket */
+      minmax(56px, 0.75fr);  /* Games/Wins */
+    column-gap:10px;
+    align-items:center;
+  }
+  #tList thead tr{
+    padding:8px 12px;
+    border-bottom:1px solid var(--border);
+  }
+  #tList tbody tr{padding:10px 12px}
+
+  #tList thead th,
+  #tList tbody td{
+    padding:0;
+    border:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #tList thead th{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    opacity:.75;
+  }
+
+  /* No inline labels inside cells on mobile */
+  #tList tbody td::before{content:none}
+
+  /* If a player filter is active, hide the redundant Player column to prevent clipping on mobile */
+  #tList.hide-player-col thead tr,
+  #tList.hide-player-col tbody tr{
+    grid-template-columns:
+      minmax(160px, 2.2fr)  /* Commander */
+      minmax(64px, 0.9fr)   /* Bracket */
+      minmax(64px, 0.9fr);  /* Partite */
+  }
+  #tList.hide-player-col thead th:first-child,
+  #tList.hide-player-col tbody td:first-child{display:none}
+
+  /* Numeric last column aligned */
+  #tList thead th:last-child,
+  #tList tbody td:last-child{text-align:right}
+
+  /* --- One-line tables on mobile (no multi-line "cards") --- */
+  #entriesTable{min-width:0}
+  #entriesTable thead{display:none}
+  #entriesTable tbody tr{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+  }
+  #entriesTable tbody td{
+    display:block;
+    padding:0;
+    border:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #entriesTable tbody td::before{content:none}
+  #entriesTable tbody td:nth-child(1){flex:1 1 28%; min-width:0}
+  #entriesTable tbody td:nth-child(2){flex:1 1 40%; min-width:0}
+  #entriesTable tbody td:nth-child(3){flex:0 0 auto}
+  #entriesTable tbody td:nth-child(4){flex:0 0 auto}
+  #entriesTable tbody td:nth-child(5){flex:0 0 auto; text-align:right}
+
+  #calTable{min-width:0}
+  #calTable thead{display:none}
+  #calTable tbody tr{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+  }
+  #calTable tbody td{
+    display:block;
+    padding:0;
+    border:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #calTable tbody td::before{content:none}
+  #calTable tbody td:nth-child(1){flex:1 1 40%; min-width:0}
+  #calTable tbody td:nth-child(2){flex:0 0 auto}
+  #calTable tbody td:nth-child(3){flex:0 0 auto}
+  #calTable tbody td:nth-child(4){flex:0 0 auto}
+  #calTable tbody td:nth-child(5){flex:0 0 auto}
+  #calTable tbody td:nth-child(6){flex:0 0 auto}
+  #calTable tbody td:nth-child(7){flex:0 0 auto}
+  #calTable tbody td:nth-child(8){flex:0 0 auto}
+
+  /* Opt-out: keep classic table rows on mobile (single line + horizontal scroll). */
+  .table-wrap.keep-table{overflow:auto; padding:0 6px 10px}
+  table.keep-table{
+    border-spacing:0;
+    min-width:560px;
+  }
+  table.keep-table thead{display:table-header-group}
+  table.keep-table tbody tr{display:table-row; padding:0; border-radius:0; background:transparent; border:0}
+  table.keep-table tbody td{display:table-cell; padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.06)}
+  table.keep-table tbody td::before{content:none}
+  table.keep-table th, table.keep-table td{white-space:nowrap}
+}
+
+/* --- Mobile tuning for decorative gradients (all pages) --- */
+@media (max-width: 860px){
+  body::before{
+    background:
+      radial-gradient(1200px 600px at 50% 0%, rgba(110,231,255,.12), rgba(11,16,32,0) 70%),
+      linear-gradient(to bottom,
+        rgba(11,16,32,0.00) 0%,
+        rgba(11,16,32,0.35) 65%,
+        rgba(11,16,32,0.85) 100%
+      );
+    background-repeat:no-repeat;
+  }
+}
+@media (max-width: 640px){
+  .chart-wrap canvas{height:300px;}
+}
+
+/* --- Mobile scroll navbar everywhere --- */
+nav {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+nav a,
+.navlink {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+nav::-webkit-scrollbar {
+  display: none;
+}
+nav {
+  scrollbar-width: none;
+}
+
+/*
+  Mobile fix: when the nav scroller sits inside a flex row (the topbar-right area),
+  some mobile browsers can fail to scroll because the flex item refuses to shrink
+  (default min-width:auto). Constrain it only on small screens so desktop layout
+  stays unchanged.
+*/
+@media (max-width: 860px){
+  .topbar-right{min-width:0;}
+  .topbar-right nav#nav{
+    min-width:0;
+    max-width:100%;
+    flex: 1 1 auto;
+    touch-action: pan-x;
+  }
+}
+
+/* --- Navbar scroll fade hint ---
+   NOTE: iOS Safari has long-standing bugs where applying CSS mask-image
+   to an overflow-x scrolling element can prevent horizontal scrolling.
+   We therefore enable the fade hint only on devices with a fine pointer
+   (desktop/laptop), where this issue doesn't occur.
+*/
+@media (hover:hover) and (pointer:fine){
+  nav{
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 16px,
+      black calc(100% - 16px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 16px,
+      black calc(100% - 16px),
+      transparent 100%
+    );
+  }
+}
+
+
+/* Very small screens: tighter spacing for Archive list table */
+@media (max-width: 380px){
+  #tList thead tr,
+  #tList tbody tr{column-gap:8px}
+  #tList thead th,
+  #tList tbody td{font-size:12px}
+}
+
+
+/* Help icon (Metrics) */
+.topbar-right{display:flex; align-items:center; gap:12px;}
+.help-icon{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:28px; height:28px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);
+  color: rgba(255,255,255,.9);
+  text-decoration:none;
+  font-weight:800;
+  font-size:14px;
+  line-height:1;
+  background: rgba(255,255,255,.04);
+}
+.help-icon:hover{background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.24);}
+.help-icon:focus{outline:2px solid rgba(255,255,255,.22); outline-offset:2px;}
+
+
+/* --- Stats internal tabs and pod/cumulative additions --- */
+.stats-tabs{
+  margin-top:14px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.stats-tab{
+  appearance:none;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  border-radius:999px;
+  padding:9px 13px;
+  cursor:pointer;
+  font-size:13px;
+}
+.stats-tab:hover{color:var(--text); border-color:rgba(255,255,255,.22)}
+.stats-tab.is-active{
+  color:var(--text);
+  background:rgba(110,231,255,.12);
+  border-color:rgba(110,231,255,.38);
+}
+.stats-panel{display:none; margin-top:14px;}
+.stats-panel.is-active{display:block;}
+.pod-matrix-wrap{overflow:auto; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.025);}
+.pod-cards{display:none;}
+.pod-card{border:1px solid var(--border); border-radius:14px; padding:12px; background:rgba(255,255,255,.035);}
+.pod-card-head{display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:10px;}
+.pod-card h3{margin:0; font-size:15px; line-height:1.25;}
+.pod-card p{margin:4px 0 0; color:var(--muted); font-size:12px;}
+.pod-card-total{text-align:right; min-width:68px;}
+.pod-card-total small{display:block; margin-top:3px; color:var(--muted); font-size:11px;}
+.pod-card-rows{display:grid; gap:7px;}
+.pod-card-row{display:flex; justify-content:space-between; gap:12px; align-items:center; border-top:1px solid rgba(255,255,255,.07); padding-top:7px; color:var(--muted); font-size:12px;}
+.pod-card-row > span:first-child{white-space:nowrap;}
+.pod-card-row > span:last-child{text-align:right; color:var(--text);}
+.pod-card-row small{display:block; margin-top:2px; color:var(--muted); font-size:11px; font-variant-numeric:tabular-nums;}
+.pod-card-row.is-empty > span:last-child{color:var(--muted);}
+
+.pod-matrix{width:100%; border-collapse:collapse; min-width:680px;}
+.pod-matrix th,.pod-matrix td{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.07); text-align:right; font-size:13px; vertical-align:middle;}
+.pod-matrix th:first-child,.pod-matrix td:first-child{text-align:left; position:sticky; left:0; background:rgba(11,16,32,.92);}
+.pod-matrix th{color:var(--muted); font-weight:650;}
+.pod-matrix tr:last-child td{border-bottom:0;}
+.pod-wae{font-weight:750; font-variant-numeric:tabular-nums;}
+.pod-wae.pos{color:#b8ff6e;}
+.pod-wae.neg{color:#ff9aa8;}
+.pod-cell-sub{display:block; margin-top:2px; color:var(--muted); font-size:11px; font-variant-numeric:tabular-nums;}
+.trend-summary{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px;}
+.trend-summary-card{border:1px solid var(--border); border-radius:14px; padding:10px 12px; background:rgba(255,255,255,.035);}
+.trend-summary-label{color:var(--muted); font-size:12px;}
+.trend-summary-value{font-size:18px; font-weight:760; margin-top:3px; font-variant-numeric:tabular-nums;}
+@media (min-width: 860px){.trend-summary{grid-template-columns:repeat(5, minmax(0,1fr));}}
+@media (max-width: 640px){.stats-tabs{position:sticky; top:0; z-index:5; padding:8px 0; background:rgba(11,16,32,.86); backdrop-filter:blur(10px);} .stats-tab{font-size:12px; padding:8px 10px;} .pod-matrix-wrap{display:none;} .pod-cards{display:grid; gap:12px;} #podCard .chart-wrap{min-height:300px;}}

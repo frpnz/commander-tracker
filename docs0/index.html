@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Tempio's Tracker</title>
+  <link rel="stylesheet" href="assets/style.css?v=20260209"/>
+  <script src="assets/nav-items.js?v=20260223"></script>
+  <script>
+    // Some hosts (or mobile webviews) may open the site at a directory URL without a trailing slash
+    // (e.g. /repo instead of /repo/). In that case, relative links like "archive/" can resolve
+    // to "/archive/" (404). Normalize to the trailing-slash form.
+    (function () {
+      try {
+        var u = new URL(window.location.href);
+        var path = u.pathname || "";
+        var last = path.split("/").pop();
+        if (!path.endsWith("/") && last && last.indexOf(".") === -1) {
+          window.location.replace(path + "/" + u.search + u.hash);
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="home home-v2">
+  <header class="topbar home-topbar">
+    <div class="brand">
+      <a class="logo" href="./" aria-label="Commander Tracker"></a>
+      <div>
+        <div class="title">Tempio's Tracker</div>
+        <div class="subtitle">Tempio · Magic · Sollazzo</div>
+      </div>
+    </div>
+      <div class="topbar-right">
+      <a class="help-icon" href="metrics/" aria-label="Guida alle metriche" title="Guida alle metriche">?</a>
+    </div>
+  </header>
+
+  <main class="home-main">
+    <section class="home-hero" aria-label="Home hero">
+      <picture class="home-bg" aria-hidden="true">
+        <!-- Current home image, responsive: mobile-first -->
+        <source
+          type="image/webp"
+          media="(max-width: 520px)"
+          srcset="assets/home-mobile-520.webp 520w, assets/home-mobile.webp 1024w"
+          sizes="100vw"
+        />
+        <source media="(max-width: 520px)" srcset="assets/home-mobile.png" />
+
+        <source
+          type="image/webp"
+          srcset="assets/home-768.webp 768w, assets/home.webp 1536w"
+          sizes="100vw"
+        />
+        <img
+          src="assets/home.png"
+          alt=""
+          loading="eager"
+          decoding="async"
+          fetchpriority="high"
+          width="1536"
+          height="1024"
+        />
+      </picture>
+
+      <div class="home-content">
+        <div class="home-copy">
+          <h1>Statistiche e analisi del meta</h1>
+          <p class="muted">Non sei il tuo deck. Sei i tuoi numeri.</p>
+        </div>
+
+        <div class="hero-actions home-actions" aria-label="Azioni home">
+          <!-- Buttons are generated from assets/nav-items.js to stay consistent with the navbar -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/home-actions.js?v=20260223"></script>
+</body>
+</html>
